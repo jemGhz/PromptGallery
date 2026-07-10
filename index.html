@@ -247,6 +247,16 @@
   .btn.primary:hover{opacity:0.85;}
   .btn.primary.copied{background:var(--ink); border-color:var(--ink);}
   .btn:not(.primary):hover{border-color:var(--ink-dim);}
+  .btn:disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+  }
+  .btn:disabled:hover{border-color:var(--line);}
+  .btn-soon-label{
+    font-size:10.5px;
+    color:var(--ink-dim);
+    font-weight:400;
+  }
 
   /* Premium / paywall */
   .lock-badge{
@@ -326,19 +336,13 @@
       <div id="paywallSection" style="display:none; flex-direction:column; flex:1; justify-content:center;">
         <div id="paywallPanel" style="display:flex; flex-direction:column;">
           <div class="paywall-title">Bu prompt kilitli</div>
-          <div class="paywall-desc">Bu prompt premium arşivin bir parçası. Aşağıdaki seçeneklerden biriyle açabilirsin.</div>
+          <div class="paywall-desc">Bu prompt premium arşivin bir parçası. Şu an için sadece koduna sahip olanlar açabilir.</div>
           <div class="paywall-actions">
-            <button class="btn primary" onclick="handlePay()">Bu prompt için öde</button>
-            <button class="btn" onclick="showMembershipPanel()">Premium üyeliğe kaydol</button>
-            <button class="btn" onclick="showCodePanel()">Kodu gir</button>
+            <button class="btn" disabled title="Yakında aktif olacak">Bu prompt için öde <span class="btn-soon-label">(yakında)</span></button>
+            <button class="btn" disabled title="Yakında aktif olacak">Premium üyeliğe kaydol <span class="btn-soon-label">(yakında)</span></button>
+            <button class="btn primary" onclick="showCodePanel()">Kodu gir</button>
             <button class="btn" onclick="closeModal()">Geri</button>
           </div>
-        </div>
-
-        <div id="membershipPanel" style="display:none; flex-direction:column;">
-          <div class="paywall-title">Premium üyelik</div>
-          <div class="paywall-desc">Planlar yakında burada olacak. Şimdilik "Kodu gir" ya da "Bu prompt için öde" seçeneklerini kullanabilirsin.</div>
-          <button class="btn" onclick="showPaywallActions()">← Geri</button>
         </div>
 
         <div id="codePanel" style="display:none; flex-direction:column;">
@@ -360,9 +364,9 @@ const SHEET_ID = '1-n0pVWWzNKKodfB9TVXKC7hpQfJDPO_ZtzFE6gDqKBM';
 const SHEET_NAME = 'Sayfa1';
 const MAX_TOP_TAGS = 20;
 
-// TODO: n8n'de kurduğun webhook URL'lerini buraya yaz
-const PREMIUM_LIST_URL = 'https://YOUR-N8N-URL/webhook/premium-list';
-const PREMIUM_VERIFY_URL = 'https://YOUR-N8N-URL/webhook/verify-code';
+// n8n webhook URL'leri
+const PREMIUM_LIST_URL = 'https://jemplus24.app.n8n.cloud/webhook/premium-list';
+const PREMIUM_VERIFY_URL = 'https://jemplus24.app.n8n.cloud/webhook/verify-premium-code';
 
 let allRows = [];
 let visibleRows = [];
@@ -617,17 +621,10 @@ function showPaywallSection(){
 
 function showPaywallActions(){
   document.getElementById('paywallPanel').style.display = 'flex';
-  document.getElementById('membershipPanel').style.display = 'none';
-  document.getElementById('codePanel').style.display = 'none';
-}
-function showMembershipPanel(){
-  document.getElementById('paywallPanel').style.display = 'none';
-  document.getElementById('membershipPanel').style.display = 'flex';
   document.getElementById('codePanel').style.display = 'none';
 }
 function showCodePanel(){
   document.getElementById('paywallPanel').style.display = 'none';
-  document.getElementById('membershipPanel').style.display = 'none';
   document.getElementById('codePanel').style.display = 'flex';
   const msgEl = document.getElementById('codeMsg');
   msgEl.textContent = '';
@@ -635,11 +632,6 @@ function showCodePanel(){
   const input = document.getElementById('codeInput');
   input.value = '';
   input.focus();
-}
-
-function handlePay(){
-  // TODO: Stripe / Telegram Stars entegrasyonu buraya bağlanacak
-  alert('Ödeme sistemi yakında aktif olacak.');
 }
 
 async function submitCode(){
