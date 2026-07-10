@@ -391,6 +391,12 @@ function escapeHtml(s){
   return div.innerHTML;
 }
 
+// n8n Respond to Webhook çıktısı her item'ı {"json": {...}} şeklinde sarmalıyor.
+// Bu yüzden ham veriden gerçek alanları çıkarmak için bu yardımcıyı kullanıyoruz.
+function unwrap(raw){
+  return raw && raw.json ? raw.json : raw;
+}
+
 async function fetchPublicRows(){
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
   const res = await fetch(url);
@@ -422,16 +428,20 @@ async function fetchPremiumList(){
     const res = await fetch(PREMIUM_LIST_URL);
     if(!res.ok) throw new Error('premium liste okunamadı');
     const data = await res.json();
-    return (Array.isArray(data) ? data : []).map(p => ({
-      id: String(p.id),
-      tarih: p.tarih || '',
-      etiketler: p.etiketler || '',
-      promptText: '',
-      gorselLink: p.gorselLink || '',
-      chatId: '',
-      kategori: (p.kategori || '').trim(),
-      isPremium: true
-    }));
+
+    return (Array.isArray(data) ? data : []).map(raw => {
+      const p = unwrap(raw);
+      return {
+        id: String(p.id ?? ''),
+        tarih: p.tarih || '',
+        etiketler: p.etiketler || '',
+        promptText: '',
+        gorselLink: p.gorselLink || '',
+        chatId: '',
+        kategori: (p.kategori || '').trim(),
+        isPremium: true
+      };
+    });
   }catch(err){
     console.warn('Premium liste alınamadı:', err.message);
     return [];
@@ -659,7 +669,8 @@ async function submitCode(){
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ id: r.id, code })
     });
-    const data = await res.json();
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
 
     if(data.success){
       setUnlockedPrompt(r.id, data.promptText);
