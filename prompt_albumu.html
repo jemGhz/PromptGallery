@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Atölyesi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --espresso:#1C1815;
+    --espresso-2:#26201B;
+    --panel:#2E2620;
+    --paper:#EDE3D2;
+    --paper-dim:#B8AC96;
+    --teal:#4A7A70;
+    --teal-light:#6FA598;
+    --ochre:#BE8A3F;
+    --brass:#C9A15A;
+    --stitch:#5B4E3F;
+    --danger:#B45F4A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(190,138,63,0.08), transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(74,122,112,0.10), transparent 50%),
+      var(--espresso);
+    color:var(--paper);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+    padding:48px 24px 80px;
+  }
+  .wrap{max-width:1200px;margin:0 auto;}
+
+  header{margin-bottom:36px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--ochre);
+    margin-bottom:14px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(32px, 5vw, 52px);
+    line-height:1.05;
+    letter-spacing:-0.01em;
+    color:var(--paper);
+  }
+  h1 em{font-style:italic; color:var(--teal-light); font-weight:400;}
+  .sub{
+    margin-top:14px;
+    color:var(--paper-dim);
+    font-size:15px;
+    max-width:560px;
+    line-height:1.5;
+  }
+
+  .config{
+    display:flex;
+    gap:10px;
+    margin-top:28px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .config input{
+    background:var(--espresso-2);
+    border:1px solid var(--stitch);
+    color:var(--paper);
+    padding:12px 14px;
+    border-radius:6px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    min-width:280px;
+    flex:1;
+  }
+  .config input::placeholder{color:var(--paper-dim); opacity:0.6;}
+  .config input:focus{outline:none; border-color:var(--teal);}
+  .config button{
+    background:var(--teal);
+    color:var(--espresso);
+    border:none;
+    padding:12px 22px;
+    border-radius:6px;
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition:background 0.15s ease;
+  }
+  .config button:hover{background:var(--teal-light);}
+  .config-note{
+    width:100%;
+    font-size:12px;
+    color:var(--paper-dim);
+    font-family:'IBM Plex Mono', monospace;
+    margin-top:2px;
+  }
+
+  .status{
+    margin-top:20px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--paper-dim);
+    display:none;
+  }
+  .status.show{display:block;}
+  .status.error{color:var(--danger);}
+
+  /* Masonry */
+  .masonry{
+    columns:4 280px;
+    column-gap:18px;
+    margin-top:32px;
+  }
+  @media (max-width:900px){ .masonry{columns:2 220px;} }
+  @media (max-width:520px){ .masonry{columns:1;} }
+
+  .tile{
+    break-inside:avoid;
+    margin-bottom:18px;
+    border-radius:10px;
+    overflow:hidden;
+    background:var(--panel);
+    border:1px solid var(--stitch);
+    cursor:pointer;
+    position:relative;
+    transition:transform 0.18s ease, border-color 0.18s ease;
+  }
+  .tile:hover{transform:translateY(-3px); border-color:var(--brass);}
+  .tile:hover .tile-overlay{opacity:1;}
+  .tile img{
+    width:100%;
+    display:block;
+    background:var(--espresso-2);
+  }
+  .tile-overlay{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(to top, rgba(28,24,21,0.88) 0%, rgba(28,24,21,0.15) 45%, transparent 70%);
+    opacity:0;
+    transition:opacity 0.18s ease;
+    display:flex;
+    align-items:flex-end;
+    padding:14px;
+  }
+  .tile-tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:5px;
+  }
+  .tile-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    padding:3px 8px;
+    border-radius:4px;
+    background:rgba(190,138,63,0.22);
+    color:var(--ochre);
+    border:1px solid rgba(190,138,63,0.35);
+  }
+  .tile-tag.person{background:rgba(74,122,112,0.25); color:var(--teal-light); border-color:rgba(74,122,112,0.4);}
+
+  .empty{
+    text-align:center;
+    padding:80px 20px;
+    color:var(--paper-dim);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+  }
+
+  /* Modal */
+  .modal-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(12,10,8,0.86);
+    backdrop-filter:blur(4px);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    z-index:100;
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal{
+    background:var(--panel);
+    border:1px solid var(--stitch);
+    border-radius:14px;
+    max-width:920px;
+    width:100%;
+    max-height:90vh;
+    display:flex;
+    overflow:hidden;
+  }
+  @media (max-width:720px){ .modal{flex-direction:column; overflow-y:auto;} }
+
+  .modal-img-wrap{
+    flex:1 1 50%;
+    background:var(--espresso-2);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    max-height:90vh;
+  }
+  .modal-img-wrap img{
+    width:100%;
+    height:100%;
+    max-height:90vh;
+    object-fit:contain;
+  }
+  .modal-body{
+    flex:1 1 50%;
+    padding:32px;
+    display:flex;
+    flex-direction:column;
+    overflow-y:auto;
+  }
+  .modal-date{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--paper-dim);
+    margin-bottom:16px;
+  }
+  .modal-tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:22px;
+  }
+  .modal-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--paper-dim);
+    margin-bottom:10px;
+  }
+  .modal-prompt{
+    font-size:14.5px;
+    line-height:1.65;
+    color:var(--paper);
+    background:var(--espresso-2);
+    border:1px dashed var(--stitch);
+    border-radius:8px;
+    padding:16px;
+    margin-bottom:20px;
+    flex:1;
+  }
+  .modal-actions{
+    display:flex;
+    gap:10px;
+  }
+  .btn{
+    flex:1;
+    padding:13px;
+    border-radius:8px;
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    border:1px solid var(--stitch);
+    background:transparent;
+    color:var(--paper);
+    transition:all 0.15s ease;
+  }
+  .btn.primary{
+    background:var(--teal);
+    border-color:var(--teal);
+    color:var(--espresso);
+  }
+  .btn.primary:hover{background:var(--teal-light);}
+  .btn.primary.copied{background:var(--ochre); border-color:var(--ochre);}
+  .btn:not(.primary):hover{border-color:var(--brass); color:var(--brass);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">jemplus &middot; görsel prompt arşivi</div>
+    <h1>Referanstan <em>ürüne.</em></h1>
+    <p class="sub">Telegram'a atılan her ilham fotoğrafından çıkan sahne, poz ve ışık talimatlarının kaydı — bir görsele tıkla, prompt'u kopyala.</p>
+
+    <div class="config">
+      <input type="text" id="sheetId" placeholder="Google Sheet ID (URL'deki /d/ ile /edit arasındaki kod)">
+      <input type="text" id="sheetName" placeholder="Sekme adı (örn. Sheet1)" style="min-width:160px; flex:none;">
+      <button onclick="loadData()">Yükle</button>
+      <div class="config-note">Not: Sheet'in "Web'de Yayınla" ile yayınlanmış olması gerekir. ID ve sekme adı tarayıcında saklanmaz, her açılışta girmen gerekir.</div>
+    </div>
+
+    <div class="status" id="status"></div>
+  </header>
+
+  <div class="masonry" id="grid"></div>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this) closeModal()">
+  <div class="modal">
+    <div class="modal-img-wrap">
+      <img id="modalImg" src="" alt="referans görsel">
+    </div>
+    <div class="modal-body">
+      <div class="modal-date" id="modalDate"></div>
+      <div class="modal-tags" id="modalTags"></div>
+      <div class="modal-label">Prompt</div>
+      <div class="modal-prompt" id="modalPrompt"></div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal()">← Geri</button>
+        <button class="btn primary" id="copyBtn" onclick="copyPrompt()">Prompt'u Kopyala</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let allRows = [];
+
+function setStatus(msg, isError){
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status show' + (isError ? ' error' : '');
+}
+function clearStatus(){
+  document.getElementById('status').className = 'status';
+}
+
+async function loadData(){
+  const sheetId = document.getElementById('sheetId').value.trim();
+  const sheetName = document.getElementById('sheetName').value.trim() || 'Sheet1';
+  if(!sheetId){ setStatus('Önce Sheet ID gir.', true); return; }
+  setStatus('Yükleniyor...');
+  document.getElementById('grid').innerHTML = '';
+
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+
+  try{
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('Sheet okunamadı (yayınlanmış mı kontrol et).');
+    const text = await res.text();
+    const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+    const data = JSON.parse(jsonStr);
+
+    const rows = data.table.rows.map(r => {
+      const cells = r.c.map(c => c ? (c.v ?? '') : '');
+      return {
+        tarih: cells[0] || '',
+        etiketler: cells[1] || '',
+        promptText: cells[2] || '',
+        gorselLink: cells[3] || '',
+        chatId: cells[4] || ''
+      };
+    }).filter(r => r.promptText);
+
+    allRows = rows.reverse();
+    clearStatus();
+    if(allRows.length === 0){
+      document.getElementById('grid').innerHTML = '<div class="empty">Henüz kayıt yok. Bota bir görsel gönder, buraya düşer.</div>';
+      return;
+    }
+    renderGrid();
+  }catch(err){
+    setStatus('Hata: ' + err.message, true);
+  }
+}
+
+function renderGrid(){
+  const grid = document.getElementById('grid');
+  grid.innerHTML = allRows.map((r, i) => {
+    const tags = r.etiketler.split(',').map(t => t.trim()).filter(Boolean);
+    const tagsHtml = tags.slice(0,3).map(t => {
+      const isPerson = t.includes('model');
+      return `<span class="tile-tag${isPerson ? ' person' : ''}">${t}</span>`;
+    }).join('');
+    const imgSrc = r.gorselLink || '';
+    return `
+      <div class="tile" onclick="openModal(${i})">
+        <img src="${imgSrc}" alt="referans görsel" loading="lazy" onerror="this.closest('.tile').style.display='none'">
+        <div class="tile-overlay">
+          <div class="tile-tags">${tagsHtml}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openModal(idx){
+  const r = allRows[idx];
+  const tags = r.etiketler.split(',').map(t => t.trim()).filter(Boolean);
+
+  document.getElementById('modalImg').src = r.gorselLink || '';
+  document.getElementById('modalPrompt').textContent = r.promptText;
+  document.getElementById('modalDate').textContent = r.tarih
+    ? new Date(r.tarih).toLocaleDateString('tr-TR', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})
+    : '';
+  document.getElementById('modalTags').innerHTML = tags.map(t => {
+    const isPerson = t.includes('model');
+    return `<span class="tile-tag${isPerson ? ' person' : ''}">${t}</span>`;
+  }).join('');
+
+  const copyBtn = document.getElementById('copyBtn');
+  copyBtn.textContent = "Prompt'u Kopyala";
+  copyBtn.classList.remove('copied');
+  copyBtn.dataset.prompt = r.promptText;
+
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('modalBackdrop').classList.remove('open');
+}
+
+function copyPrompt(){
+  const btn = document.getElementById('copyBtn');
+  navigator.clipboard.writeText(btn.dataset.prompt).then(() => {
+    btn.textContent = 'Kopyalandı ✓';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = "Prompt'u Kopyala";
+      btn.classList.remove('copied');
+    }, 1600);
+  });
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape') closeModal();
+});
+</script>
+</body>
+</html>
