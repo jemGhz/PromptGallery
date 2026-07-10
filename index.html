@@ -70,6 +70,41 @@
   .status.show{display:block;}
   .status.error{color:#C77B62;}
 
+  /* Filter bars */
+  .filters{
+    max-width:1280px;
+    margin:0 auto;
+    padding:24px 32px 0;
+  }
+  .filter-block{margin-bottom:18px;}
+  .filter-label{
+    display:block;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--ink-dim);
+    margin-bottom:10px;
+  }
+  .filter-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .chip{
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    padding:7px 14px;
+    border-radius:20px;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--ink-dim);
+    cursor:pointer;
+    transition:all 0.15s ease;
+    white-space:nowrap;
+  }
+  .chip:hover{border-color:var(--ink-dim); color:var(--ink);}
+  .chip.active{background:var(--gold); border-color:var(--gold); color:#0A0A09;}
+
   .masonry{
     max-width:1280px;
     margin:0 auto;
@@ -225,6 +260,8 @@
 
 <div class="status" id="status"></div>
 
+<div class="filters" id="filters"></div>
+
 <div class="masonry" id="grid"></div>
 
 <div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this) closeModal()">
@@ -247,8 +284,12 @@
 <script>
 const SHEET_ID = '1-n0pVWWzNKKodfB9TVXKC7hpQfJDPO_ZtzFE6gDqKBM';
 const SHEET_NAME = 'Sayfa1';
+const MAX_TOP_TAGS = 20;
 
 let allRows = [];
+let visibleRows = [];
+let activeCategory = null;
+let activeTag = null;
 
 function setStatus(msg, isError){
   const el = document.getElementById('status');
@@ -258,10 +299,19 @@ function setStatus(msg, isError){
 function clearStatus(){
   document.getElementById('status').className = 'status';
 }
+function escapeAttr(s){
+  return String(s).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+function escapeHtml(s){
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
 
 async function loadData(){
   setStatus('Yükleniyor...');
   document.getElementById('grid').innerHTML = '';
+  document.getElementById('filters').innerHTML = '';
 
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
@@ -279,11 +329,14 @@ async function loadData(){
         etiketler: cells[1] || '',
         promptText: cells[2] || '',
         gorselLink: cells[3] || '',
-        chatId: cells[4] || ''
+        chatId: cells[4] || '',
+        kategori: (cells[5] || '').trim()
       };
     }).filter(r => r.promptText);
 
     allRows = rows.reverse();
+    activeCategory = null;
+    activeTag = null;
     clearStatus();
     document.getElementById('countLabel').textContent = allRows.length + ' kayıt';
 
@@ -291,29 +344,106 @@ async function loadData(){
       document.getElementById('grid').innerHTML = '<div class="empty">Henüz kayıt yok. Bota bir görsel gönder, buraya düşer.</div>';
       return;
     }
-    renderGrid();
+    renderFilters();
+    applyFiltersAndRender();
   }catch(err){
     setStatus('Hata: ' + err.message, true);
   }
 }
 
+function getCategories(){
+  return [...new Set(allRows.map(r => r.kategori).filter(Boolean))].sort();
+}
+
+function getTopTags(){
+  const freq = {};
+  allRows.forEach(r => {
+    r.etiketler.split(',').map(t => t.trim()).filter(Boolean).forEach(t => {
+      freq[t] = (freq[t] || 0) + 1;
+    });
+  });
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, MAX_TOP_TAGS)
+    .map(e => e[0]);
+}
+
+function renderFilters(){
+  const categories = getCategories();
+  const topTags = getTopTags();
+  const container = document.getElementById('filters');
+
+  let html = '';
+
+  if(categories.length){
+    html += `
+      <div class="filter-block">
+        <span class="filter-label">Kategoriler</span>
+        <div class="filter-row">
+          <button class="chip ${!activeCategory ? 'active' : ''}" onclick="setCategory(null)">Tümü</button>
+          ${categories.map(c => `<button class="chip ${activeCategory === c ? 'active' : ''}" onclick="setCategory('${escapeAttr(c)}')">${escapeHtml(c)}</button>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  if(topTags.length){
+    html += `
+      <div class="filter-block">
+        <span class="filter-label">Popüler Etiketler</span>
+        <div class="filter-row">
+          ${topTags.map(t => `<button class="chip ${activeTag === t ? 'active' : ''}" onclick="setTag('${escapeAttr(t)}')">${escapeHtml(t)}</button>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function setCategory(c){
+  activeCategory = c;
+  renderFilters();
+  applyFiltersAndRender();
+}
+
+function setTag(t){
+  activeTag = (activeTag === t) ? null : t;
+  renderFilters();
+  applyFiltersAndRender();
+}
+
+function applyFiltersAndRender(){
+  visibleRows = allRows.filter(r => {
+    const matchesCategory = !activeCategory || r.kategori === activeCategory;
+    const tags = r.etiketler.split(',').map(t => t.trim());
+    const matchesTag = !activeTag || tags.includes(activeTag);
+    return matchesCategory && matchesTag;
+  });
+  renderGrid();
+}
+
 function renderGrid(){
   const grid = document.getElementById('grid');
-  grid.innerHTML = allRows.map((r, i) => {
+
+  if(visibleRows.length === 0){
+    grid.innerHTML = '<div class="empty">Bu filtrelere uyan kayıt yok.</div>';
+    return;
+  }
+
+  grid.innerHTML = visibleRows.map((r, i) => {
     const tags = r.etiketler.split(',').map(t => t.trim()).filter(Boolean);
     const firstTag = tags[0] || '';
     const imgSrc = r.gorselLink || '';
     return `
       <div class="tile" onclick="openModal(${i})">
         <img src="${imgSrc}" alt="referans görsel" loading="lazy" onerror="this.closest('.tile').style.display='none'">
-        <div class="tile-hint"><span>${firstTag}</span></div>
+        <div class="tile-hint"><span>${escapeHtml(firstTag)}</span></div>
       </div>
     `;
   }).join('');
 }
 
 function openModal(idx){
-  const r = allRows[idx];
+  const r = visibleRows[idx];
   const tags = r.etiketler.split(',').map(t => t.trim()).filter(Boolean);
 
   document.getElementById('modalImg').src = r.gorselLink || '';
@@ -321,10 +451,15 @@ function openModal(idx){
   document.getElementById('modalDate').textContent = r.tarih
     ? new Date(r.tarih).toLocaleDateString('tr-TR', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})
     : '';
-  document.getElementById('modalTags').innerHTML = tags.map(t => {
+
+  let tagsHtml = tags.map(t => {
     const isPerson = t.includes('model');
-    return `<span class="tag${isPerson ? ' person' : ''}">${t}</span>`;
+    return `<span class="tag${isPerson ? ' person' : ''}">${escapeHtml(t)}</span>`;
   }).join('');
+  if(r.kategori){
+    tagsHtml = `<span class="tag person">${escapeHtml(r.kategori)}</span>` + tagsHtml;
+  }
+  document.getElementById('modalTags').innerHTML = tagsHtml;
 
   const copyBtn = document.getElementById('copyBtn');
   copyBtn.textContent = 'Kopyala';
