@@ -247,6 +247,48 @@
   .btn.primary:hover{opacity:0.85;}
   .btn.primary.copied{background:var(--ink); border-color:var(--ink);}
   .btn:not(.primary):hover{border-color:var(--ink-dim);}
+
+  /* Premium / paywall */
+  .lock-badge{
+    position:absolute;
+    top:10px; right:10px;
+    width:26px; height:26px;
+    border-radius:50%;
+    background:rgba(10,10,9,0.75);
+    border:1px solid rgba(199,161,94,0.4);
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px;
+    z-index:2;
+  }
+  .tile.locked .tile-hint{opacity:1; background:linear-gradient(to top, rgba(10,10,9,0.85) 0%, rgba(10,10,9,0.15) 65%, transparent 100%);}
+
+  .paywall-title{
+    font-family:'Fraunces', serif;
+    font-size:19px;
+    margin-bottom:10px;
+  }
+  .paywall-desc{
+    font-size:13px;
+    line-height:1.6;
+    color:var(--ink-dim);
+    margin-bottom:24px;
+  }
+  .paywall-actions{display:flex; flex-direction:column; gap:9px;}
+  .code-row{display:flex; gap:8px;}
+  .code-row input{
+    flex:1;
+    background:transparent;
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:12px;
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    font-size:13.5px;
+  }
+  .code-row input:focus{outline:none; border-color:var(--gold);}
+  .code-msg{font-size:12px; margin-top:10px; min-height:14px;}
+  .code-msg.error{color:#C77B62;}
+  .code-msg.success{color:var(--gold);}
 </style>
 </head>
 <body>
@@ -272,10 +314,42 @@
     <div class="modal-body">
       <div class="modal-eyebrow" id="modalDate"></div>
       <div class="modal-tags" id="modalTags"></div>
-      <div class="modal-prompt" id="modalPrompt"></div>
-      <div class="modal-actions">
-        <button class="btn" onclick="closeModal()">← Geri</button>
-        <button class="btn primary" id="copyBtn" onclick="copyPrompt()">Kopyala</button>
+
+      <div id="promptSection" style="display:flex; flex-direction:column; flex:1;">
+        <div class="modal-prompt" id="modalPrompt"></div>
+        <div class="modal-actions">
+          <button class="btn" onclick="closeModal()">← Geri</button>
+          <button class="btn primary" id="copyBtn" onclick="copyPrompt()">Kopyala</button>
+        </div>
+      </div>
+
+      <div id="paywallSection" style="display:none; flex-direction:column; flex:1; justify-content:center;">
+        <div id="paywallPanel" style="display:flex; flex-direction:column;">
+          <div class="paywall-title">Bu prompt kilitli</div>
+          <div class="paywall-desc">Bu prompt premium arşivin bir parçası. Aşağıdaki seçeneklerden biriyle açabilirsin.</div>
+          <div class="paywall-actions">
+            <button class="btn primary" onclick="handlePay()">Bu prompt için öde</button>
+            <button class="btn" onclick="showMembershipPanel()">Premium üyeliğe kaydol</button>
+            <button class="btn" onclick="showCodePanel()">Kodu gir</button>
+            <button class="btn" onclick="closeModal()">Geri</button>
+          </div>
+        </div>
+
+        <div id="membershipPanel" style="display:none; flex-direction:column;">
+          <div class="paywall-title">Premium üyelik</div>
+          <div class="paywall-desc">Planlar yakında burada olacak. Şimdilik "Kodu gir" ya da "Bu prompt için öde" seçeneklerini kullanabilirsin.</div>
+          <button class="btn" onclick="showPaywallActions()">← Geri</button>
+        </div>
+
+        <div id="codePanel" style="display:none; flex-direction:column;">
+          <div class="paywall-title">Kodunu gir</div>
+          <div class="code-row">
+            <input type="text" id="codeInput" placeholder="Örn. AB12CD" maxlength="24" onkeydown="if(event.key==='Enter') submitCode()">
+            <button class="btn primary" onclick="submitCode()">Doğrula</button>
+          </div>
+          <div class="code-msg" id="codeMsg"></div>
+          <button class="btn" style="margin-top:16px" onclick="showPaywallActions()">← Geri</button>
+        </div>
       </div>
     </div>
   </div>
@@ -286,10 +360,15 @@ const SHEET_ID = '1-n0pVWWzNKKodfB9TVXKC7hpQfJDPO_ZtzFE6gDqKBM';
 const SHEET_NAME = 'Sayfa1';
 const MAX_TOP_TAGS = 20;
 
+// TODO: n8n'de kurduğun webhook URL'lerini buraya yaz
+const PREMIUM_LIST_URL = 'https://YOUR-N8N-URL/webhook/premium-list';
+const PREMIUM_VERIFY_URL = 'https://YOUR-N8N-URL/webhook/verify-code';
+
 let allRows = [];
 let visibleRows = [];
 let activeCategory = null;
 let activeTag = null;
+let currentModalRow = null;
 
 function setStatus(msg, isError){
   const el = document.getElementById('status');
@@ -308,33 +387,67 @@ function escapeHtml(s){
   return div.innerHTML;
 }
 
+async function fetchPublicRows(){
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('Sheet okunamadı.');
+  const text = await res.text();
+  const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+  const data = JSON.parse(jsonStr);
+
+  const rows = data.table.rows.map((r, i) => {
+    const cells = r.c.map(c => c ? (c.v ?? '') : '');
+    return {
+      id: 'pub_' + i,
+      tarih: cells[0] || '',
+      etiketler: cells[1] || '',
+      promptText: cells[2] || '',
+      gorselLink: cells[3] || '',
+      chatId: cells[4] || '',
+      kategori: (cells[5] || '').trim(),
+      isPremium: false
+    };
+  }).filter(r => r.promptText);
+
+  return rows.reverse();
+}
+
+async function fetchPremiumList(){
+  if(!PREMIUM_LIST_URL || PREMIUM_LIST_URL.includes('YOUR-N8N-URL')) return [];
+  try{
+    const res = await fetch(PREMIUM_LIST_URL);
+    if(!res.ok) throw new Error('premium liste okunamadı');
+    const data = await res.json();
+    return (Array.isArray(data) ? data : []).map(p => ({
+      id: String(p.id),
+      tarih: p.tarih || '',
+      etiketler: p.etiketler || '',
+      promptText: '',
+      gorselLink: p.gorselLink || '',
+      chatId: '',
+      kategori: (p.kategori || '').trim(),
+      isPremium: true
+    }));
+  }catch(err){
+    console.warn('Premium liste alınamadı:', err.message);
+    return [];
+  }
+}
+
 async function loadData(){
   setStatus('Yükleniyor...');
   document.getElementById('grid').innerHTML = '';
   document.getElementById('filters').innerHTML = '';
 
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
-
   try{
-    const res = await fetch(url);
-    if(!res.ok) throw new Error('Sheet okunamadı.');
-    const text = await res.text();
-    const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
-    const data = JSON.parse(jsonStr);
+    const [publicRows, premiumRows] = await Promise.all([fetchPublicRows(), fetchPremiumList()]);
 
-    const rows = data.table.rows.map(r => {
-      const cells = r.c.map(c => c ? (c.v ?? '') : '');
-      return {
-        tarih: cells[0] || '',
-        etiketler: cells[1] || '',
-        promptText: cells[2] || '',
-        gorselLink: cells[3] || '',
-        chatId: cells[4] || '',
-        kategori: (cells[5] || '').trim()
-      };
-    }).filter(r => r.promptText);
+    allRows = [...publicRows, ...premiumRows].sort((a, b) => {
+      const da = new Date(a.tarih).getTime() || 0;
+      const db = new Date(b.tarih).getTime() || 0;
+      return db - da;
+    });
 
-    allRows = rows.reverse();
     activeCategory = null;
     activeTag = null;
     clearStatus();
@@ -431,11 +544,13 @@ function renderGrid(){
 
   grid.innerHTML = visibleRows.map((r, i) => {
     const tags = r.etiketler.split(',').map(t => t.trim()).filter(Boolean);
-    const firstTag = tags[0] || '';
+    const firstTag = tags[0] || (r.isPremium ? 'Premium' : '');
     const imgSrc = r.gorselLink || '';
+    const lockBadge = r.isPremium && !getUnlockedPrompt(r.id) ? '<div class="lock-badge">🔒</div>' : '';
     return `
-      <div class="tile" onclick="openModal(${i})">
+      <div class="tile ${r.isPremium ? 'locked' : ''}" onclick="openModal(${i})">
         <img src="${imgSrc}" alt="referans görsel" loading="lazy" onerror="this.closest('.tile').style.display='none'">
+        ${lockBadge}
         <div class="tile-hint"><span>${escapeHtml(firstTag)}</span></div>
       </div>
     `;
@@ -444,10 +559,10 @@ function renderGrid(){
 
 function openModal(idx){
   const r = visibleRows[idx];
+  currentModalRow = r;
   const tags = r.etiketler.split(',').map(t => t.trim()).filter(Boolean);
 
   document.getElementById('modalImg').src = r.gorselLink || '';
-  document.getElementById('modalPrompt').textContent = r.promptText;
   document.getElementById('modalDate').textContent = r.tarih
     ? new Date(r.tarih).toLocaleDateString('tr-TR', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})
     : '';
@@ -461,16 +576,113 @@ function openModal(idx){
   }
   document.getElementById('modalTags').innerHTML = tagsHtml;
 
-  const copyBtn = document.getElementById('copyBtn');
-  copyBtn.textContent = 'Kopyala';
-  copyBtn.classList.remove('copied');
-  copyBtn.dataset.prompt = r.promptText;
+  const unlocked = r.isPremium ? getUnlockedPrompt(r.id) : null;
+  if(r.isPremium && !unlocked){
+    showPaywallSection();
+  }else{
+    showPromptSection(r.isPremium ? unlocked : r.promptText);
+  }
 
   document.getElementById('modalBackdrop').classList.add('open');
 }
 
 function closeModal(){
   document.getElementById('modalBackdrop').classList.remove('open');
+}
+
+// ---- Premium / paywall ----
+
+function getUnlockedPrompt(id){
+  try{ return sessionStorage.getItem('unlocked_' + id); }catch(e){ return null; }
+}
+function setUnlockedPrompt(id, promptText){
+  try{ sessionStorage.setItem('unlocked_' + id, promptText); }catch(e){}
+}
+
+function showPromptSection(promptText){
+  document.getElementById('promptSection').style.display = 'flex';
+  document.getElementById('paywallSection').style.display = 'none';
+  document.getElementById('modalPrompt').textContent = promptText || '';
+  const copyBtn = document.getElementById('copyBtn');
+  copyBtn.textContent = 'Kopyala';
+  copyBtn.classList.remove('copied');
+  copyBtn.dataset.prompt = promptText || '';
+}
+
+function showPaywallSection(){
+  document.getElementById('promptSection').style.display = 'none';
+  document.getElementById('paywallSection').style.display = 'flex';
+  showPaywallActions();
+}
+
+function showPaywallActions(){
+  document.getElementById('paywallPanel').style.display = 'flex';
+  document.getElementById('membershipPanel').style.display = 'none';
+  document.getElementById('codePanel').style.display = 'none';
+}
+function showMembershipPanel(){
+  document.getElementById('paywallPanel').style.display = 'none';
+  document.getElementById('membershipPanel').style.display = 'flex';
+  document.getElementById('codePanel').style.display = 'none';
+}
+function showCodePanel(){
+  document.getElementById('paywallPanel').style.display = 'none';
+  document.getElementById('membershipPanel').style.display = 'none';
+  document.getElementById('codePanel').style.display = 'flex';
+  const msgEl = document.getElementById('codeMsg');
+  msgEl.textContent = '';
+  msgEl.className = 'code-msg';
+  const input = document.getElementById('codeInput');
+  input.value = '';
+  input.focus();
+}
+
+function handlePay(){
+  // TODO: Stripe / Telegram Stars entegrasyonu buraya bağlanacak
+  alert('Ödeme sistemi yakında aktif olacak.');
+}
+
+async function submitCode(){
+  const r = currentModalRow;
+  const code = document.getElementById('codeInput').value.trim();
+  const msgEl = document.getElementById('codeMsg');
+
+  if(!code){
+    msgEl.textContent = 'Kod boş olamaz.';
+    msgEl.className = 'code-msg error';
+    return;
+  }
+  if(!PREMIUM_VERIFY_URL || PREMIUM_VERIFY_URL.includes('YOUR-N8N-URL')){
+    msgEl.textContent = 'Doğrulama servisi henüz bağlanmadı.';
+    msgEl.className = 'code-msg error';
+    return;
+  }
+
+  msgEl.textContent = 'Kontrol ediliyor...';
+  msgEl.className = 'code-msg';
+
+  try{
+    const res = await fetch(PREMIUM_VERIFY_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ id: r.id, code })
+    });
+    const data = await res.json();
+
+    if(data.success){
+      setUnlockedPrompt(r.id, data.promptText);
+      msgEl.textContent = 'Kod doğru! Açılıyor...';
+      msgEl.className = 'code-msg success';
+      setTimeout(() => showPromptSection(data.promptText), 500);
+      renderGrid(); // kilit rozetini kaldırmak için tile'ları yenile
+    }else{
+      msgEl.textContent = data.message || 'Kod geçersiz.';
+      msgEl.className = 'code-msg error';
+    }
+  }catch(err){
+    msgEl.textContent = 'Bağlantı hatası: ' + err.message;
+    msgEl.className = 'code-msg error';
+  }
 }
 
 function copyPrompt(){
