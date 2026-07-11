@@ -427,8 +427,7 @@ async function fetchPremiumList(){
   try{
     const res = await fetch(PREMIUM_LIST_URL);
     if(!res.ok) throw new Error('premium liste okunamadı');
-    const raw = await res.json();
-    const data = (Array.isArray(raw) ? raw[0] : raw)?.json ?? raw;
+    const data = await res.json();
 
     return (Array.isArray(data) ? data : []).map(raw => {
       const p = unwrap(raw);
