@@ -270,6 +270,26 @@
     font-size:12px;
     z-index:2;
   }
+  .stat-badges{
+    position:absolute;
+    top:10px; left:10px;
+    display:flex;
+    gap:6px;
+    z-index:2;
+  }
+  .stat-badge{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    background:rgba(10,10,9,0.65);
+    backdrop-filter:blur(2px);
+    border-radius:20px;
+    padding:4px 9px;
+    font-size:10.5px;
+    color:var(--ink);
+    line-height:1;
+  }
+  .stat-badge svg{width:11px; height:11px; opacity:0.85;}
   .tile.locked .tile-hint{opacity:1; background:linear-gradient(to top, rgba(10,10,9,0.85) 0%, rgba(10,10,9,0.15) 65%, transparent 100%);}
 
   .paywall-title{
@@ -558,6 +578,30 @@ function applyFiltersAndRender(){
   renderGrid();
 }
 
+// Görüntülenme/beğeni sayıları - id'ye göre sabit kalan sözde-rastgele değerler
+const statCache = {};
+function seededRandom(seed, min, max){
+  let hash = 0;
+  for(let i = 0; i < seed.length; i++){
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  return min + (hash % (max - min + 1));
+}
+function getViewCount(id){
+  const key = 'v_' + id;
+  if(!(key in statCache)) statCache[key] = seededRandom(key, 40, 2400);
+  return statCache[key];
+}
+function getLikeCount(id){
+  const key = 'l_' + id;
+  if(!(key in statCache)) statCache[key] = seededRandom(key, 3, 180);
+  return statCache[key];
+}
+function formatCount(n){
+  if(n >= 1000) return (n/1000).toFixed(1).replace('.0','') + 'b';
+  return String(n);
+}
+
 function renderGrid(){
   const grid = document.getElementById('grid');
 
@@ -571,10 +615,18 @@ function renderGrid(){
     const firstTag = tags[0] || (r.isPremium ? 'Premium' : '');
     const imgSrc = r.gorselLink || '';
     const lockBadge = r.isPremium && !getUnlockedPrompt(r.id) ? '<div class="lock-badge">🔒</div>' : '';
+    const views = formatCount(getViewCount(r.id));
+    const likes = formatCount(getLikeCount(r.id));
+    const statBadges = `
+      <div class="stat-badges">
+        <span class="stat-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>${views}</span>
+        <span class="stat-badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-6.7-4.35-9.3-8.1C.8 9.9 1.7 6.4 4.6 5.1c2.1-.95 4.2-.1 5.4 1.6.4.55.8 1.1 1 1.5.2-.4.6-.95 1-1.5 1.2-1.7 3.3-2.55 5.4-1.6 2.9 1.3 3.8 4.8 1.9 7.8C18.7 16.65 12 21 12 21z"/></svg>${likes}</span>
+      </div>`;
     return `
       <div class="tile ${r.isPremium ? 'locked' : ''}" onclick="openModal(${i})">
         <img src="${imgSrc}" alt="referans görsel" loading="lazy" onerror="this.closest('.tile').style.display='none'">
         ${lockBadge}
+        ${statBadges}
         <div class="tile-hint"><span>${escapeHtml(firstTag)}</span></div>
       </div>
     `;
