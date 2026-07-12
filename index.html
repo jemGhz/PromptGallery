@@ -59,6 +59,30 @@
   }
   .refresh:hover{color:var(--gold);}
 
+  #authArea{display:flex; align-items:center;}
+  .user-chip{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12.5px;
+    color:var(--ink-dim);
+  }
+  .user-chip img{
+    width:24px; height:24px;
+    border-radius:50%;
+    border:1px solid var(--line);
+  }
+  .user-chip button{
+    background:none;
+    border:none;
+    color:var(--ink-dim);
+    font-size:12px;
+    cursor:pointer;
+    text-decoration:underline;
+    font-family:'Inter', sans-serif;
+  }
+  .user-chip button:hover{color:var(--gold);}
+
   .status{
     max-width:1280px;
     margin:20px auto 0;
@@ -347,6 +371,7 @@
   .code-msg.error{color:#C77B62;}
   .code-msg.success{color:var(--gold);}
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 <header>
@@ -354,6 +379,7 @@
   <div class="meta">
     <span id="countLabel"></span>
     <button class="refresh" onclick="loadData()">↻ yenile</button>
+    <div id="authArea"></div>
   </div>
 </header>
 
@@ -825,6 +851,78 @@ function copyPrompt(){
 }
 
 document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeModal(); });
+
+// ---- Google Girişi ----
+const GOOGLE_CLIENT_ID = '1036033399902-fufvgkbifjipd9615d790gkjh8k3u7an.apps.googleusercontent.com';
+
+function decodeJwt(token){
+  try{
+    const payload = token.split('.')[1];
+    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(decoded);
+  }catch(e){ return null; }
+}
+
+function handleGoogleCredential(response){
+  const data = decodeJwt(response.credential);
+  if(!data) return;
+  try{
+    localStorage.setItem('userEmail', data.email || '');
+    localStorage.setItem('userName', data.name || '');
+    localStorage.setItem('userPicture', data.picture || '');
+  }catch(e){}
+  renderAuthArea();
+}
+
+function logout(){
+  try{
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userPicture');
+  }catch(e){}
+  if(window.google && google.accounts && google.accounts.id){
+    google.accounts.id.disableAutoSelect();
+  }
+  renderAuthArea();
+}
+
+function renderAuthArea(){
+  const area = document.getElementById('authArea');
+  let email = '';
+  try{ email = localStorage.getItem('userEmail') || ''; }catch(e){}
+
+  if(email){
+    const name = (() => { try{ return localStorage.getItem('userName') || ''; }catch(e){ return ''; } })();
+    const picture = (() => { try{ return localStorage.getItem('userPicture') || ''; }catch(e){ return ''; } })();
+    area.innerHTML = `
+      <div class="user-chip">
+        ${picture ? `<img src="${escapeAttr(picture)}" alt="">` : ''}
+        <span>${escapeHtml(name || email)}</span>
+        <button onclick="logout()">Çıkış</button>
+      </div>`;
+  }else{
+    area.innerHTML = '';
+    if(window.google && google.accounts && google.accounts.id){
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredential
+      });
+      google.accounts.id.renderButton(area, { theme: 'filled_black', size: 'medium', shape: 'pill', text: 'signin' });
+    }
+  }
+}
+
+window.addEventListener('load', () => {
+  // Google script'inin yüklenmesini bekle
+  const tryRender = () => {
+    if(window.google && google.accounts && google.accounts.id){
+      renderAuthArea();
+    }else{
+      setTimeout(tryRender, 200);
+    }
+  };
+  tryRender();
+});
 
 loadData();
 </script>
