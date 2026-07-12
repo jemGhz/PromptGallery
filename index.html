@@ -340,13 +340,23 @@
           <div class="paywall-actions">
             <button class="btn" disabled title="Yakında aktif olacak">Bu prompt için öde <span class="btn-soon-label">(yakında)</span></button>
             <button class="btn" disabled title="Yakında aktif olacak">Premium üyeliğe kaydol <span class="btn-soon-label">(yakında)</span></button>
-            <button class="btn primary" onclick="showCodePanel()">Kodu gir</button>
+            <button class="btn primary" onclick="showCodePanel()">Bu prompt'a sahip ol</button>
             <button class="btn" onclick="closeModal()">Geri</button>
           </div>
         </div>
 
         <div id="codePanel" style="display:none; flex-direction:column;">
-          <div class="paywall-title">Kodunu gir</div>
+          <div class="paywall-title">Bu prompt'a sahip ol</div>
+          <div class="paywall-desc">
+            Aşağıdaki IBAN'a ödeme yaptıktan sonra dekontu WhatsApp'tan <strong>+90 5XX XXX XX XX</strong> numarasına gönder. Sana bir kod ileteceğiz, o kodu aşağıya girip promptu açabilirsin.
+          </div>
+          <div class="paywall-desc" style="background:var(--surface); border:1px solid var(--line); border-radius:7px; padding:14px; margin-bottom:24px;">
+            <strong>Alıcı:</strong> [Ad Soyad]<br>
+            <strong>IBAN:</strong> TR00 0000 0000 0000 0000 0000 00<br>
+            <strong>Banka:</strong> [Banka Adı]<br>
+            <strong>Tutar:</strong> [Fiyat]
+          </div>
+          <div class="paywall-title" style="font-size:15px;">Kodun var mı?</div>
           <div class="code-row">
             <input type="text" id="codeInput" placeholder="Örn. AB12CD" maxlength="24" onkeydown="if(event.key==='Enter') submitCode()">
             <button class="btn primary" onclick="submitCode()">Doğrula</button>
