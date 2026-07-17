@@ -370,6 +370,61 @@
   .code-msg{font-size:12px; margin-top:10px; min-height:14px;}
   .code-msg.error{color:#C77B62;}
   .code-msg.success{color:var(--gold);}
+
+  /* Tabs */
+  .tabbar{
+    max-width:1280px;
+    margin:24px auto 0;
+    padding:0 32px;
+    display:flex;
+    gap:6px;
+  }
+  .tab-btn{
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    padding:11px 20px;
+    border-radius:8px 8px 0 0;
+    border:1px solid var(--line);
+    border-bottom:none;
+    background:transparent;
+    color:var(--ink-dim);
+    cursor:pointer;
+    transition:all 0.15s ease;
+  }
+  .tab-btn:hover{color:var(--ink);}
+  .tab-btn.active{color:var(--ink); background:var(--surface);}
+
+  /* Prompt Maker */
+  .maker-wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding:44px 32px 90px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+  .maker-intro{font-size:13px; color:var(--ink-dim); line-height:1.6; margin-bottom:6px;}
+  .drop-zone{
+    border:1.5px dashed var(--line);
+    border-radius:10px;
+    padding:64px 20px;
+    text-align:center;
+    cursor:pointer;
+    color:var(--ink-dim);
+    font-size:13.5px;
+    transition:all 0.15s ease;
+  }
+  .drop-zone:hover, .drop-zone.dragover{border-color:var(--gold); color:var(--ink);}
+  #makerPreview{width:100%; border-radius:10px; display:none;}
+  .maker-status{font-size:13px; color:var(--ink-dim); min-height:16px;}
+  .maker-remaining{font-size:12px; color:var(--ink-dim); text-align:center;}
+  .maker-result, .maker-limit{
+    background:var(--surface);
+    border-radius:10px;
+    padding:28px;
+    display:none;
+    flex-direction:column;
+  }
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -383,11 +438,50 @@
   </div>
 </header>
 
+<div class="tabbar">
+  <button class="tab-btn active" data-tab="gallery" onclick="switchTab('gallery')">Galeri</button>
+  <button class="tab-btn" data-tab="maker" onclick="switchTab('maker')">Prompt Üretici</button>
+</div>
+
+<div id="galleryView">
 <div class="status" id="status"></div>
 
 <div class="filters" id="filters"></div>
 
 <div class="masonry" id="grid"></div>
+</div>
+
+<div id="makerView" style="display:none">
+  <div class="maker-wrap">
+    <div class="maker-intro">Elindeki bir referans görseli yükle, stilini koruyarak kendi ürününü o sahneye yerleştirecek promptu senin için üretelim. Günde 3 ücretsiz üretim hakkın var.</div>
+
+    <div id="makerDropZone" class="drop-zone" onclick="document.getElementById('makerFileInput').click()" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleMakerDrop(event)">
+      Bir görsel sürükle ya da tıklayıp seç
+    </div>
+    <input type="file" id="makerFileInput" accept="image/*" style="display:none" onchange="handleMakerFile(event)">
+    <img id="makerPreview" alt="yüklenen görsel">
+
+    <button class="btn primary" id="makerGenerateBtn" style="display:none" onclick="generatePrompt()">Prompt Oluştur</button>
+
+    <div class="maker-status" id="makerStatus"></div>
+
+    <div class="maker-result" id="makerResult">
+      <div class="modal-prompt" id="makerPromptText"></div>
+      <div class="modal-actions">
+        <button class="btn" onclick="resetMaker()">Yeni Görsel</button>
+        <button class="btn primary" id="makerCopyBtn" onclick="copyMakerPrompt()">Kopyala</button>
+      </div>
+    </div>
+
+    <div class="maker-limit" id="makerLimit">
+      <div class="paywall-title">Günlük ücretsiz hakkın bitti</div>
+      <div class="paywall-desc">Bugün için 3 ücretsiz prompt hakkını kullandın. Yarın tekrar deneyebilir ya da premium'a geçebilirsin.</div>
+      <button class="btn" onclick="resetMaker()">Yeni Görsel</button>
+    </div>
+
+    <div class="maker-remaining" id="makerRemaining"></div>
+  </div>
+</div>
 
 <div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this) closeModal()">
   <div class="modal">
@@ -450,12 +544,15 @@ const MAX_TOP_TAGS = 10;
 // n8n webhook URL'leri
 const PREMIUM_LIST_URL = 'https://jemplus24.app.n8n.cloud/webhook/premium-list';
 const PREMIUM_VERIFY_URL = 'https://jemplus24.app.n8n.cloud/webhook/verify-premium-code';
+const PROMPT_MAKER_URL = 'https://jemplus24.app.n8n.cloud/webhook/generate-prompt';
 
 let allRows = [];
 let visibleRows = [];
 let activeCategory = null;
 let activeTag = null;
 let currentModalRow = null;
+let makerImageBase64 = null;
+let makerImageMime = null;
 
 function setStatus(msg, isError){
   const el = document.getElementById('status');
@@ -851,6 +948,158 @@ function copyPrompt(){
 }
 
 document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeModal(); });
+
+// ---- Sekmeler ----
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.getElementById('galleryView').style.display = tab === 'gallery' ? 'block' : 'none';
+  document.getElementById('makerView').style.display = tab === 'maker' ? 'block' : 'none';
+}
+
+// ---- Prompt Üretici ----
+
+function getDeviceId(){
+  let id = localStorage.getItem('jg_device_id');
+  if(!id){
+    id = 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2);
+    localStorage.setItem('jg_device_id', id);
+  }
+  return id;
+}
+
+function resizeImageToBase64(file, maxDim){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Dosya okunamadı.'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Görsel yüklenemedi.'));
+      img.onload = () => {
+        let { width, height } = img;
+        if(width > maxDim || height > maxDim){
+          const scale = maxDim / Math.max(width, height);
+          width = Math.round(width * scale);
+          height = Math.round(height * scale);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        resolve({ base64: dataUrl.split(',')[1], mimeType: 'image/jpeg', dataUrl });
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function handleMakerFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  resizeImageToBase64(file, 1600).then(({ base64, mimeType, dataUrl }) => {
+    makerImageBase64 = base64;
+    makerImageMime = mimeType;
+    const preview = document.getElementById('makerPreview');
+    preview.src = dataUrl;
+    preview.style.display = 'block';
+    document.getElementById('makerDropZone').style.display = 'none';
+    document.getElementById('makerGenerateBtn').style.display = 'block';
+    document.getElementById('makerResult').style.display = 'none';
+    document.getElementById('makerLimit').style.display = 'none';
+    document.getElementById('makerStatus').textContent = '';
+  }).catch(err => {
+    document.getElementById('makerStatus').textContent = 'Görsel okunamadı: ' + err.message;
+  });
+}
+
+function handleMakerDrop(e){
+  e.preventDefault();
+  e.currentTarget.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if(file) handleMakerFile({ target: { files: [file] } });
+}
+
+function updateRemainingLabel(remaining){
+  const el = document.getElementById('makerRemaining');
+  if(remaining === undefined || remaining === null){ el.textContent = ''; return; }
+  el.textContent = remaining > 0 ? `Bugün için ${remaining} ücretsiz hakkın kaldı.` : 'Bugünlük ücretsiz hakkın bitti.';
+}
+
+async function generatePrompt(){
+  if(!makerImageBase64) return;
+
+  if(!PROMPT_MAKER_URL || PROMPT_MAKER_URL.includes('YOUR-N8N-URL')){
+    document.getElementById('makerStatus').textContent = 'Prompt üretici servisi henüz bağlanmadı.';
+    return;
+  }
+
+  const btn = document.getElementById('makerGenerateBtn');
+  btn.disabled = true;
+  document.getElementById('makerStatus').textContent = 'Görsel analiz ediliyor, birkaç saniye sürebilir...';
+  document.getElementById('makerResult').style.display = 'none';
+  document.getElementById('makerLimit').style.display = 'none';
+
+  try{
+    const res = await fetch(PROMPT_MAKER_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        deviceId: getDeviceId(),
+        mimeType: makerImageMime,
+        imageBase64: makerImageBase64
+      })
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+
+    if(!data.allowed){
+      document.getElementById('makerStatus').textContent = '';
+      document.getElementById('makerLimit').style.display = 'flex';
+      updateRemainingLabel(data.remaining ?? 0);
+      return;
+    }
+
+    document.getElementById('makerStatus').textContent = '';
+    document.getElementById('makerPromptText').textContent = data.promptText || '';
+    const copyBtn = document.getElementById('makerCopyBtn');
+    copyBtn.dataset.prompt = data.promptText || '';
+    copyBtn.textContent = 'Kopyala';
+    copyBtn.classList.remove('copied');
+    document.getElementById('makerResult').style.display = 'flex';
+    updateRemainingLabel(data.remaining);
+  }catch(err){
+    document.getElementById('makerStatus').textContent = 'Hata: ' + err.message;
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+function resetMaker(){
+  makerImageBase64 = null;
+  makerImageMime = null;
+  document.getElementById('makerPreview').style.display = 'none';
+  document.getElementById('makerPreview').src = '';
+  document.getElementById('makerDropZone').style.display = 'block';
+  document.getElementById('makerGenerateBtn').style.display = 'none';
+  document.getElementById('makerResult').style.display = 'none';
+  document.getElementById('makerLimit').style.display = 'none';
+  document.getElementById('makerStatus').textContent = '';
+  document.getElementById('makerFileInput').value = '';
+}
+
+function copyMakerPrompt(){
+  const btn = document.getElementById('makerCopyBtn');
+  navigator.clipboard.writeText(btn.dataset.prompt).then(() => {
+    btn.textContent = 'Kopyalandı ✓';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Kopyala';
+      btn.classList.remove('copied');
+    }, 1600);
+  });
+}
 
 // ---- Google Girişi ----
 const GOOGLE_CLIENT_ID = '1036033399902-fufvgkbifjipd9615d790gkjh8k3u7an.apps.googleusercontent.com';
