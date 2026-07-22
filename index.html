@@ -1291,6 +1291,159 @@
     margin:0 auto;
     padding:36px 32px 60px;
   }
+
+  /* ---- AI Avatar / Karakter Oluşturucu ---- */
+  .field-group{display:flex; flex-direction:column; gap:6px;}
+  .field-row{display:flex; gap:12px;}
+  .field-row .field-group{flex:1; min-width:0;}
+  .field-label{font-size:12.5px; font-weight:600; color:var(--ink);}
+  .field-input, .select-input{
+    width:100%;
+    background:#0d0d0b;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:11px 12px;
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+  }
+  .field-input:focus, .select-input:focus{outline:none; border-color:var(--gold);}
+  .field-input::placeholder{color:var(--ink-dim);}
+  .select-input{cursor:pointer;}
+  .select-input option{background:var(--surface); color:var(--ink);}
+
+  .gender-row{display:flex; gap:8px;}
+  .gender-btn{
+    flex:1;
+    padding:12px;
+    border-radius:9px;
+    border:1px solid var(--line);
+    background:#0d0d0b;
+    color:var(--ink-dim);
+    cursor:pointer;
+    font-size:13px;
+    font-family:'Inter', sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+  }
+  .gender-btn:hover{border-color:var(--ink-dim); color:var(--ink);}
+  .gender-btn.active{border-color:var(--gold); color:var(--gold); background:rgba(199,161,94,0.08); font-weight:600;}
+
+  .swatch-row{display:flex; gap:9px; flex-wrap:wrap;}
+  .swatch{
+    width:30px; height:30px;
+    border-radius:50%;
+    border:2px solid var(--line);
+    cursor:pointer;
+    flex-shrink:0;
+    padding:0;
+  }
+  .swatch.active{border-color:var(--gold); box-shadow:0 0 0 3px rgba(199,161,94,0.25);}
+
+  .avatar-panel-title{
+    font-family:'Fraunces', serif;
+    font-size:15.5px;
+    margin-bottom:2px;
+  }
+
+  .sheet-panel{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:22px;
+  }
+  .sheet-panel + .sheet-panel{margin-top:16px;}
+
+  .sheet-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .sheet-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:15px;
+    font-weight:600;
+  }
+  .sheet-title .new-badge{
+    font-size:10px;
+    font-weight:700;
+    color:#0A0A09;
+    background:var(--gold);
+    padding:2px 8px;
+    border-radius:10px;
+  }
+  .sheet-actions{display:flex; gap:8px; flex-wrap:wrap;}
+  .sheet-actions .btn{padding:10px 16px; font-size:12.5px;}
+
+  .sheet-grid{display:grid; grid-template-columns:280px 1fr; gap:16px;}
+  @media (max-width:900px){ .sheet-grid{grid-template-columns:1fr;} }
+
+  .sheet-block-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-dim);
+    margin-bottom:8px;
+  }
+  .sheet-portrait{
+    border-radius:10px;
+    overflow:hidden;
+    background:#0d0d0b;
+    border:1px solid var(--line);
+    aspect-ratio:3/4;
+  }
+  .sheet-portrait img{width:100%; height:100%; object-fit:cover; display:block;}
+
+  .sheet-views-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:10px;}
+  @media (max-width:700px){ .sheet-views-grid{grid-template-columns:repeat(2,1fr);} }
+  .sheet-view-item{background:#0d0d0b; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .sheet-view-item img{width:100%; aspect-ratio:3/4; object-fit:cover; display:block;}
+  .sheet-view-item span{display:block; text-align:center; font-size:10px; letter-spacing:0.04em; text-transform:uppercase; color:var(--ink-dim); padding:7px 4px;}
+
+  .sheet-strip-block{margin-top:20px;}
+  .sheet-strip{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  @media (max-width:600px){ .sheet-strip{grid-template-columns:repeat(2,1fr);} }
+  .sheet-strip-item{background:#0d0d0b; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .sheet-strip-item img{width:100%; aspect-ratio:1/1; object-fit:cover; display:block;}
+  .sheet-strip-item span{display:block; text-align:center; font-size:10px; text-transform:uppercase; letter-spacing:0.03em; color:var(--ink-dim); padding:6px 4px;}
+
+  .sheet-palette{display:flex; gap:8px; flex-wrap:wrap;}
+  .sheet-palette .swatch-dot{width:32px; height:32px; border-radius:8px; border:1px solid var(--line); flex-shrink:0;}
+
+  .sheet-info-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px 24px;}
+  @media (max-width:500px){ .sheet-info-grid{grid-template-columns:1fr;} }
+  .sheet-info-item dt{font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-dim); margin-bottom:3px;}
+  .sheet-info-item dd{font-size:13px; color:var(--ink);}
+
+  .sheet-uses{display:flex; flex-wrap:wrap; gap:8px;}
+
+  .avatar-empty-sheet{
+    text-align:center;
+    padding:80px 20px;
+    color:var(--ink-dim);
+  }
+  .avatar-empty-sheet .gen-empty-icon{margin:0 auto 20px;}
+  .avatar-empty-sheet h3{
+    font-family:'Fraunces', serif;
+    font-size:19px;
+    font-weight:500;
+    color:var(--gold);
+    margin-bottom:8px;
+  }
+  .avatar-empty-sheet p{font-size:13px; color:var(--ink-dim); line-height:1.6; max-width:340px; margin:0 auto;}
+
+  .save-login-hint{
+    font-size:11.5px;
+    color:var(--ink-dim);
+    text-align:right;
+  }
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -1339,6 +1492,7 @@
   <button class="tab-btn active" data-tab="gallery" onclick="switchTab('gallery')">Galeri</button>
   <button class="tab-btn" data-tab="maker" onclick="switchTab('maker')">Prompt Üretici</button>
   <button class="tab-btn" data-tab="visual" onclick="switchTab('visual')">Görsel Oluşturucu</button>
+  <button class="tab-btn" data-tab="avatar" onclick="switchTab('avatar')">AI Avatar / Karakter Oluşturucu</button>
 </div>
 
 <div id="galleryView" class="gallery-layout">
@@ -1636,6 +1790,282 @@
 
 </div>
 
+<div id="avatarView" style="display:none">
+
+  <div class="gen-header">
+    <h1>AI Avatar / Karakter Oluşturucu</h1>
+    <p>Karakterinin özelliklerini tanımla, istersen bir referans görsel ekle; portreden tam vücut görünümlerine kadar eksiksiz bir karakter sheet'i senin için oluşturalım.</p>
+  </div>
+
+  <div class="gen-layout">
+
+    <div class="gen-left">
+
+      <div>
+        <div class="avatar-panel-title">Karakter Bilgileri</div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Cinsiyet</div>
+        <div class="gender-row" id="avatarGenderRow">
+          <button type="button" class="gender-btn active" onclick="setAvatarGender('Kadın', this)">♀ Kadın</button>
+          <button type="button" class="gender-btn" onclick="setAvatarGender('Erkek', this)">♂ Erkek</button>
+          <button type="button" class="gender-btn" onclick="setAvatarGender('Diğer', this)">⚧ Diğer</button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Ad <span class="optional-badge">(isteğe bağlı)</span></div>
+        <input type="text" class="field-input" id="avatarNameInput" placeholder="Örn. Elara" maxlength="40">
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <div class="field-label">Yaş</div>
+          <input type="number" class="field-input" id="avatarAgeInput" placeholder="28" min="1" max="99">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Boy (cm)</div>
+          <input type="number" class="field-input" id="avatarHeightInput" placeholder="168" min="100" max="230">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Irk / Köken</div>
+        <select class="select-input" id="avatarEthnicitySelect">
+          <option>Avrupa - Akdeniz</option>
+          <option>Avrupa - Kuzey</option>
+          <option>Asya - Doğu</option>
+          <option>Asya - Güney</option>
+          <option>Orta Doğu</option>
+          <option>Afrika</option>
+          <option>Latin Amerika</option>
+          <option>Karma</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Ten Rengi</div>
+        <div class="swatch-row" id="avatarSkinRow"></div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <div class="field-label">Saç Rengi</div>
+          <select class="select-input" id="avatarHairColorSelect">
+            <option>Siyah</option>
+            <option>Koyu Kahverengi</option>
+            <option>Açık Kahverengi</option>
+            <option>Kumral</option>
+            <option>Sarı</option>
+            <option>Kızıl</option>
+            <option>Gri / Beyaz</option>
+            <option>Renkli</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Saç Tipi</div>
+          <select class="select-input" id="avatarHairTypeSelect">
+            <option>Düz</option>
+            <option>Dalgalı</option>
+            <option>Kıvırcık</option>
+            <option>Afro</option>
+            <option>Kısa</option>
+            <option>Uzun</option>
+            <option>Örgülü</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <div class="field-label">Göz Rengi</div>
+          <select class="select-input" id="avatarEyeColorSelect">
+            <option>Kahverengi</option>
+            <option>Ela</option>
+            <option>Yeşil</option>
+            <option>Mavi</option>
+            <option>Gri</option>
+            <option>Siyah</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Vücut Yapısı</div>
+          <select class="select-input" id="avatarBodyTypeSelect">
+            <option>İnce / Atletik</option>
+            <option>Ortalama</option>
+            <option>Kaslı</option>
+            <option>Dolgun</option>
+            <option>Uzun / İnce</option>
+            <option>Kısa / Tıknaz</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="accordion">
+
+        <div class="acc-item">
+          <button type="button" class="acc-trigger" onclick="toggleAcc('face')">
+            <span>😊 Yüz Detayları</span>
+            <span class="acc-right"><span class="acc-count" id="faceAccCount"></span><span class="acc-chev">⌄</span></span>
+          </button>
+          <div class="acc-panel" id="faceAccPanel">
+            <div class="chip-multi" id="faceChips"></div>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <button type="button" class="acc-trigger" onclick="toggleAcc('avstyle')">
+            <span>👗 Stil & Giyim</span>
+            <span class="acc-right"><span class="acc-count" id="avstyleAccCount"></span><span class="acc-chev">⌄</span></span>
+          </button>
+          <div class="acc-panel" id="avstyleAccPanel">
+            <div class="chip-multi" id="avstyleChips"></div>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <button type="button" class="acc-trigger" onclick="toggleAcc('personality')">
+            <span>🧠 Kişilik & Özellikler</span>
+            <span class="acc-right"><span class="acc-count" id="personalityAccCount"></span><span class="acc-chev">⌄</span></span>
+          </button>
+          <div class="acc-panel" id="personalityAccPanel">
+            <div class="chip-multi" id="personalityChips"></div>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <button type="button" class="acc-trigger" onclick="toggleAcc('otherdetail')">
+            <span>📌 Diğer Detaylar</span>
+            <span class="acc-right"><span class="optional-badge">İsteğe bağlı</span><span class="acc-chev">⌄</span></span>
+          </button>
+          <div class="acc-panel" id="otherdetailAccPanel">
+            <div class="gen-block-hint">Meslek, ilgi alanı veya karaktere özgü ek detaylar seçebilirsiniz.</div>
+            <div class="chip-multi" id="otherdetailChips"></div>
+            <div class="field-group" style="margin-top:12px;">
+              <div class="field-label">Ek notlar</div>
+              <textarea class="gen-textarea" id="avatarExtraNotes" style="min-height:70px;" maxlength="400" placeholder="Karakterle ilgili eklemek istediğin başka bir detay varsa buraya yaz..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <button type="button" class="acc-trigger" onclick="toggleAcc('avref')">
+            <span>🖼 Referans Görsel</span>
+            <span class="acc-right"><span class="optional-badge">İsteğe bağlı</span><span class="acc-chev">⌄</span></span>
+          </button>
+          <div class="acc-panel" id="avrefAccPanel">
+            <div class="gen-block-hint">Benzetmek istediğin gerçek ya da hayali bir karakter görseli varsa ekle; en ince detaylarına kadar incelenir.</div>
+            <div class="ref-upload-box" id="avatarRefUploadBox" onclick="document.getElementById('avatarRefFileInput').click()">
+              <img id="avatarRefPreviewImg" alt="referans">
+              <button type="button" class="ref-remove-btn" id="avatarRefRemoveBtn" onclick="event.stopPropagation(); removeAvatarRefImage()">✕</button>
+              <span id="avatarRefPlaceholder">Görsel yüklemek için tıklayın</span>
+            </div>
+            <input type="file" id="avatarRefFileInput" accept="image/*" style="display:none" onchange="handleAvatarRefFile(event)">
+          </div>
+        </div>
+
+      </div>
+
+      <button type="button" class="gen-submit-btn" id="avatarSubmitBtn" onclick="generateCharacter()">✨ Karakter Oluştur</button>
+      <div class="gen-quota-note" id="avatarQuotaNote"></div>
+
+    </div>
+
+    <div class="gen-right">
+      <div class="gen-right-header">
+        <div class="gen-right-title">Karakter Sheet</div>
+        <button class="btn" disabled title="Yakında aktif olacak">🕐 Geçmişi Gör</button>
+      </div>
+
+      <div class="gen-canvas" id="avatarCanvas" style="align-items:stretch; min-height:auto;">
+        <div class="avatar-empty-sheet" id="avatarEmptyState" style="margin:auto;">
+          <div class="gen-empty-icon">🧬</div>
+          <h3>İlk karakterini oluştur</h3>
+          <p>Soldaki bilgileri doldur, "Karakter Oluştur" butonuna bas; portre, tam vücut görünümleri ve yüz/saç detaylarıyla eksiksiz bir sheet burada belirecek.</p>
+        </div>
+
+        <div id="avatarSheetResult" style="display:none; width:100%;">
+
+          <div class="sheet-panel">
+            <div class="sheet-header">
+              <div class="sheet-title">Oluşturulan Karakter Sheet <span class="new-badge">Yeni</span></div>
+              <div class="sheet-actions">
+                <button class="btn" onclick="downloadCharacterSheet()">⬇ Tümünü İndir</button>
+                <button class="btn" onclick="shareCharacterSheet()">⇗ Paylaş</button>
+                <button class="btn primary" id="avatarSaveBtn" onclick="saveCharacter()">💾 Kaydet</button>
+              </div>
+            </div>
+
+            <div class="sheet-grid">
+              <div>
+                <div class="sheet-block-label">Portre</div>
+                <div class="sheet-portrait"><img id="sheetPortraitImg" alt="karakter portresi"></div>
+              </div>
+              <div>
+                <div class="sheet-block-label">Görünümler</div>
+                <div class="sheet-views-grid" id="sheetViewsGrid"></div>
+              </div>
+            </div>
+
+            <div class="sheet-strip-block">
+              <div class="sheet-block-label">Yüz Detayları</div>
+              <div class="sheet-strip" id="sheetFaceStrip"></div>
+            </div>
+
+            <div class="sheet-strip-block">
+              <div class="sheet-block-label">Saç Detayları</div>
+              <div class="sheet-strip" id="sheetHairStrip"></div>
+            </div>
+
+            <div class="sheet-strip-block">
+              <div class="sheet-block-label">Renk Paleti</div>
+              <div class="sheet-palette" id="sheetPalette"></div>
+            </div>
+          </div>
+
+          <div class="sheet-panel" style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:240px;">
+              <div class="sheet-block-label">Karakter Bilgileri</div>
+              <dl class="sheet-info-grid" id="sheetInfoGrid"></dl>
+            </div>
+            <div style="flex:1; min-width:200px;">
+              <div class="sheet-block-label">Önerilen Kullanımlar</div>
+              <div class="sheet-uses" id="sheetUses"></div>
+              <div class="save-login-hint" id="avatarSaveHint" style="margin-top:14px;"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="gen-lower-banner">
+    <div class="maker-features" style="max-width:none; margin:0; padding:32px 0 0; border-top:1px solid var(--line);">
+      <div class="feature">
+        <span class="feature-icon">🛡️</span>
+        <div>
+          <strong>Detaylı & Tutarlı</strong>
+          <p>Karakterin yüz, saç ve vücut detayları tüm görünümlerde tutarlı kalacak şekilde üretilir.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">⚡</span>
+        <div>
+          <strong>Günde 1 Ücretsiz Sheet</strong>
+          <p>24 saatte 1 adet karakter sheet'ini ücretsiz oluşturabilirsin.</p>
+        </div>
+      </div>
+      <div class="feature" style="align-items:center;">
+        <button class="upgrade-btn" style="width:auto; padding:12px 22px; white-space:nowrap;" title="Yakında aktif olacak" disabled>👑 JG Plus'a yükselt</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this) closeModal()">
   <div class="modal">
     <div class="modal-img-wrap">
@@ -1700,6 +2130,9 @@ const PREMIUM_VERIFY_URL = 'https://jemghz.app.n8n.cloud/webhook/verify-premium-
 const PROMPT_MAKER_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-prompt';
 const GEN_GENERATE_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-visual';
 const IMAGE_DAILY_LIMIT = 5;
+const CHARACTER_GENERATE_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-character';
+const CHARACTER_SAVE_URL = 'https://jemghz.app.n8n.cloud/webhook/save-character';
+const CHARACTER_DAILY_LIMIT = 1;
 
 let allRows = [];
 let visibleRows = [];
@@ -2161,6 +2594,7 @@ function switchTab(tab){
   document.getElementById('galleryView').style.display = tab === 'gallery' ? 'flex' : 'none';
   document.getElementById('makerView').style.display = tab === 'maker' ? 'block' : 'none';
   document.getElementById('visualView').style.display = tab === 'visual' ? 'block' : 'none';
+  document.getElementById('avatarView').style.display = tab === 'avatar' ? 'block' : 'none';
   activeQuotaContext = tab;
   refreshFreePill();
 }
@@ -2246,6 +2680,9 @@ function refreshFreePill(){
   if(activeQuotaContext === 'visual'){
     const rem = getImageRemaining();
     pill.textContent = rem + ' / ' + IMAGE_DAILY_LIMIT + ' görsel hakkınız kaldı';
+  }else if(activeQuotaContext === 'avatar'){
+    const rem = getCharacterRemaining();
+    pill.textContent = rem + ' / ' + CHARACTER_DAILY_LIMIT + ' karakter hakkınız kaldı';
   }else{
     if(promptRemaining === null){
       pill.textContent = '3 ücretsiz hakkınız kaldı';
@@ -2725,6 +3162,308 @@ async function generateVisual(){
   }
 }
 
+// ---- AI Avatar / Karakter Oluşturucu ----
+
+const FACE_DETAIL_OPTIONS = ['Belirgin çene hattı','Yüksek elmacık kemikleri','Dolgun dudaklar','İnce burun','Yoğun kaşlar','Simetrik yüz','Çil','Gamze','Küçük burun','Badem gözler'];
+const AVATAR_STYLE_OPTIONS = ['Minimal / Modern','Sokak Stili','Klasik / Şık','Spor','Vintage','Lüks','Bohem','İş / Ofis','Gotik','Casual'];
+const PERSONALITY_OPTIONS = ['Özgüvenli','Zeki','Bağımsız','Sıcakkanlı','Gizemli','Enerjik','Sakin','Maceraperest','Alaycı','Duygusal'];
+const OTHER_DETAIL_OPTIONS = ['Fotoğrafçı','Model','Sanatçı','Girişimci','Sporcu','Öğrenci','Yazar','Mühendis','Müzisyen','Aktör/Aktris'];
+const SKIN_TONES = ['#F5D5B8','#E8B88C','#D39C6E','#B57A4A','#8B5A2B','#5C3A1E'];
+
+let avatarGender = 'Kadın';
+let avatarSelectedSkinIdx = 0;
+let avatarSelectedFace = new Set();
+let avatarSelectedAvstyle = new Set();
+let avatarSelectedPersonality = new Set();
+let avatarSelectedOtherdetail = new Set();
+let avatarRefImageBase64 = null, avatarRefImageMime = null;
+let lastCharacterSheet = null;
+
+function initAvatarView(){
+  const skinRow = document.getElementById('avatarSkinRow');
+  skinRow.innerHTML = SKIN_TONES.map((hex, i) => `<button type="button" class="swatch ${i === avatarSelectedSkinIdx ? 'active' : ''}" style="background:${hex}" onclick="setAvatarSkin(${i}, this)" title="Ten tonu ${i+1}"></button>`).join('');
+
+  renderChipGroup('faceChips', FACE_DETAIL_OPTIONS, avatarSelectedFace, 'face');
+  renderChipGroup('avstyleChips', AVATAR_STYLE_OPTIONS, avatarSelectedAvstyle, 'avstyle');
+  renderChipGroup('personalityChips', PERSONALITY_OPTIONS, avatarSelectedPersonality, 'personality');
+  renderChipGroup('otherdetailChips', OTHER_DETAIL_OPTIONS, avatarSelectedOtherdetail, 'otherdetail');
+
+  updateAvatarQuotaNote();
+}
+
+// toggleChip/getSetByKey/getOptionsByKey/getContainerByKey (Görsel Oluşturucu'dan) yeni anahtarları da tanısın diye genişletiyoruz
+const _origGetSetByKey = getSetByKey;
+getSetByKey = function(key){
+  const extra = { face: avatarSelectedFace, avstyle: avatarSelectedAvstyle, personality: avatarSelectedPersonality, otherdetail: avatarSelectedOtherdetail };
+  return key in extra ? extra[key] : _origGetSetByKey(key);
+};
+const _origGetOptionsByKey = getOptionsByKey;
+getOptionsByKey = function(key){
+  const extra = { face: FACE_DETAIL_OPTIONS, avstyle: AVATAR_STYLE_OPTIONS, personality: PERSONALITY_OPTIONS, otherdetail: OTHER_DETAIL_OPTIONS };
+  return key in extra ? extra[key] : _origGetOptionsByKey(key);
+};
+const _origGetContainerByKey = getContainerByKey;
+getContainerByKey = function(key){
+  const extra = { face:'faceChips', avstyle:'avstyleChips', personality:'personalityChips', otherdetail:'otherdetailChips' };
+  return key in extra ? extra[key] : _origGetContainerByKey(key);
+};
+
+function setAvatarGender(g, btn){
+  avatarGender = g;
+  document.querySelectorAll('#avatarGenderRow .gender-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function setAvatarSkin(i, btn){
+  avatarSelectedSkinIdx = i;
+  document.querySelectorAll('#avatarSkinRow .swatch').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function handleAvatarRefFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  resizeImageToBase64(file, 1400).then(({base64, mimeType, dataUrl}) => {
+    avatarRefImageBase64 = base64;
+    avatarRefImageMime = mimeType;
+    const img = document.getElementById('avatarRefPreviewImg');
+    img.src = dataUrl;
+    img.style.display = 'block';
+    document.getElementById('avatarRefPlaceholder').style.display = 'none';
+    document.getElementById('avatarRefUploadBox').classList.add('has-img');
+    document.getElementById('avatarRefRemoveBtn').style.display = 'flex';
+  }).catch(err => {
+    document.getElementById('avatarQuotaNote').textContent = 'Referans görsel okunamadı: ' + err.message;
+  });
+}
+function removeAvatarRefImage(){
+  avatarRefImageBase64 = null; avatarRefImageMime = null;
+  const img = document.getElementById('avatarRefPreviewImg');
+  img.style.display = 'none'; img.src = '';
+  document.getElementById('avatarRefPlaceholder').style.display = 'block';
+  document.getElementById('avatarRefUploadBox').classList.remove('has-img');
+  document.getElementById('avatarRefRemoveBtn').style.display = 'none';
+  document.getElementById('avatarRefFileInput').value = '';
+}
+
+// Ücretsiz kota: 24 saatte 1 karakter sheet (takvim gününe göre sıfırlanır, diğer kotalarla aynı mantık)
+function getCharacterQuotaState(){
+  const today = new Date().toISOString().slice(0,10);
+  let state;
+  try{ state = JSON.parse(localStorage.getItem('jg_character_quota') || 'null'); }catch(e){ state = null; }
+  if(!state || state.date !== today){
+    state = { date: today, used: 0 };
+    try{ localStorage.setItem('jg_character_quota', JSON.stringify(state)); }catch(e){}
+  }
+  return state;
+}
+function getCharacterRemaining(){
+  return Math.max(0, CHARACTER_DAILY_LIMIT - getCharacterQuotaState().used);
+}
+function consumeCharacterQuota(){
+  const state = getCharacterQuotaState();
+  state.used += 1;
+  try{ localStorage.setItem('jg_character_quota', JSON.stringify(state)); }catch(e){}
+}
+function setCharacterRemaining(remaining){
+  const state = getCharacterQuotaState();
+  state.used = Math.max(0, CHARACTER_DAILY_LIMIT - remaining);
+  try{ localStorage.setItem('jg_character_quota', JSON.stringify(state)); }catch(e){}
+  updateAvatarQuotaNote();
+  refreshFreePill();
+}
+function updateAvatarQuotaNote(){
+  const note = document.getElementById('avatarQuotaNote');
+  if(!note) return;
+  const rem = getCharacterRemaining();
+  note.textContent = rem > 0
+    ? rem + ' / ' + CHARACTER_DAILY_LIMIT + ' ücretsiz karakter hakkınız kaldı (24 saatte yenilenir)'
+    : 'Bugünlük ücretsiz karakter hakkınız bitti. Yarın tekrar deneyebilir ya da JG Plus\'a yükseltebilirsiniz.';
+}
+
+function isLoggedIn(){
+  try{ return !!localStorage.getItem('userEmail'); }catch(e){ return false; }
+}
+
+async function generateCharacter(){
+  if(getCharacterRemaining() <= 0){
+    updateAvatarQuotaNote();
+    return;
+  }
+  if(!CHARACTER_GENERATE_URL || CHARACTER_GENERATE_URL.includes('YOUR-N8N-URL')){
+    document.getElementById('avatarQuotaNote').textContent = 'Karakter oluşturma servisi henüz bağlanmadı.';
+    return;
+  }
+
+  const btn = document.getElementById('avatarSubmitBtn');
+  btn.disabled = true;
+  document.getElementById('avatarQuotaNote').textContent = 'Karakter sheet oluşturuluyor, bu biraz sürebilir...';
+
+  const payload = {
+    deviceId: getDeviceId(),
+    gender: avatarGender,
+    name: document.getElementById('avatarNameInput').value.trim(),
+    age: document.getElementById('avatarAgeInput').value,
+    height: document.getElementById('avatarHeightInput').value,
+    ethnicity: document.getElementById('avatarEthnicitySelect').value,
+    skinTone: SKIN_TONES[avatarSelectedSkinIdx],
+    hairColor: document.getElementById('avatarHairColorSelect').value,
+    hairType: document.getElementById('avatarHairTypeSelect').value,
+    eyeColor: document.getElementById('avatarEyeColorSelect').value,
+    bodyType: document.getElementById('avatarBodyTypeSelect').value,
+    faceDetails: [...avatarSelectedFace],
+    style: [...avatarSelectedAvstyle],
+    personality: [...avatarSelectedPersonality],
+    otherDetails: [...avatarSelectedOtherdetail],
+    extraNotes: document.getElementById('avatarExtraNotes').value.trim(),
+    referenceImage: avatarRefImageBase64 ? { base64: avatarRefImageBase64, mimeType: avatarRefImageMime } : null
+  };
+
+  try{
+    const res = await fetch(CHARACTER_GENERATE_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+
+    if(!data.allowed){
+      document.getElementById('avatarQuotaNote').textContent = 'Bugün için ücretsiz karakter hakkınız kalmadı.';
+      if(typeof data.remaining === 'number') setCharacterRemaining(data.remaining);
+      return;
+    }
+
+    consumeCharacterQuota();
+    const finalRemaining = (typeof data.remaining === 'number') ? data.remaining : getCharacterRemaining();
+    setCharacterRemaining(finalRemaining);
+    renderCharacterSheet(data.sheet || {}, payload);
+    document.getElementById('avatarQuotaNote').textContent = '';
+  }catch(err){
+    document.getElementById('avatarQuotaNote').textContent = 'Hata: ' + err.message;
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+function renderCharacterSheet(sheet, inputPayload){
+  lastCharacterSheet = { sheet, input: inputPayload };
+
+  document.getElementById('avatarEmptyState').style.display = 'none';
+  const result = document.getElementById('avatarSheetResult');
+  result.style.display = 'block';
+
+  document.getElementById('sheetPortraitImg').src = sheet.portraitUrl || '';
+
+  const views = sheet.views || [];
+  document.getElementById('sheetViewsGrid').innerHTML = views.map(v => `
+    <div class="sheet-view-item">
+      <img src="${v.url || ''}" alt="${escapeAttr(v.label || '')}">
+      <span>${escapeHtml(v.label || '')}</span>
+    </div>`).join('') || '<div class="gen-block-hint">Görünümler henüz oluşturulmadı.</div>';
+
+  const faceDetails = sheet.faceDetails || [];
+  document.getElementById('sheetFaceStrip').innerHTML = faceDetails.map(f => `
+    <div class="sheet-strip-item">
+      <img src="${f.url || ''}" alt="${escapeAttr(f.label || '')}">
+      <span>${escapeHtml(f.label || '')}</span>
+    </div>`).join('') || '<div class="gen-block-hint">Yüz detayı yok.</div>';
+
+  const hairDetails = sheet.hairDetails || [];
+  document.getElementById('sheetHairStrip').innerHTML = hairDetails.map(h => `
+    <div class="sheet-strip-item">
+      <img src="${h.url || ''}" alt="${escapeAttr(h.label || '')}">
+      <span>${escapeHtml(h.label || '')}</span>
+    </div>`).join('') || '<div class="gen-block-hint">Saç detayı yok.</div>';
+
+  const palette = sheet.palette || [];
+  document.getElementById('sheetPalette').innerHTML = palette.map(hex => `<span class="swatch-dot" style="background:${escapeAttr(hex)}" title="${escapeAttr(hex)}"></span>`).join('') || '<div class="gen-block-hint">Renk paleti yok.</div>';
+
+  const info = {
+    'Ad': inputPayload.name || '—',
+    'Yaş': inputPayload.age || '—',
+    'Boy': inputPayload.height ? inputPayload.height + ' cm' : '—',
+    'Irk / Köken': inputPayload.ethnicity || '—',
+    'Saç Rengi': inputPayload.hairColor || '—',
+    'Vücut Yapısı': inputPayload.bodyType || '—',
+    'Tarz': (inputPayload.style || []).join(', ') || '—',
+    'Kişilik': (inputPayload.personality || []).join(', ') || '—'
+  };
+  document.getElementById('sheetInfoGrid').innerHTML = Object.entries(info).map(([k,v]) => `
+    <div class="sheet-info-item"><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(String(v))}</dd></div>`).join('');
+
+  const uses = sheet.suggestedUses || ['Film / Dizi','Oyun Karakteri','Reklam','Sosyal Medya','Roman / Kitap','Dijital Sanat'];
+  document.getElementById('sheetUses').innerHTML = uses.map(u => `<span class="chip">${escapeHtml(u)}</span>`).join('');
+
+  const saveBtn = document.getElementById('avatarSaveBtn');
+  const saveHint = document.getElementById('avatarSaveHint');
+  if(isLoggedIn()){
+    saveBtn.disabled = false;
+    saveBtn.textContent = '💾 Kaydet';
+    saveHint.textContent = '';
+  }else{
+    saveBtn.disabled = false;
+    saveHint.textContent = 'Kaydetmek için giriş yapmalısınız.';
+  }
+}
+
+async function saveCharacter(){
+  if(!lastCharacterSheet) return;
+  if(!isLoggedIn()){
+    document.getElementById('avatarSaveHint').textContent = 'Kaydetmek için önce sağ üstten Google ile giriş yapın.';
+    return;
+  }
+  if(!CHARACTER_SAVE_URL || CHARACTER_SAVE_URL.includes('YOUR-N8N-URL')){
+    document.getElementById('avatarSaveHint').textContent = 'Kaydetme servisi henüz bağlanmadı.';
+    return;
+  }
+  const btn = document.getElementById('avatarSaveBtn');
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Kaydediliyor...';
+  try{
+    const email = localStorage.getItem('userEmail') || '';
+    const res = await fetch(CHARACTER_SAVE_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email, ...lastCharacterSheet })
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+    if(data.success){
+      btn.textContent = '✓ Kaydedildi';
+      document.getElementById('avatarSaveHint').textContent = 'Karakter hesabınıza kaydedildi.';
+    }else{
+      btn.textContent = originalLabel;
+      document.getElementById('avatarSaveHint').textContent = data.message || 'Kaydetme başarısız oldu.';
+    }
+  }catch(err){
+    btn.textContent = originalLabel;
+    document.getElementById('avatarSaveHint').textContent = 'Bağlantı hatası: ' + err.message;
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+function downloadCharacterSheet(){
+  if(!lastCharacterSheet || !lastCharacterSheet.sheet.portraitUrl) return;
+  const a = document.createElement('a');
+  a.href = lastCharacterSheet.sheet.portraitUrl;
+  a.download = 'karakter-sheet.png';
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+function shareCharacterSheet(){
+  if(!lastCharacterSheet) return;
+  const url = lastCharacterSheet.sheet.portraitUrl || '';
+  if(navigator.share){
+    navigator.share({ title: 'JG Studio Karakter Sheet', url }).catch(() => {});
+  }else if(url){
+    navigator.clipboard.writeText(url);
+  }
+}
+
 // ---- Google Girişi ----
 const GOOGLE_CLIENT_ID = '1036033399902-fufvgkbifjipd9615d790gkjh8k3u7an.apps.googleusercontent.com';
 
@@ -2794,6 +3533,7 @@ function renderAuthArea(){
 window.addEventListener('load', () => {
   updateRemainingLabel();
   initGenView();
+  initAvatarView();
   updateGenQuotaNote();
   refreshFreePill();
   // Google script'inin yüklenmesini bekle
