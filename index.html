@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prompt Atölyesi</title>
+<title>JG Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0A0A09;
@@ -35,12 +35,12 @@
     border-bottom:1px solid var(--line);
   }
   .mark{
-    font-family:'Fraunces', serif;
-    font-size:22px;
-    font-weight:500;
+    font-family:'Inter', sans-serif;
+    font-size:21px;
+    font-weight:700;
     letter-spacing:-0.01em;
   }
-  .mark span{color:var(--gold); font-style:italic; font-weight:400;}
+  .mark .mark-jg{color:var(--gold);}
   .meta{
     font-size:12.5px;
     color:var(--ink-dim);
@@ -58,6 +58,19 @@
     transition:color 0.15s ease;
   }
   .refresh:hover{color:var(--gold);}
+
+  .free-pill{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:rgba(199,161,94,0.1);
+    border:1px solid rgba(199,161,94,0.3);
+    border-radius:20px;
+    padding:7px 14px;
+    font-size:12.5px;
+    color:var(--gold);
+    white-space:nowrap;
+  }
 
   #authArea{display:flex; align-items:center;}
   .user-chip{
@@ -255,7 +268,6 @@
   .modal-prompt::-webkit-scrollbar-thumb{background:var(--line);}
   .modal-actions{display:flex; gap:10px;}
   .btn{
-    flex:1;
     padding:14px;
     border-radius:7px;
     font-family:'Inter', sans-serif;
@@ -267,6 +279,7 @@
     color:var(--ink);
     transition:all 0.15s ease;
   }
+  .modal-actions .btn{flex:1;}
   .btn.primary{background:var(--gold); border-color:var(--gold); color:#0A0A09;}
   .btn.primary:hover{opacity:0.85;}
   .btn.primary.copied{background:var(--ink); border-color:var(--ink);}
@@ -394,46 +407,232 @@
   .tab-btn:hover{color:var(--ink);}
   .tab-btn.active{color:var(--ink); background:var(--surface);}
 
-  /* Prompt Maker */
-  .maker-wrap{
-    max-width:640px;
+  /* ---- Prompt Üretici (yeni tasarım) ---- */
+  .maker-header{
+    max-width:1280px;
     margin:0 auto;
-    padding:44px 32px 90px;
+    padding:44px 32px 8px;
+  }
+  .maker-header h1{
+    font-family:'Fraunces', serif;
+    font-size:32px;
+    font-weight:500;
+    margin-bottom:10px;
+  }
+  .maker-header p{
+    font-size:14px;
+    color:var(--ink-dim);
+    line-height:1.6;
+    max-width:640px;
+  }
+
+  .maker-columns{
+    max-width:1280px;
+    margin:0 auto;
+    padding:28px 32px 0;
+    display:flex;
+    align-items:flex-start;
+    gap:20px;
+  }
+  @media (max-width:900px){ .maker-columns{flex-direction:column;} }
+
+  .maker-col{
+    flex:1;
+    min-width:0;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:24px;
     display:flex;
     flex-direction:column;
-    gap:18px;
+    gap:16px;
   }
-  .maker-intro{font-size:13px; color:var(--ink-dim); line-height:1.6; margin-bottom:6px;}
-  .drop-zone{
+
+  .maker-arrow{
+    width:40px; height:40px;
+    border-radius:50%;
+    background:var(--gold);
+    color:#0A0A09;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:16px;
+    flex-shrink:0;
+    margin-top:130px;
+  }
+  @media (max-width:900px){ .maker-arrow{display:none;} }
+
+  .col-header-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .col-header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:15px;
+    font-weight:600;
+  }
+  .col-num{
+    width:24px; height:24px;
+    border-radius:50%;
+    background:rgba(199,161,94,0.15);
+    color:var(--gold);
+    border:1px solid rgba(199,161,94,0.4);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    flex-shrink:0;
+  }
+
+  .upload-box{
+    position:relative;
     border:1.5px dashed var(--line);
     border-radius:10px;
-    padding:64px 20px;
-    text-align:center;
+    overflow:hidden;
+    min-height:340px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#0d0d0b;
     cursor:pointer;
+    transition:border-color 0.15s ease;
+  }
+  .upload-box:hover, .upload-box.dragover{border-color:var(--gold);}
+  .upload-box.has-img{border-style:solid;}
+  .upload-box img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:none;
+  }
+  .upload-box .drop-placeholder{
     color:var(--ink-dim);
     font-size:13.5px;
-    transition:all 0.15s ease;
+    text-align:center;
+    padding:20px;
+    line-height:1.6;
   }
-  .drop-zone:hover, .drop-zone.dragover{border-color:var(--gold); color:var(--ink);}
-  #makerPreview{width:100%; border-radius:10px; display:none;}
-  .maker-status{font-size:13px; color:var(--ink-dim); min-height:16px;}
-  .maker-remaining{font-size:12px; color:var(--ink-dim); text-align:center;}
-  .maker-result, .maker-limit{
-    background:var(--surface);
-    border-radius:10px;
-    padding:28px;
+  .remove-img-btn{
+    position:absolute;
+    top:10px; right:10px;
+    width:28px; height:28px;
+    border-radius:50%;
+    background:rgba(10,10,9,0.75);
+    border:1px solid var(--line);
+    color:var(--ink);
+    cursor:pointer;
     display:none;
-    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    z-index:2;
   }
+
+  .result-label{
+    font-size:12px;
+    color:var(--gold);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  .result-box{
+    position:relative;
+    background:#0d0d0b;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:18px;
+    font-size:13.5px;
+    line-height:1.7;
+    color:var(--ink);
+    min-height:260px;
+    max-height:260px;
+    overflow-y:auto;
+    white-space:pre-wrap;
+  }
+  .result-box.empty-state{
+    color:var(--ink-dim);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+  .copy-icon-btn{
+    position:absolute;
+    top:10px; right:10px;
+    width:26px; height:26px;
+    border-radius:6px;
+    background:rgba(10,10,9,0.7);
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+  }
+  .copy-icon-btn:hover{color:var(--ink); border-color:var(--ink-dim);}
+  .result-actions{display:flex; gap:10px;}
+  .result-actions .btn{flex:1;}
+
+  .tip-box{
+    display:flex;
+    gap:12px;
+    background:rgba(199,161,94,0.06);
+    border:1px solid rgba(199,161,94,0.2);
+    border-radius:8px;
+    padding:16px;
+    font-size:12.5px;
+    color:var(--ink-dim);
+    line-height:1.6;
+  }
+  .tip-box .tip-icon{font-size:16px; flex-shrink:0;}
+  .tip-box strong{color:var(--ink); display:block; margin-bottom:4px; font-size:13px;}
+
+  .maker-status{
+    font-size:13px;
+    color:var(--ink-dim);
+    min-height:16px;
+  }
+
+  .maker-features{
+    max-width:1280px;
+    margin:0 auto;
+    padding:0 32px 60px;
+    margin-top:36px;
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:24px;
+    border-top:1px solid var(--line);
+    padding-top:32px;
+  }
+  @media (max-width:760px){ .maker-features{grid-template-columns:1fr;} }
+  .feature{display:flex; gap:12px;}
+  .feature-icon{
+    width:36px; height:36px;
+    border-radius:50%;
+    background:rgba(199,161,94,0.1);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    font-size:15px;
+  }
+  .feature strong{font-size:13.5px; display:block; margin-bottom:4px;}
+  .feature p{font-size:12.5px; color:var(--ink-dim); line-height:1.5;}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 <header>
-  <div class="mark">JG <span>Prompt Archive</span></div>
+  <div class="mark"><span class="mark-jg">JG</span> Studio</div>
   <div class="meta">
     <span id="countLabel"></span>
     <button class="refresh" onclick="loadData()">↻ yenile</button>
+    <span class="free-pill" id="freePill" style="display:none;">⚡ <span id="freePillText"></span></span>
     <div id="authArea"></div>
   </div>
 </header>
@@ -452,35 +651,82 @@
 </div>
 
 <div id="makerView" style="display:none">
-  <div class="maker-wrap">
-    <div class="maker-intro">Elindeki bir referans görseli yükle, stilini koruyarak kendi ürününü o sahneye yerleştirecek promptu senin için üretelim. Günde 3 ücretsiz üretim hakkın var.</div>
 
-    <div id="makerDropZone" class="drop-zone" onclick="document.getElementById('makerFileInput').click()" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleMakerDrop(event)">
-      Bir görsel sürükle ya da tıklayıp seç
+  <div class="maker-header">
+    <h1>Prompt Üretici</h1>
+    <p>Görselini yükle, stilini koruyarak ürününü sahneye yerleştirecek promptu senin için üretelim.</p>
+  </div>
+
+  <div class="maker-columns">
+
+    <div class="maker-col">
+      <div class="col-header"><span class="col-num">1</span> Görsel Yükle</div>
+
+      <div id="makerDropZone" class="upload-box" onclick="document.getElementById('makerFileInput').click()" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleMakerDrop(event)">
+        <img id="makerPreview" alt="yüklenen görsel">
+        <button class="remove-img-btn" id="removeImgBtn" onclick="event.stopPropagation(); resetMaker()">✕</button>
+        <div class="drop-placeholder" id="makerPlaceholder">Bir görsel sürükle ya da tıklayıp seç</div>
+      </div>
+      <input type="file" id="makerFileInput" accept="image/*" style="display:none" onchange="handleMakerFile(event)">
+
+      <button class="btn" style="width:100%" onclick="document.getElementById('makerFileInput').click()">⭱ Görseli Değiştir</button>
     </div>
-    <input type="file" id="makerFileInput" accept="image/*" style="display:none" onchange="handleMakerFile(event)">
-    <img id="makerPreview" alt="yüklenen görsel">
 
-    <button class="btn primary" id="makerGenerateBtn" style="display:none" onclick="generatePrompt()">Prompt Oluştur</button>
+    <div class="maker-arrow">→</div>
 
-    <div class="maker-status" id="makerStatus"></div>
+    <div class="maker-col">
+      <div class="col-header-row">
+        <div class="col-header"><span class="col-num">2</span> Prompt Oluştur</div>
+        <button class="btn primary" id="makerGenerateBtn" onclick="generatePrompt()" disabled>✨ Prompt Oluştur</button>
+      </div>
 
-    <div class="maker-result" id="makerResult">
-      <div class="modal-prompt" id="makerPromptText"></div>
-      <div class="modal-actions">
-        <button class="btn" onclick="resetMaker()">Yeni Görsel</button>
-        <button class="btn primary" id="makerCopyBtn" onclick="copyMakerPrompt()">Kopyala</button>
+      <div class="maker-status" id="makerStatus"></div>
+
+      <div class="result-label">Oluşturulan Prompt</div>
+      <div class="result-box empty-state" id="makerResultBox">
+        <span id="makerEmptyMsg">Prompt üretildiğinde burada görünecek.</span>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn primary" id="makerCopyBtn" onclick="copyMakerPrompt()" disabled>Kopyala</button>
+        <button class="btn" id="makerDownloadBtn" onclick="downloadMakerPrompt()" disabled>⬇ İndir (.txt)</button>
+      </div>
+
+      <div class="tip-box">
+        <span class="tip-icon">💡</span>
+        <div>
+          <strong>İpucu</strong>
+          Daha iyi sonuçlar için görselinizin net, iyi ışıklandırılmış ve ürünün detaylarını gösteren bir açıdan olması önerilir.
+        </div>
       </div>
     </div>
 
-    <div class="maker-limit" id="makerLimit">
-      <div class="paywall-title">Günlük ücretsiz hakkın bitti</div>
-      <div class="paywall-desc">Bugün için 3 ücretsiz prompt hakkını kullandın. Yarın tekrar deneyebilir ya da premium'a geçebilirsin.</div>
-      <button class="btn" onclick="resetMaker()">Yeni Görsel</button>
-    </div>
-
-    <div class="maker-remaining" id="makerRemaining"></div>
   </div>
+
+  <div class="maker-features">
+    <div class="feature">
+      <span class="feature-icon">🛡️</span>
+      <div>
+        <strong>Güvenli & Gizli</strong>
+        <p>Yüklediğiniz görseller sadece sizin tarafınızdan görülebilir ve işlenir.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="feature-icon">⚡</span>
+      <div>
+        <strong id="featureFreeTitle">3 Ücretsiz Hakkınız Var</strong>
+        <p>Her gün 3 adet ücretsiz prompt oluşturabilirsiniz.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="feature-icon">🕐</span>
+      <div>
+        <strong>Günlük Sıfırlanır</strong>
+        <p>Haklarınız her gün 00:00'da yenilenir.</p>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this) closeModal()">
@@ -553,6 +799,7 @@ let activeTag = null;
 let currentModalRow = null;
 let makerImageBase64 = null;
 let makerImageMime = null;
+let makerGeneratedPrompt = '';
 
 function setStatus(msg, isError){
   const el = document.getElementById('status');
@@ -955,6 +1202,7 @@ function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.getElementById('galleryView').style.display = tab === 'gallery' ? 'block' : 'none';
   document.getElementById('makerView').style.display = tab === 'maker' ? 'block' : 'none';
+  document.getElementById('freePill').style.display = tab === 'maker' ? 'flex' : 'none';
 }
 
 // ---- Prompt Üretici ----
@@ -1001,14 +1249,17 @@ function handleMakerFile(e){
   resizeImageToBase64(file, 1600).then(({ base64, mimeType, dataUrl }) => {
     makerImageBase64 = base64;
     makerImageMime = mimeType;
+
     const preview = document.getElementById('makerPreview');
     preview.src = dataUrl;
     preview.style.display = 'block';
-    document.getElementById('makerDropZone').style.display = 'none';
-    document.getElementById('makerGenerateBtn').style.display = 'block';
-    document.getElementById('makerResult').style.display = 'none';
-    document.getElementById('makerLimit').style.display = 'none';
+    document.getElementById('makerPlaceholder').style.display = 'none';
+    document.getElementById('makerDropZone').classList.add('has-img');
+    document.getElementById('removeImgBtn').style.display = 'flex';
+
+    document.getElementById('makerGenerateBtn').disabled = false;
     document.getElementById('makerStatus').textContent = '';
+    resetResultPanel();
   }).catch(err => {
     document.getElementById('makerStatus').textContent = 'Görsel okunamadı: ' + err.message;
   });
@@ -1022,9 +1273,40 @@ function handleMakerDrop(e){
 }
 
 function updateRemainingLabel(remaining){
-  const el = document.getElementById('makerRemaining');
-  if(remaining === undefined || remaining === null){ el.textContent = ''; return; }
-  el.textContent = remaining > 0 ? `Bugün için ${remaining} ücretsiz hakkın kaldı.` : 'Bugünlük ücretsiz hakkın bitti.';
+  const pill = document.getElementById('freePillText');
+  const featureTitle = document.getElementById('featureFreeTitle');
+  if(remaining === undefined || remaining === null){
+    pill.textContent = '3 ücretsiz hakkınız kaldı';
+    return;
+  }
+  if(remaining > 0){
+    pill.textContent = remaining + ' ücretsiz hakkınız kaldı';
+    featureTitle.textContent = remaining + ' Ücretsiz Hakkınız Var';
+  }else{
+    pill.textContent = 'Bugünlük hakkınız bitti';
+    featureTitle.textContent = 'Bugünlük Hakkınız Bitti';
+  }
+}
+
+function resetResultPanel(){
+  makerGeneratedPrompt = '';
+  const box = document.getElementById('makerResultBox');
+  box.className = 'result-box empty-state';
+  box.innerHTML = '<span id="makerEmptyMsg">Prompt üretildiğinde burada görünecek.</span>';
+  document.getElementById('makerCopyBtn').disabled = true;
+  document.getElementById('makerDownloadBtn').disabled = true;
+}
+
+function showResultPrompt(promptText){
+  makerGeneratedPrompt = promptText || '';
+  const box = document.getElementById('makerResultBox');
+  box.className = 'result-box';
+  box.innerHTML = `<button class="copy-icon-btn" onclick="copyMakerPrompt()" title="Kopyala">📋</button>${escapeHtml(makerGeneratedPrompt)}`;
+  document.getElementById('makerCopyBtn').disabled = false;
+  document.getElementById('makerDownloadBtn').disabled = false;
+  const copyBtn = document.getElementById('makerCopyBtn');
+  copyBtn.textContent = 'Kopyala';
+  copyBtn.classList.remove('copied');
 }
 
 async function generatePrompt(){
@@ -1038,8 +1320,7 @@ async function generatePrompt(){
   const btn = document.getElementById('makerGenerateBtn');
   btn.disabled = true;
   document.getElementById('makerStatus').textContent = 'Görsel analiz ediliyor, birkaç saniye sürebilir...';
-  document.getElementById('makerResult').style.display = 'none';
-  document.getElementById('makerLimit').style.display = 'none';
+  resetResultPanel();
 
   try{
     const res = await fetch(PROMPT_MAKER_URL, {
@@ -1055,43 +1336,40 @@ async function generatePrompt(){
     const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
 
     if(!data.allowed){
-      document.getElementById('makerStatus').textContent = '';
-      document.getElementById('makerLimit').style.display = 'flex';
+      document.getElementById('makerStatus').textContent = 'Bugün için ücretsiz hakkınız kalmadı.';
       updateRemainingLabel(data.remaining ?? 0);
       return;
     }
 
     document.getElementById('makerStatus').textContent = '';
-    document.getElementById('makerPromptText').textContent = data.promptText || '';
-    const copyBtn = document.getElementById('makerCopyBtn');
-    copyBtn.dataset.prompt = data.promptText || '';
-    copyBtn.textContent = 'Kopyala';
-    copyBtn.classList.remove('copied');
-    document.getElementById('makerResult').style.display = 'flex';
+    showResultPrompt(data.promptText || '');
     updateRemainingLabel(data.remaining);
   }catch(err){
     document.getElementById('makerStatus').textContent = 'Hata: ' + err.message;
   }finally{
-    btn.disabled = false;
+    btn.disabled = !makerImageBase64;
   }
 }
 
 function resetMaker(){
   makerImageBase64 = null;
   makerImageMime = null;
-  document.getElementById('makerPreview').style.display = 'none';
-  document.getElementById('makerPreview').src = '';
-  document.getElementById('makerDropZone').style.display = 'block';
-  document.getElementById('makerGenerateBtn').style.display = 'none';
-  document.getElementById('makerResult').style.display = 'none';
-  document.getElementById('makerLimit').style.display = 'none';
+  const preview = document.getElementById('makerPreview');
+  preview.style.display = 'none';
+  preview.src = '';
+  document.getElementById('makerPlaceholder').style.display = 'block';
+  document.getElementById('makerDropZone').classList.remove('has-img');
+  document.getElementById('removeImgBtn').style.display = 'none';
+  document.getElementById('makerGenerateBtn').disabled = true;
   document.getElementById('makerStatus').textContent = '';
   document.getElementById('makerFileInput').value = '';
+  resetResultPanel();
 }
 
 function copyMakerPrompt(){
-  const btn = document.getElementById('makerCopyBtn');
-  navigator.clipboard.writeText(btn.dataset.prompt).then(() => {
+  if(!makerGeneratedPrompt) return;
+  navigator.clipboard.writeText(makerGeneratedPrompt).then(() => {
+    const btn = document.getElementById('makerCopyBtn');
     btn.textContent = 'Kopyalandı ✓';
     btn.classList.add('copied');
     setTimeout(() => {
@@ -1099,6 +1377,19 @@ function copyMakerPrompt(){
       btn.classList.remove('copied');
     }, 1600);
   });
+}
+
+function downloadMakerPrompt(){
+  if(!makerGeneratedPrompt) return;
+  const blob = new Blob([makerGeneratedPrompt], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'prompt.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // ---- Google Girişi ----
@@ -1162,6 +1453,7 @@ function renderAuthArea(){
 }
 
 window.addEventListener('load', () => {
+  updateRemainingLabel();
   // Google script'inin yüklenmesini bekle
   const tryRender = () => {
     if(window.google && google.accounts && google.accounts.id){
