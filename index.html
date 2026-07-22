@@ -835,6 +835,462 @@
   }
   .feature strong{font-size:13.5px; display:block; margin-bottom:4px;}
   .feature p{font-size:12.5px; color:var(--ink-dim); line-height:1.5;}
+
+  /* ---- Görsel Oluşturucu ---- */
+  .gen-header{
+    max-width:1400px;
+    margin:0 auto;
+    padding:44px 32px 8px;
+  }
+  .gen-header h1{
+    font-family:'Fraunces', serif;
+    font-size:32px;
+    font-weight:500;
+    margin-bottom:10px;
+  }
+  .gen-header p{
+    font-size:14px;
+    color:var(--ink-dim);
+    line-height:1.6;
+    max-width:640px;
+  }
+
+  .gen-layout{
+    max-width:1400px;
+    margin:0 auto;
+    padding:28px 32px 0;
+    display:flex;
+    align-items:flex-start;
+    gap:24px;
+  }
+  @media (max-width:1000px){ .gen-layout{flex-direction:column;} }
+
+  .gen-left{
+    width:440px;
+    flex-shrink:0;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:24px;
+  }
+  @media (max-width:1000px){ .gen-left{width:100%;} }
+
+  .gen-right{
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    position:sticky;
+    top:88px;
+  }
+  @media (max-width:1000px){ .gen-right{position:static;} }
+
+  .gen-block-label{
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:6px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .gen-block-hint{
+    font-size:11.5px;
+    color:var(--ink-dim);
+    margin-bottom:10px;
+    line-height:1.5;
+  }
+  .optional-badge{
+    font-size:10.5px;
+    font-weight:400;
+    color:var(--ink-dim);
+  }
+
+  .gen-textarea{
+    width:100%;
+    min-height:110px;
+    resize:vertical;
+    background:#0d0d0b;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px;
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    font-size:13.5px;
+    line-height:1.6;
+  }
+  .gen-textarea:focus{outline:none; border-color:var(--gold);}
+  .gen-textarea::placeholder{color:var(--ink-dim);}
+
+  .gen-textarea-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:10px;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .chip-btn-row{display:flex; gap:8px; flex-wrap:wrap;}
+  .chip-btn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    padding:8px 12px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--ink-dim);
+    cursor:pointer;
+  }
+  .chip-btn:hover{border-color:var(--gold); color:var(--ink);}
+  .char-count{font-size:11px; color:var(--ink-dim); white-space:nowrap;}
+
+  .opt-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:8px;
+  }
+  .opt-btn{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:14px 6px;
+    border-radius:9px;
+    border:1px solid var(--line);
+    background:#0d0d0b;
+    color:var(--ink-dim);
+    cursor:pointer;
+    font-size:11.5px;
+    font-family:'Inter', sans-serif;
+    transition:all 0.15s ease;
+  }
+  .opt-btn:hover{border-color:var(--ink-dim); color:var(--ink);}
+  .opt-btn.active{border-color:var(--gold); color:var(--gold); background:rgba(199,161,94,0.08);}
+  .opt-btn .ratio-icon{border:1.5px solid currentColor; border-radius:2px;}
+  .opt-btn[data-ratio="1:1"] .ratio-icon{width:20px; height:20px;}
+  .opt-btn[data-ratio="3:4"] .ratio-icon{width:16px; height:20px;}
+  .opt-btn[data-ratio="4:3"] .ratio-icon{width:20px; height:16px;}
+  .opt-btn[data-ratio="9:16"] .ratio-icon{width:12px; height:20px;}
+  .opt-btn[data-ratio="16:9"] .ratio-icon{width:22px; height:13px;}
+  .opt-btn[data-ratio="custom"] .ratio-icon{width:16px; height:16px; border-style:dashed;}
+
+  .count-row{display:flex; gap:8px;}
+  .count-btn{
+    flex:1;
+    padding:12px;
+    border-radius:9px;
+    border:1px solid var(--line);
+    background:#0d0d0b;
+    color:var(--ink-dim);
+    cursor:pointer;
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:600;
+  }
+  .count-btn:hover{border-color:var(--ink-dim); color:var(--ink);}
+  .count-btn.active{border-color:var(--gold); color:var(--gold); background:rgba(199,161,94,0.08);}
+
+  .model-select-wrap{position:relative;}
+  .model-select-btn{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:13px 14px;
+    border-radius:9px;
+    border:1px solid var(--line);
+    background:#0d0d0b;
+    color:var(--ink);
+    cursor:pointer;
+    font-family:'Inter', sans-serif;
+    font-size:13.5px;
+  }
+  .model-select-btn:hover{border-color:var(--ink-dim);}
+  .model-current{display:flex; align-items:center; gap:10px;}
+  .model-badge-new{
+    font-size:10px;
+    font-weight:700;
+    color:#0A0A09;
+    background:var(--gold);
+    padding:2px 7px;
+    border-radius:10px;
+  }
+  .model-desc{font-size:11.5px; color:var(--ink-dim); margin-top:7px; line-height:1.5;}
+  .model-menu{
+    position:absolute;
+    top:calc(100% + 6px);
+    left:0; right:0;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:6px;
+    display:none;
+    flex-direction:column;
+    z-index:30;
+    max-height:260px;
+    overflow-y:auto;
+  }
+  .model-menu.open{display:flex;}
+  .model-option{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    text-align:left;
+    background:none;
+    border:none;
+    padding:10px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    font-family:'Inter', sans-serif;
+    width:100%;
+  }
+  .model-option:hover{background:var(--bg);}
+  .model-option .m-name{font-size:13px; color:var(--ink); font-weight:500; display:flex; align-items:center; gap:8px;}
+  .model-option .m-desc{font-size:11px; color:var(--ink-dim);}
+
+  .accordion{border-top:1px solid var(--line); padding-top:6px;}
+  .acc-item{border-bottom:1px solid var(--line);}
+  .acc-item:last-child{border-bottom:none;}
+  .acc-trigger{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:none;
+    border:none;
+    padding:14px 2px;
+    cursor:pointer;
+    color:var(--ink);
+    font-size:13.5px;
+    font-weight:600;
+    font-family:'Inter', sans-serif;
+  }
+  .acc-trigger .acc-right{display:flex; align-items:center; gap:10px;}
+  .acc-trigger .acc-count{
+    font-size:11px;
+    color:var(--gold);
+    background:rgba(199,161,94,0.12);
+    padding:2px 8px;
+    border-radius:10px;
+    display:none;
+  }
+  .acc-trigger .acc-count.show{display:inline-block;}
+  .acc-chev{color:var(--ink-dim); font-size:11px; transition:transform 0.15s ease;}
+  .acc-panel{display:none; padding:0 2px 18px;}
+  .acc-panel.open{display:block;}
+  .acc-trigger.open .acc-chev{transform:rotate(180deg);}
+
+  .chip-multi{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip-multi .chip{
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    padding:8px 14px;
+    border-radius:20px;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--ink-dim);
+    cursor:pointer;
+  }
+  .chip-multi .chip:hover{border-color:var(--ink-dim); color:var(--ink);}
+  .chip-multi .chip.active{background:var(--gold); border-color:var(--gold); color:#0A0A09; font-weight:500;}
+
+  .ref-upload-box{
+    border:1.5px dashed var(--line);
+    border-radius:9px;
+    padding:18px;
+    text-align:center;
+    cursor:pointer;
+    color:var(--ink-dim);
+    font-size:12px;
+    position:relative;
+    min-height:100px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .ref-upload-box:hover{border-color:var(--gold);}
+  .ref-upload-box img{max-height:180px; width:100%; object-fit:cover; border-radius:6px; display:none;}
+  .ref-upload-box.has-img{border-style:solid; padding:0;}
+  .ref-remove-btn{
+    position:absolute; top:8px; right:8px;
+    width:24px; height:24px; border-radius:50%;
+    background:rgba(10,10,9,0.75); border:1px solid var(--line);
+    color:var(--ink); display:none; align-items:center; justify-content:center;
+    font-size:11px; cursor:pointer; z-index:2;
+  }
+
+  .char-list{display:flex; flex-direction:column; gap:12px;}
+  .char-row{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    background:#0d0d0b;
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:12px;
+  }
+  .char-thumb{
+    width:52px; height:52px;
+    flex-shrink:0;
+    border-radius:7px;
+    border:1px dashed var(--line);
+    background:var(--surface);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--ink-dim);
+    font-size:16px;
+    cursor:pointer;
+    overflow:hidden;
+  }
+  .char-thumb img{width:100%; height:100%; object-fit:cover;}
+  .char-fields{flex:1; display:flex; flex-direction:column; gap:6px; min-width:0;}
+  .char-fields input{
+    width:100%;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:8px 10px;
+    color:var(--ink);
+    font-size:12.5px;
+    font-family:'Inter', sans-serif;
+  }
+  .char-fields input:focus{outline:none; border-color:var(--gold);}
+  .char-remove{
+    width:26px; height:26px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--ink-dim);
+    cursor:pointer;
+    flex-shrink:0;
+    font-size:12px;
+  }
+  .char-remove:hover{border-color:#C77B62; color:#C77B62;}
+  .add-char-btn{
+    width:100%;
+    padding:11px;
+    border-radius:8px;
+    border:1px dashed var(--line);
+    background:transparent;
+    color:var(--ink-dim);
+    cursor:pointer;
+    font-size:12.5px;
+    font-family:'Inter', sans-serif;
+  }
+  .add-char-btn:hover{border-color:var(--gold); color:var(--gold);}
+  .add-char-btn:disabled{opacity:0.4; cursor:not-allowed;}
+
+  .gen-submit-btn{
+    width:100%;
+    padding:15px;
+    border-radius:9px;
+    border:none;
+    background:var(--gold);
+    color:#0A0A09;
+    font-family:'Inter', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+  }
+  .gen-submit-btn:hover{opacity:0.88;}
+  .gen-submit-btn:disabled{opacity:0.4; cursor:not-allowed;}
+  .gen-quota-note{text-align:center; font-size:12px; color:var(--ink-dim);}
+
+  .gen-right-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .gen-right-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:15px;
+    font-weight:600;
+  }
+  .gen-count-badge{
+    font-size:11.5px;
+    color:var(--ink-dim);
+    background:var(--surface);
+    border:1px solid var(--line);
+    padding:2px 9px;
+    border-radius:10px;
+  }
+
+  .gen-canvas{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:12px;
+    min-height:520px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px;
+  }
+  .gen-empty{
+    text-align:center;
+    max-width:340px;
+  }
+  .gen-empty-icon{
+    width:64px; height:64px;
+    margin:0 auto 20px;
+    border-radius:14px;
+    border:1.5px dashed var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--ink-dim);
+    font-size:24px;
+  }
+  .gen-empty h3{
+    font-family:'Fraunces', serif;
+    font-size:19px;
+    font-weight:500;
+    color:var(--gold);
+    margin-bottom:8px;
+  }
+  .gen-empty p{font-size:13px; color:var(--ink-dim); line-height:1.6;}
+
+  .gen-results-grid{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(220px,1fr));
+    gap:14px;
+  }
+  .gen-tile{
+    position:relative;
+    border-radius:9px;
+    overflow:hidden;
+    background:#0d0d0b;
+    border:1px solid var(--line);
+    aspect-ratio:1/1;
+  }
+  .gen-tile img{width:100%; height:100%; object-fit:cover; display:block;}
+  .gen-tile.loading{display:flex; align-items:center; justify-content:center; color:var(--ink-dim); font-size:12px; text-align:center;}
+  .gen-tile-actions{
+    position:absolute;
+    bottom:8px; right:8px;
+    display:flex;
+    gap:6px;
+    opacity:0;
+    transition:opacity 0.15s ease;
+  }
+  .gen-tile:hover .gen-tile-actions{opacity:1;}
+
+  .gen-lower-banner{
+    max-width:1400px;
+    margin:0 auto;
+    padding:36px 32px 60px;
+  }
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -882,6 +1338,7 @@
 <div class="tabbar">
   <button class="tab-btn active" data-tab="gallery" onclick="switchTab('gallery')">Galeri</button>
   <button class="tab-btn" data-tab="maker" onclick="switchTab('maker')">Prompt Üretici</button>
+  <button class="tab-btn" data-tab="visual" onclick="switchTab('visual')">Görsel Oluşturucu</button>
 </div>
 
 <div id="galleryView" class="gallery-layout">
@@ -1002,6 +1459,183 @@
 
 </div>
 
+<div id="visualView" style="display:none">
+
+  <div class="gen-header">
+    <h1>Görsel Oluşturucu</h1>
+    <p>Promptunu yaz, ayarlarını seç ve hayalindeki görseli yapay zeka ile birkaç saniyede oluştur.</p>
+  </div>
+
+  <div class="gen-layout">
+
+    <div class="gen-left">
+
+      <div>
+        <div class="gen-block-label">Prompt</div>
+        <div class="gen-block-hint">Ne görmek istersiniz? Detaylı yazmanız daha iyi sonuçlar verir.</div>
+        <textarea class="gen-textarea" id="genPromptInput" maxlength="2000" placeholder="Örn. Gün batımında sahilde yürüyen bir kadın, sinematik, warm tones..." oninput="onGenPromptInput()"></textarea>
+        <div class="gen-textarea-toolbar">
+          <div class="chip-btn-row">
+            <button type="button" class="chip-btn" onclick="suggestGenPrompt()">✨ Öneri Al</button>
+            <button type="button" class="chip-btn" onclick="usePromptFromMaker()">⭱ Prompt Üretici'den Al</button>
+          </div>
+          <span class="char-count" id="genCharCount">0 / 2000</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="gen-block-label">Görsel Boyutu</div>
+        <div class="opt-grid" id="genSizeGrid">
+          <button type="button" class="opt-btn active" data-ratio="1:1" onclick="setGenSize('1:1', this)"><span class="ratio-icon"></span>1:1</button>
+          <button type="button" class="opt-btn" data-ratio="3:4" onclick="setGenSize('3:4', this)"><span class="ratio-icon"></span>3:4</button>
+          <button type="button" class="opt-btn" data-ratio="4:3" onclick="setGenSize('4:3', this)"><span class="ratio-icon"></span>4:3</button>
+          <button type="button" class="opt-btn" data-ratio="9:16" onclick="setGenSize('9:16', this)"><span class="ratio-icon"></span>9:16</button>
+          <button type="button" class="opt-btn" data-ratio="16:9" onclick="setGenSize('16:9', this)"><span class="ratio-icon"></span>16:9</button>
+          <button type="button" class="opt-btn" data-ratio="custom" onclick="setGenSize('custom', this)"><span class="ratio-icon"></span>Özel</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="gen-block-label">Görsel Adeti</div>
+        <div class="count-row" id="genCountRow">
+          <button type="button" class="count-btn" onclick="setGenCount(1, this)">1</button>
+          <button type="button" class="count-btn" onclick="setGenCount(2, this)">2</button>
+          <button type="button" class="count-btn active" onclick="setGenCount(4, this)">4</button>
+          <button type="button" class="count-btn" onclick="setGenCount(8, this)">8</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="gen-block-label">Kullanılan AI</div>
+        <div class="model-select-wrap">
+          <button type="button" class="model-select-btn" onclick="toggleModelMenu()">
+            <span class="model-current"><span id="genModelIcon">🎨</span> <span id="genModelName">DALL·E 3</span> <span class="model-badge-new" id="genModelBadge">New</span></span>
+            <span>⌄</span>
+          </button>
+          <div class="model-menu" id="genModelMenu"></div>
+        </div>
+        <div class="model-desc" id="genModelDesc">Daha yüksek kalite ve detay için en iyi seçim.</div>
+      </div>
+
+      <div class="accordion">
+
+        <div class="acc-item">
+          <button type="button" class="acc-trigger" onclick="toggleAcc('camera')">
+            <span>📷 Kamera Açısı</span>
+            <span class="acc-right"><span class="acc-count" id="cameraAccCount"></span><span class="acc-chev">⌄</span></span>
+          </button>
+          <div class="acc-panel" id="cameraAccPanel">
+            <div class="chip-multi" id="cameraChips"></div>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <button type="button" class="acc-trigger" onclick="toggleAcc('effects')">
+            <span>✨ Efektler</span>
+            <span class="acc-right"><span class="acc-count" id="effectsAccCount"></span><span class="acc-chev">⌄</span></span>
+          </button>
+          <div class="acc-panel" id="effectsAccPanel">
+            <div class="chip-multi" id="effectsChips"></div>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <button type="button" class="acc-trigger" onclick="toggleAcc('poses')">
+            <span>🧍 Pozlar</span>
+            <span class="acc-right"><span class="acc-count" id="posesAccCount"></span><span class="acc-chev">⌄</span></span>
+          </button>
+          <div class="acc-panel" id="posesAccPanel">
+            <div class="chip-multi" id="posesChips"></div>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <button type="button" class="acc-trigger" onclick="toggleAcc('style')">
+            <span>🎬 Görsel Türü</span>
+            <span class="acc-right"><span class="acc-count" id="styleAccCount"></span><span class="acc-chev">⌄</span></span>
+          </button>
+          <div class="acc-panel" id="styleAccPanel">
+            <div class="chip-multi" id="styleChips"></div>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <button type="button" class="acc-trigger" onclick="toggleAcc('ref')">
+            <span>🖼 Referans Görsel</span>
+            <span class="acc-right"><span class="optional-badge">İsteğe bağlı</span><span class="acc-chev">⌄</span></span>
+          </button>
+          <div class="acc-panel" id="refAccPanel">
+            <div class="gen-block-hint">Benzetmek istediğiniz bir görsel, kişi ya da sahne varsa ekleyin.</div>
+            <div class="ref-upload-box" id="refUploadBox" onclick="document.getElementById('refFileInput').click()">
+              <img id="refPreviewImg" alt="referans">
+              <button type="button" class="ref-remove-btn" id="refRemoveBtn" onclick="event.stopPropagation(); removeRefImage()">✕</button>
+              <span id="refPlaceholder">Görsel yüklemek için tıklayın</span>
+            </div>
+            <input type="file" id="refFileInput" accept="image/*" style="display:none" onchange="handleRefFile(event)">
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <button type="button" class="acc-trigger" onclick="toggleAcc('char')">
+            <span>👤 Karakter Ekle</span>
+            <span class="acc-right"><span class="optional-badge">İsteğe bağlı</span><span class="acc-chev">⌄</span></span>
+          </button>
+          <div class="acc-panel" id="charAccPanel">
+            <div class="gen-block-hint">Görsele eklemek istediğiniz karakterleri tanımlayın; isteğe bağlı özel isim ve referans görsel verebilirsiniz.</div>
+            <div class="char-list" id="charList"></div>
+            <button type="button" class="add-char-btn" id="addCharBtn" onclick="addCharacterRow()" style="margin-top:10px;">+ Karakter Ekle</button>
+          </div>
+        </div>
+
+      </div>
+
+      <button type="button" class="gen-submit-btn" id="genSubmitBtn" onclick="generateVisual()" disabled>✨ Görseli Oluştur</button>
+      <div class="gen-quota-note" id="genQuotaNote">5 görsel hakkınız kaldı (24 saatte yenilenir)</div>
+
+    </div>
+
+    <div class="gen-right">
+      <div class="gen-right-header">
+        <div class="gen-right-title">Oluşturulan Görseller <span class="gen-count-badge" id="genResultCount">0</span></div>
+        <button class="btn" disabled title="Yakında aktif olacak">🕐 Geçmişi Gör</button>
+      </div>
+
+      <div class="gen-canvas" id="genCanvas">
+        <div class="gen-empty" id="genEmptyState">
+          <div class="gen-empty-icon">🖼</div>
+          <h3>İlk görselini oluştur</h3>
+          <p>Promptunu yaz, ayarlarını seç ve hayalindeki görseli gerçeğe dönüştür.</p>
+        </div>
+        <div class="gen-results-grid" id="genResultsGrid" style="display:none"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="gen-lower-banner">
+    <div class="maker-features" style="max-width:none; margin:0; padding:32px 0 0; border-top:1px solid var(--line);">
+      <div class="feature">
+        <span class="feature-icon">👑</span>
+        <div>
+          <strong>Daha fazlasını istiyorsan, JG Plus tam sana göre!</strong>
+          <p>Günlük 100 görsel üretme hakkı ve daha hızlı oluşturma önceliği.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">⚡</span>
+        <div>
+          <strong>Yüksek Çözünürlük</strong>
+          <p>Plus üyeler tüm gelişmiş AI modelleriyle yüksek çözünürlüklü indirme yapabilir.</p>
+        </div>
+      </div>
+      <div class="feature" style="align-items:center;">
+        <button class="upgrade-btn" style="width:auto; padding:12px 22px; white-space:nowrap;" title="Yakında aktif olacak" disabled>👑 JG Plus'a yükselt</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this) closeModal()">
   <div class="modal">
     <div class="modal-img-wrap">
@@ -1064,6 +1698,8 @@ const MAX_TOP_TAGS = 10;
 const PREMIUM_LIST_URL = 'https://jemghz.app.n8n.cloud/webhook/premium-list';
 const PREMIUM_VERIFY_URL = 'https://jemghz.app.n8n.cloud/webhook/verify-premium-code';
 const PROMPT_MAKER_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-prompt';
+const GEN_GENERATE_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-visual';
+const IMAGE_DAILY_LIMIT = 5;
 
 let allRows = [];
 let visibleRows = [];
@@ -1524,6 +2160,9 @@ function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.getElementById('galleryView').style.display = tab === 'gallery' ? 'flex' : 'none';
   document.getElementById('makerView').style.display = tab === 'maker' ? 'block' : 'none';
+  document.getElementById('visualView').style.display = tab === 'visual' ? 'block' : 'none';
+  activeQuotaContext = tab;
+  refreshFreePill();
 }
 
 function triggerUploadFlow(){
@@ -1598,20 +2237,39 @@ function handleMakerDrop(e){
   if(file) handleMakerFile({ target: { files: [file] } });
 }
 
-function updateRemainingLabel(remaining){
+let activeQuotaContext = 'gallery';
+let promptRemaining = null;
+
+function refreshFreePill(){
   const pill = document.getElementById('freePillText');
-  const featureTitle = document.getElementById('featureFreeTitle');
-  if(remaining === undefined || remaining === null){
-    pill.textContent = '3 ücretsiz hakkınız kaldı';
-    return;
-  }
-  if(remaining > 0){
-    pill.textContent = remaining + ' ücretsiz hakkınız kaldı';
-    featureTitle.textContent = remaining + ' Ücretsiz Hakkınız Var';
+  if(!pill) return;
+  if(activeQuotaContext === 'visual'){
+    const rem = getImageRemaining();
+    pill.textContent = rem + ' / ' + IMAGE_DAILY_LIMIT + ' görsel hakkınız kaldı';
   }else{
-    pill.textContent = 'Bugünlük hakkınız bitti';
-    featureTitle.textContent = 'Bugünlük Hakkınız Bitti';
+    if(promptRemaining === null){
+      pill.textContent = '3 ücretsiz hakkınız kaldı';
+    }else if(promptRemaining > 0){
+      pill.textContent = promptRemaining + ' ücretsiz hakkınız kaldı';
+    }else{
+      pill.textContent = 'Bugünlük hakkınız bitti';
+    }
   }
+}
+
+function updateRemainingLabel(remaining){
+  const featureTitle = document.getElementById('featureFreeTitle');
+  promptRemaining = (remaining === undefined) ? null : remaining;
+  if(featureTitle){
+    if(promptRemaining === null){
+      featureTitle.textContent = '3 Ücretsiz Hakkınız Var';
+    }else if(promptRemaining > 0){
+      featureTitle.textContent = promptRemaining + ' Ücretsiz Hakkınız Var';
+    }else{
+      featureTitle.textContent = 'Bugünlük Hakkınız Bitti';
+    }
+  }
+  refreshFreePill();
 }
 
 function resetResultPanel(){
@@ -1718,6 +2376,355 @@ function downloadMakerPrompt(){
   URL.revokeObjectURL(url);
 }
 
+// ---- Görsel Oluşturucu ----
+
+const CAMERA_OPTIONS = ['Ön çekim','Yakın plan','Kuş bakışı','Alçak açı','Yandan (profil)','Geniş açı','Makro','Drone çekimi'];
+const EFFECT_OPTIONS = ['Sinematik ışık','Bokeh','Duman / Sis','Neon parıltı','Film grain','Lens flare','Çift pozlama','Uzun pozlama','Yumuşak gölgeler','Yüksek kontrast'];
+const POSE_OPTIONS = ['Ayakta duruş','Yürüyüş','Oturma','Aksiyon / hareket','Doğal & rahat','Editorial poz','Yakın yüz ifadesi','Sırtı dönük'];
+const STYLE_OPTIONS = ['Sinematik','Portre','Thumbnail','Eskiz (Sketch)','Piksel Sanatı','Anime','3D Render','Suluboya','Yağlıboya','Minimalist','Vintage Film','Fantastik','Ürün Fotoğrafçılığı','Moda / Editorial','Siyah-Beyaz','Gerçekçi (Realistic)','Konsept Sanat'];
+
+const AI_MODELS = [
+  { name:'DALL·E 3', icon:'🎨', badge:'New', desc:'Daha yüksek kalite ve detay için en iyi seçim.' },
+  { name:'Midjourney v6', icon:'🌙', badge:'', desc:'Sanatsal ve atmosferik sonuçlar için güçlü seçim.' },
+  { name:'Stable Diffusion XL', icon:'🧬', badge:'', desc:'Hızlı ve esnek, özelleştirmeye açık bir model.' },
+  { name:'Flux Pro', icon:'⚡', badge:'', desc:'Fotogerçekçi sonuçlar ve gelişmiş prompt takibi.' },
+  { name:'Ideogram', icon:'🔤', badge:'', desc:'Görsele metin/yazı eklemek için en iyi seçim.' }
+];
+
+let genSelectedCamera = new Set();
+let genSelectedEffects = new Set();
+let genSelectedPoses = new Set();
+let genSelectedStyles = new Set();
+let genSelectedSize = '1:1';
+let genSelectedCount = 4;
+let genSelectedModelIdx = 0;
+let refImageBase64 = null, refImageMime = null;
+let characters = [];
+let charIdCounter = 0;
+
+function initGenView(){
+  renderChipGroup('cameraChips', CAMERA_OPTIONS, genSelectedCamera, 'camera');
+  renderChipGroup('effectsChips', EFFECT_OPTIONS, genSelectedEffects, 'effects');
+  renderChipGroup('posesChips', POSE_OPTIONS, genSelectedPoses, 'poses');
+  renderChipGroup('styleChips', STYLE_OPTIONS, genSelectedStyles, 'style');
+  renderModelMenu();
+  renderCharList();
+  updateGenSubmitState();
+}
+
+function renderChipGroup(containerId, options, selectedSet, key){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  el.innerHTML = options.map(opt => `<button type="button" class="chip ${selectedSet.has(opt) ? 'active' : ''}" onclick="toggleChip('${key}','${escapeAttr(opt)}')">${escapeHtml(opt)}</button>`).join('');
+}
+
+function getSetByKey(key){
+  return { camera: genSelectedCamera, effects: genSelectedEffects, poses: genSelectedPoses, style: genSelectedStyles }[key];
+}
+function getOptionsByKey(key){
+  return { camera: CAMERA_OPTIONS, effects: EFFECT_OPTIONS, poses: POSE_OPTIONS, style: STYLE_OPTIONS }[key];
+}
+function getContainerByKey(key){
+  return { camera:'cameraChips', effects:'effectsChips', poses:'posesChips', style:'styleChips' }[key];
+}
+
+function toggleChip(key, opt){
+  const set = getSetByKey(key);
+  if(set.has(opt)) set.delete(opt); else set.add(opt);
+  renderChipGroup(getContainerByKey(key), getOptionsByKey(key), set, key);
+  updateAccCount(key);
+}
+
+function updateAccCount(key){
+  const set = getSetByKey(key);
+  const badge = document.getElementById(key + 'AccCount');
+  if(!badge) return;
+  if(set.size > 0){
+    badge.textContent = set.size;
+    badge.classList.add('show');
+  }else{
+    badge.classList.remove('show');
+  }
+}
+
+function toggleAcc(key){
+  const panel = document.getElementById(key + 'AccPanel');
+  const trigger = panel.previousElementSibling;
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  trigger.classList.toggle('open', !isOpen);
+}
+
+function setGenSize(ratio, btn){
+  genSelectedSize = ratio;
+  document.querySelectorAll('#genSizeGrid .opt-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setGenCount(n, btn){
+  genSelectedCount = n;
+  document.querySelectorAll('#genCountRow .count-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function toggleModelMenu(){
+  document.getElementById('genModelMenu').classList.toggle('open');
+}
+function renderModelMenu(){
+  const menu = document.getElementById('genModelMenu');
+  menu.innerHTML = AI_MODELS.map((m, i) => `
+    <button type="button" class="model-option" onclick="selectModel(${i})">
+      <span class="m-name">${m.icon} ${escapeHtml(m.name)} ${m.badge ? `<span class="model-badge-new">${escapeHtml(m.badge)}</span>` : ''}</span>
+      <span class="m-desc">${escapeHtml(m.desc)}</span>
+    </button>`).join('');
+  selectModel(genSelectedModelIdx, true);
+}
+function selectModel(i, silent){
+  genSelectedModelIdx = i;
+  const m = AI_MODELS[i];
+  document.getElementById('genModelIcon').textContent = m.icon;
+  document.getElementById('genModelName').textContent = m.name;
+  document.getElementById('genModelDesc').textContent = m.desc;
+  const badgeEl = document.getElementById('genModelBadge');
+  badgeEl.style.display = m.badge ? 'inline-block' : 'none';
+  if(!silent) document.getElementById('genModelMenu').classList.remove('open');
+}
+document.addEventListener('click', (e) => {
+  const wrap = document.querySelector('.model-select-wrap');
+  if(wrap && !wrap.contains(e.target)) document.getElementById('genModelMenu').classList.remove('open');
+});
+
+function onGenPromptInput(){
+  const val = document.getElementById('genPromptInput').value;
+  document.getElementById('genCharCount').textContent = val.length + ' / 2000';
+  updateGenSubmitState();
+}
+function updateGenSubmitState(){
+  const val = document.getElementById('genPromptInput').value.trim();
+  document.getElementById('genSubmitBtn').disabled = !val;
+}
+
+function usePromptFromMaker(){
+  if(makerGeneratedPrompt){
+    document.getElementById('genPromptInput').value = makerGeneratedPrompt;
+    onGenPromptInput();
+  }
+  switchTab('visual');
+}
+function suggestGenPrompt(){
+  const ideas = [
+    'Gün batımında sahilde yürüyen bir kadın, sinematik ışık, warm tones',
+    'Yağmurlu bir şehir sokağında neon yansımalar, cyberpunk atmosfer',
+    'Minimalist stüdyoda ürün fotoğrafı, yumuşak gölgeler, temiz arka plan',
+    'Dağ zirvesinde gün doğumu, epik geniş açı, sinematik renk paleti',
+    'Kafede kitap okuyan bir karakter, doğal ışık, sıcak tonlar, portre'
+  ];
+  document.getElementById('genPromptInput').value = ideas[Math.floor(Math.random()*ideas.length)];
+  onGenPromptInput();
+}
+
+// Referans görsel
+function handleRefFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  resizeImageToBase64(file, 1200).then(({base64, mimeType, dataUrl}) => {
+    refImageBase64 = base64;
+    refImageMime = mimeType;
+    const img = document.getElementById('refPreviewImg');
+    img.src = dataUrl;
+    img.style.display = 'block';
+    document.getElementById('refPlaceholder').style.display = 'none';
+    document.getElementById('refUploadBox').classList.add('has-img');
+    document.getElementById('refRemoveBtn').style.display = 'flex';
+  }).catch(err => {
+    document.getElementById('genQuotaNote').textContent = 'Referans görsel okunamadı: ' + err.message;
+  });
+}
+function removeRefImage(){
+  refImageBase64 = null; refImageMime = null;
+  const img = document.getElementById('refPreviewImg');
+  img.style.display = 'none'; img.src = '';
+  document.getElementById('refPlaceholder').style.display = 'block';
+  document.getElementById('refUploadBox').classList.remove('has-img');
+  document.getElementById('refRemoveBtn').style.display = 'none';
+  document.getElementById('refFileInput').value = '';
+}
+
+// Karakterler
+function addCharacterRow(){
+  if(characters.length >= 4) return;
+  charIdCounter++;
+  characters.push({ id: charIdCounter, name: '', base64: null, mime: null });
+  renderCharList();
+}
+function removeCharacterRow(id){
+  characters = characters.filter(c => c.id !== id);
+  renderCharList();
+}
+function updateCharName(id, val){
+  const c = characters.find(c => c.id === id);
+  if(c) c.name = val;
+}
+function handleCharFile(id, e){
+  const file = e.target.files[0];
+  if(!file) return;
+  resizeImageToBase64(file, 1000).then(({base64, mimeType}) => {
+    const c = characters.find(c => c.id === id);
+    if(!c) return;
+    c.base64 = base64; c.mime = mimeType;
+    renderCharList();
+  }).catch(err => {
+    document.getElementById('genQuotaNote').textContent = 'Karakter görseli okunamadı: ' + err.message;
+  });
+}
+function renderCharList(){
+  const el = document.getElementById('charList');
+  el.innerHTML = characters.map((c, idx) => `
+    <div class="char-row">
+      <div class="char-thumb" onclick="document.getElementById('charFile_${c.id}').click()">
+        ${c.base64 ? `<img src="data:${c.mime};base64,${c.base64}" alt="">` : '📷'}
+      </div>
+      <input type="file" id="charFile_${c.id}" accept="image/*" style="display:none" onchange="handleCharFile(${c.id}, event)">
+      <div class="char-fields">
+        <input type="text" placeholder="Karakter ${idx+1} (isim, isteğe bağlı)" value="${escapeAttr(c.name)}" oninput="updateCharName(${c.id}, this.value)">
+      </div>
+      <button type="button" class="char-remove" onclick="removeCharacterRow(${c.id})" title="Kaldır">✕</button>
+    </div>`).join('');
+  document.getElementById('addCharBtn').disabled = characters.length >= 4;
+}
+
+// Ücretsiz kota (24 saatte 5 görsel) - n8n yanıtı 'remaining' döndürürse o esas alınır,
+// yoksa tarayıcıda tarihe göre yerel takip yapılır.
+function getImageQuotaState(){
+  const today = new Date().toISOString().slice(0,10);
+  let state;
+  try{ state = JSON.parse(localStorage.getItem('jg_image_quota') || 'null'); }catch(e){ state = null; }
+  if(!state || state.date !== today){
+    state = { date: today, used: 0 };
+    try{ localStorage.setItem('jg_image_quota', JSON.stringify(state)); }catch(e){}
+  }
+  return state;
+}
+function getImageRemaining(){
+  return Math.max(0, IMAGE_DAILY_LIMIT - getImageQuotaState().used);
+}
+function consumeImageQuota(n){
+  const state = getImageQuotaState();
+  state.used += n;
+  try{ localStorage.setItem('jg_image_quota', JSON.stringify(state)); }catch(e){}
+}
+function setImageRemaining(remaining){
+  const state = getImageQuotaState();
+  state.used = Math.max(0, IMAGE_DAILY_LIMIT - remaining);
+  try{ localStorage.setItem('jg_image_quota', JSON.stringify(state)); }catch(e){}
+  updateGenQuotaNote();
+  refreshFreePill();
+}
+function updateGenQuotaNote(){
+  const note = document.getElementById('genQuotaNote');
+  if(!note) return;
+  const rem = getImageRemaining();
+  note.textContent = rem > 0
+    ? rem + ' görsel hakkınız kaldı (24 saatte yenilenir)'
+    : 'Bugünlük görsel hakkınız bitti (24 saatte yenilenir)';
+}
+
+function showGenLoadingTiles(n){
+  document.getElementById('genEmptyState').style.display = 'none';
+  const grid = document.getElementById('genResultsGrid');
+  grid.style.display = 'grid';
+  grid.innerHTML = Array.from({length:n}).map(() => `<div class="gen-tile loading">Oluşturuluyor...</div>`).join('');
+  document.getElementById('genResultCount').textContent = n;
+}
+function showGenEmptyState(){
+  document.getElementById('genEmptyState').style.display = 'block';
+  const grid = document.getElementById('genResultsGrid');
+  grid.style.display = 'none';
+  grid.innerHTML = '';
+  document.getElementById('genResultCount').textContent = '0';
+}
+function renderGenResults(images){
+  if(!images || !images.length){ showGenEmptyState(); return; }
+  const grid = document.getElementById('genResultsGrid');
+  grid.innerHTML = images.map((url, i) => `
+    <div class="gen-tile">
+      <img src="${url}" alt="oluşturulan görsel ${i+1}" loading="lazy">
+      <div class="gen-tile-actions">
+        <button class="icon-btn" onclick="event.stopPropagation(); downloadGenImage('${escapeAttr(url)}', ${i})" title="İndir">⬇</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('genResultCount').textContent = images.length;
+}
+function downloadGenImage(url, idx){
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'jg-studio-gorsel-' + (idx+1) + '.png';
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+async function generateVisual(){
+  const prompt = document.getElementById('genPromptInput').value.trim();
+  if(!prompt) return;
+
+  if(getImageRemaining() <= 0){
+    document.getElementById('genQuotaNote').textContent = 'Bugünlük ücretsiz hakkınız bitti. Yarın tekrar deneyebilir ya da JG Plus\'a yükseltebilirsiniz.';
+    return;
+  }
+
+  if(!GEN_GENERATE_URL || GEN_GENERATE_URL.includes('YOUR-N8N-URL')){
+    document.getElementById('genQuotaNote').textContent = 'Görsel oluşturma servisi henüz bağlanmadı.';
+    return;
+  }
+
+  const btn = document.getElementById('genSubmitBtn');
+  btn.disabled = true;
+  document.getElementById('genQuotaNote').textContent = 'Görsel oluşturuluyor, birkaç saniye sürebilir...';
+  showGenLoadingTiles(genSelectedCount);
+
+  try{
+    const payload = {
+      deviceId: getDeviceId(),
+      prompt: prompt,
+      size: genSelectedSize,
+      count: genSelectedCount,
+      model: AI_MODELS[genSelectedModelIdx].name,
+      camera: [...genSelectedCamera],
+      effects: [...genSelectedEffects],
+      poses: [...genSelectedPoses],
+      styles: [...genSelectedStyles],
+      referenceImage: refImageBase64 ? { base64: refImageBase64, mimeType: refImageMime } : null,
+      characters: characters.map(c => ({ name: c.name, base64: c.base64, mimeType: c.mime }))
+    };
+    const res = await fetch(GEN_GENERATE_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+
+    if(!data.allowed){
+      document.getElementById('genQuotaNote').textContent = 'Bugün için ücretsiz hakkınız kalmadı.';
+      showGenEmptyState();
+      if(typeof data.remaining === 'number') setImageRemaining(data.remaining);
+      return;
+    }
+
+    consumeImageQuota(genSelectedCount);
+    const finalRemaining = (typeof data.remaining === 'number') ? data.remaining : getImageRemaining();
+    setImageRemaining(finalRemaining);
+    renderGenResults(data.images || []);
+  }catch(err){
+    document.getElementById('genQuotaNote').textContent = 'Hata: ' + err.message;
+    showGenEmptyState();
+  }finally{
+    btn.disabled = false;
+  }
+}
+
 // ---- Google Girişi ----
 const GOOGLE_CLIENT_ID = '1036033399902-fufvgkbifjipd9615d790gkjh8k3u7an.apps.googleusercontent.com';
 
@@ -1786,6 +2793,9 @@ function renderAuthArea(){
 
 window.addEventListener('load', () => {
   updateRemainingLabel();
+  initGenView();
+  updateGenQuotaNote();
+  refreshFreePill();
   // Google script'inin yüklenmesini bekle
   const tryRender = () => {
     if(window.google && google.accounts && google.accounts.id){
