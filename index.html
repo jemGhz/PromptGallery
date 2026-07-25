@@ -1,3574 +1,751 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JG Studio</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#0A0A09;
-    --surface:#141412;
-    --line:#242320;
-    --ink:#EDEAE3;
-    --ink-dim:#8A867C;
-    --gold:#C7A15E;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{
-    background:var(--bg);
-    color:var(--ink);
-    font-family:'Inter', sans-serif;
-    min-height:100vh;
-  }
-
-  /* ---- Top bar ---- */
-  .topbar{
-    border-bottom:1px solid var(--line);
-    padding:18px 32px;
-    position:sticky;
-    top:0;
-    background:var(--bg);
-    z-index:40;
-  }
-  .topbar-inner{
-    max-width:1400px;
-    margin:0 auto;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    flex-wrap:wrap;
-  }
-  .mark{
-    font-family:'Inter', sans-serif;
-    font-size:21px;
-    font-weight:700;
-    letter-spacing:-0.01em;
-    flex-shrink:0;
-  }
-  .mark .mark-jg{color:var(--gold);}
-
-  .search-wrap{
-    flex:1;
-    min-width:200px;
-    display:flex;
-    align-items:center;
-    gap:9px;
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:24px;
-    padding:11px 16px;
-    transition:border-color 0.15s ease;
-  }
-  .search-wrap:focus-within{border-color:var(--gold);}
-  .search-wrap svg{width:16px; height:16px; stroke:var(--ink-dim); flex-shrink:0;}
-  .search-wrap input{
-    flex:1;
-    background:none;
-    border:none;
-    color:var(--ink);
-    font-size:13.5px;
-    font-family:'Inter', sans-serif;
-  }
-  .search-wrap input:focus{outline:none;}
-  .search-wrap input::placeholder{color:var(--ink-dim);}
-
-  .icon-square-btn{
-    width:38px; height:38px;
-    flex-shrink:0;
-    border-radius:10px;
-    border:1px solid var(--line);
-    background:transparent;
-    color:var(--ink-dim);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    transition:all 0.15s ease;
-  }
-  .icon-square-btn svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2;}
-  .icon-square-btn:hover{border-color:var(--ink-dim); color:var(--ink);}
-  .icon-square-btn.active{border-color:var(--gold); color:var(--gold);}
-
-  .sort-wrap{position:relative; flex-shrink:0;}
-  .sort-btn{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    font-family:'Inter', sans-serif;
-    font-size:13px;
-    padding:10px 14px;
-    border-radius:10px;
-    border:1px solid var(--line);
-    background:transparent;
-    color:var(--ink);
-    cursor:pointer;
-    white-space:nowrap;
-  }
-  .sort-btn:hover{border-color:var(--ink-dim);}
-  .sort-menu{
-    position:absolute;
-    top:calc(100% + 6px);
-    right:0;
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:9px;
-    padding:6px;
-    min-width:130px;
-    display:none;
-    flex-direction:column;
-    z-index:50;
-  }
-  .sort-menu.open{display:flex;}
-  .sort-menu button{
-    background:none;
-    border:none;
-    color:var(--ink-dim);
-    text-align:left;
-    padding:9px 10px;
-    border-radius:6px;
-    font-size:13px;
-    font-family:'Inter', sans-serif;
-    cursor:pointer;
-  }
-  .sort-menu button:hover{background:var(--bg); color:var(--ink);}
-  .sort-menu button.active{color:var(--gold);}
-
-  .free-pill{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    background:rgba(199,161,94,0.1);
-    border:1px solid rgba(199,161,94,0.3);
-    border-radius:20px;
-    padding:9px 14px;
-    font-size:12.5px;
-    color:var(--gold);
-    white-space:nowrap;
-    flex-shrink:0;
-  }
-
-  .upload-cta{
-    background:var(--gold);
-    border:none;
-    border-radius:20px;
-    padding:11px 18px;
-    font-family:'Inter', sans-serif;
-    font-weight:600;
-    font-size:13px;
-    color:#0A0A09;
-    cursor:pointer;
-    white-space:nowrap;
-    flex-shrink:0;
-  }
-  .upload-cta:hover{opacity:0.88;}
-
-  .bell-btn{
-    width:38px; height:38px;
-    flex-shrink:0;
-    border-radius:50%;
-    border:1px solid var(--line);
-    background:transparent;
-    color:var(--ink-dim);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:14px;
-    cursor:not-allowed;
-  }
-
-  #authArea{display:flex; align-items:center; flex-shrink:0;}
-  .avatar-circle{
-    width:38px; height:38px;
-    border-radius:50%;
-    background:var(--surface);
-    border:1px solid var(--line);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:12px;
-    font-weight:700;
-    color:var(--gold);
-    cursor:pointer;
-    overflow:hidden;
-    padding:0;
-  }
-  .avatar-circle img{width:100%; height:100%; object-fit:cover;}
-
-  .status{
-    font-size:13px;
-    color:var(--ink-dim);
-    display:none;
-    margin-bottom:16px;
-  }
-  .status.show{display:block;}
-  .status.error{color:#C77B62;}
-
-  /* ---- Tabs ---- */
-  .tabbar{
-    max-width:1400px;
-    margin:0 auto;
-    padding:16px 32px 0;
-    display:flex;
-    gap:6px;
-  }
-  .tab-btn{
-    font-family:'Inter', sans-serif;
-    font-size:13px;
-    padding:11px 20px;
-    border-radius:8px 8px 0 0;
-    border:1px solid var(--line);
-    border-bottom:none;
-    background:transparent;
-    color:var(--ink-dim);
-    cursor:pointer;
-    transition:all 0.15s ease;
-  }
-  .tab-btn:hover{color:var(--ink);}
-  .tab-btn.active{color:var(--ink); background:var(--surface);}
-
-  /* ---- Gallery layout: sidebar + grid ---- */
-  .gallery-layout{
-    max-width:1400px;
-    margin:0 auto;
-    padding:28px 32px 40px;
-    display:flex;
-    align-items:flex-start;
-    gap:28px;
-  }
-
-  .sidebar{
-    width:260px;
-    flex-shrink:0;
-    display:flex;
-    flex-direction:column;
-    gap:24px;
-    position:sticky;
-    top:88px;
-    max-height:calc(100vh - 110px);
-    overflow-y:auto;
-    padding-right:4px;
-  }
-  .sidebar::-webkit-scrollbar{width:3px;}
-  .sidebar::-webkit-scrollbar-thumb{background:var(--line);}
-
-  .sidebar-meta{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    font-size:12px;
-    color:var(--ink-dim);
-  }
-  .sidebar-meta button{
-    background:none;
-    border:none;
-    color:var(--ink-dim);
-    font-size:12px;
-    cursor:pointer;
-    font-family:'Inter', sans-serif;
-  }
-  .sidebar-meta button:hover{color:var(--gold);}
-
-  .sidebar-section{display:flex; flex-direction:column;}
-  .sidebar-header{
-    width:100%;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    background:none;
-    border:none;
-    color:var(--ink);
-    font-size:13px;
-    font-weight:600;
-    padding:6px 0 12px;
-    cursor:pointer;
-    font-family:'Inter', sans-serif;
-  }
-  .sidebar-header .chev{color:var(--ink-dim); font-size:11px; transition:transform 0.15s ease;}
-
-  .cat-list{display:flex; flex-direction:column; gap:2px;}
-  .cat-item{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    width:100%;
-    text-align:left;
-    background:none;
-    border:none;
-    color:var(--ink-dim);
-    font-size:13px;
-    padding:9px 11px;
-    border-radius:8px;
-    cursor:pointer;
-    font-family:'Inter', sans-serif;
-    transition:all 0.15s ease;
-  }
-  .cat-item:hover{background:var(--surface); color:var(--ink);}
-  .cat-item.active{background:var(--gold); color:#0A0A09; font-weight:600;}
-  .cat-count{font-size:11.5px; opacity:0.75;}
-
-  .tag-cloud{display:flex; flex-wrap:wrap; gap:8px;}
-  .chip{
-    font-family:'Inter', sans-serif;
-    font-size:12px;
-    padding:7px 14px;
-    border-radius:20px;
-    border:1px solid var(--line);
-    background:transparent;
-    color:var(--ink-dim);
-    cursor:pointer;
-    transition:all 0.15s ease;
-    white-space:nowrap;
-  }
-  .chip:hover{border-color:var(--ink-dim); color:var(--ink);}
-  .chip.active{background:var(--gold); border-color:var(--gold); color:#0A0A09;}
-  .see-all-tags{
-    background:none;
-    border:none;
-    color:var(--gold);
-    font-size:12.5px;
-    cursor:pointer;
-    text-align:left;
-    padding:12px 2px 0;
-    font-family:'Inter', sans-serif;
-  }
-  .see-all-tags:hover{opacity:0.8;}
-
-  .upgrade-card{
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:12px;
-    padding:20px;
-    margin-top:auto;
-  }
-  .upgrade-icon{font-size:20px; margin-bottom:10px;}
-  .upgrade-title{font-family:'Fraunces', serif; font-size:15.5px; margin-bottom:8px;}
-  .upgrade-desc{font-size:12px; line-height:1.55; color:var(--ink-dim); margin-bottom:16px;}
-  .upgrade-btn{
-    width:100%;
-    background:var(--gold);
-    border:none;
-    border-radius:7px;
-    padding:11px;
-    font-family:'Inter', sans-serif;
-    font-weight:500;
-    font-size:12.5px;
-    color:#0A0A09;
-    cursor:not-allowed;
-    opacity:0.75;
-  }
-
-  @media (max-width:900px){
-    .sidebar{
-      position:fixed;
-      top:0; left:0;
-      height:100vh;
-      width:280px;
-      background:var(--bg);
-      border-right:1px solid var(--line);
-      z-index:60;
-      padding:24px;
-      transform:translateX(-100%);
-      transition:transform 0.2s ease;
-      max-height:100vh;
-    }
-    .sidebar.open{transform:translateX(0);}
-    .gallery-layout{padding:20px 16px 32px;}
-  }
-
-  .gallery-main{flex:1; min-width:0;}
-
-  .masonry{
-    columns:5 240px;
-    column-gap:14px;
-  }
-  .masonry.wide{columns:3 300px;}
-  @media (max-width:1000px){ .masonry{columns:3 200px;} .masonry.wide{columns:2 280px;} }
-  @media (max-width:640px){ .masonry{columns:2 160px; gap:10px;} }
-
-  .tile{
-    break-inside:avoid;
-    margin-bottom:14px;
-    border-radius:6px;
-    overflow:hidden;
-    cursor:pointer;
-    position:relative;
-    background:var(--surface);
-  }
-  .tile img{
-    width:100%;
-    display:block;
-    transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);
-  }
-  .tile:hover img{transform:scale(1.03);}
-  .tile-hint{
-    position:absolute;
-    inset:0;
-    background:linear-gradient(to top, rgba(10,10,9,0.75) 0%, transparent 55%);
-    opacity:0;
-    transition:opacity 0.2s ease;
-    display:flex;
-    align-items:flex-end;
-    padding:12px;
-  }
-  .tile:hover .tile-hint{opacity:1;}
-  .tile-hint span{
-    font-size:11px;
-    color:var(--ink);
-    letter-spacing:0.02em;
-  }
-
-  .empty{
-    text-align:center;
-    padding:120px 20px;
-    color:var(--ink-dim);
-    font-size:14px;
-  }
-
-  /* Modal */
-  .modal-backdrop{
-    position:fixed;
-    inset:0;
-    background:rgba(6,6,5,0.92);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    padding:32px;
-    z-index:100;
-  }
-  .modal-backdrop.open{display:flex;}
-  .modal{
-    max-width:960px;
-    width:100%;
-    max-height:88vh;
-    display:flex;
-    background:var(--surface);
-    border-radius:10px;
-    overflow:hidden;
-  }
-  @media (max-width:760px){ .modal{flex-direction:column; overflow-y:auto; max-height:92vh;} }
-
-  .modal-img-wrap{
-    flex:1 1 55%;
-    background:#000;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-  .modal-img-wrap img{
-    width:100%;
-    height:100%;
-    max-height:88vh;
-    object-fit:contain;
-  }
-  .modal-body{
-    flex:1 1 45%;
-    padding:40px;
-    display:flex;
-    flex-direction:column;
-  }
-  .modal-eyebrow{
-    font-size:11px;
-    letter-spacing:0.1em;
-    text-transform:uppercase;
-    color:var(--ink-dim);
-    margin-bottom:20px;
-  }
-  .modal-tags{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    margin-bottom:28px;
-  }
-  .tag{
-    font-size:11px;
-    padding:5px 11px;
-    border-radius:20px;
-    border:1px solid var(--line);
-    color:var(--ink-dim);
-  }
-  .tag.person{color:var(--gold); border-color:rgba(199,161,94,0.4);}
-  .modal-prompt{
-    font-size:14px;
-    line-height:1.7;
-    color:var(--ink);
-    flex:1;
-    margin-bottom:28px;
-    max-height:280px;
-    overflow-y:auto;
-    padding-right:6px;
-  }
-  .modal-prompt::-webkit-scrollbar{width:3px;}
-  .modal-prompt::-webkit-scrollbar-thumb{background:var(--line);}
-  .modal-actions{display:flex; gap:10px;}
-  .btn{
-    padding:14px;
-    border-radius:7px;
-    font-family:'Inter', sans-serif;
-    font-weight:500;
-    font-size:13.5px;
-    cursor:pointer;
-    border:1px solid var(--line);
-    background:transparent;
-    color:var(--ink);
-    transition:all 0.15s ease;
-  }
-  .modal-actions .btn{flex:1;}
-  .btn.primary{background:var(--gold); border-color:var(--gold); color:#0A0A09;}
-  .btn.primary:hover{opacity:0.85;}
-  .btn.primary.copied{background:var(--ink); border-color:var(--ink);}
-  .btn:not(.primary):hover{border-color:var(--ink-dim);}
-  .btn:disabled{
-    opacity:0.4;
-    cursor:not-allowed;
-  }
-  .btn:disabled:hover{border-color:var(--line);}
-  .btn-soon-label{
-    font-size:10.5px;
-    color:var(--ink-dim);
-    font-weight:400;
-  }
-
-  /* Premium / paywall */
-  .lock-badge{
-    position:absolute;
-    top:10px; right:10px;
-    width:26px; height:26px;
-    border-radius:50%;
-    background:rgba(10,10,9,0.75);
-    border:1px solid rgba(199,161,94,0.4);
-    display:flex; align-items:center; justify-content:center;
-    font-size:12px;
-    z-index:2;
-  }
-  .stat-badges{
-    position:absolute;
-    top:10px; left:10px;
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-    z-index:2;
-  }
-  .stat-badge{
-    display:flex;
-    align-items:center;
-    gap:4px;
-    background:rgba(10,10,9,0.65);
-    backdrop-filter:blur(2px);
-    border-radius:20px;
-    padding:4px 9px;
-    font-size:10.5px;
-    color:var(--ink);
-    line-height:1;
-    width:fit-content;
-  }
-  .stat-badge svg{width:11px; height:11px; opacity:0.85; flex-shrink:0;}
-
-  .card-actions{
-    position:absolute;
-    bottom:10px; right:10px;
-    display:flex;
-    gap:6px;
-    z-index:2;
-  }
-  .icon-btn{
-    width:28px; height:28px;
-    border-radius:50%;
-    background:rgba(10,10,9,0.65);
-    backdrop-filter:blur(2px);
-    border:none;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    padding:0;
-    transition:transform 0.15s ease;
-  }
-  .icon-btn:hover{transform:scale(1.08);}
-  .icon-btn svg{width:14px; height:14px; stroke:var(--ink); fill:none; stroke-width:2;}
-  .icon-btn.like-btn.active svg{fill:#E0475C; stroke:#E0475C;}
-  .icon-btn.save-btn.active svg{fill:var(--gold); stroke:var(--gold);}
-  .tile.locked .tile-hint{opacity:1; background:linear-gradient(to top, rgba(10,10,9,0.85) 0%, rgba(10,10,9,0.15) 65%, transparent 100%);}
-
-  .paywall-title{
-    font-family:'Fraunces', serif;
-    font-size:19px;
-    margin-bottom:10px;
-  }
-  .paywall-desc{
-    font-size:13px;
-    line-height:1.6;
-    color:var(--ink-dim);
-    margin-bottom:24px;
-  }
-  .paywall-actions{display:flex; flex-direction:column; gap:9px;}
-  .code-row{display:flex; gap:8px;}
-  .code-row input{
-    flex:1;
-    background:transparent;
-    border:1px solid var(--line);
-    border-radius:7px;
-    padding:12px;
-    color:var(--ink);
-    font-family:'Inter', sans-serif;
-    font-size:13.5px;
-  }
-  .code-row input:focus{outline:none; border-color:var(--gold);}
-  .code-msg{font-size:12px; margin-top:10px; min-height:14px;}
-  .code-msg.error{color:#C77B62;}
-  .code-msg.success{color:var(--gold);}
-
-  /* ---- Prompt Üretici (yeni tasarım) ---- */
-  .maker-header{
-    max-width:1280px;
-    margin:0 auto;
-    padding:44px 32px 8px;
-  }
-  .maker-header h1{
-    font-family:'Fraunces', serif;
-    font-size:32px;
-    font-weight:500;
-    margin-bottom:10px;
-  }
-  .maker-header p{
-    font-size:14px;
-    color:var(--ink-dim);
-    line-height:1.6;
-    max-width:640px;
-  }
-
-  .maker-columns{
-    max-width:1280px;
-    margin:0 auto;
-    padding:28px 32px 0;
-    display:flex;
-    align-items:flex-start;
-    gap:20px;
-  }
-  @media (max-width:900px){ .maker-columns{flex-direction:column;} }
-
-  .maker-col{
-    flex:1;
-    min-width:0;
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:12px;
-    padding:24px;
-    display:flex;
-    flex-direction:column;
-    gap:16px;
-  }
-
-  .maker-arrow{
-    width:40px; height:40px;
-    border-radius:50%;
-    background:var(--gold);
-    color:#0A0A09;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:16px;
-    flex-shrink:0;
-    margin-top:130px;
-  }
-  @media (max-width:900px){ .maker-arrow{display:none;} }
-
-  .col-header-row{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    flex-wrap:wrap;
-    gap:12px;
-  }
-  .col-header{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-size:15px;
-    font-weight:600;
-  }
-  .col-num{
-    width:24px; height:24px;
-    border-radius:50%;
-    background:rgba(199,161,94,0.15);
-    color:var(--gold);
-    border:1px solid rgba(199,161,94,0.4);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:12px;
-    flex-shrink:0;
-  }
-
-  .upload-box{
-    position:relative;
-    border:1.5px dashed var(--line);
-    border-radius:10px;
-    overflow:hidden;
-    min-height:340px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#0d0d0b;
-    cursor:pointer;
-    transition:border-color 0.15s ease;
-  }
-  .upload-box:hover, .upload-box.dragover{border-color:var(--gold);}
-  .upload-box.has-img{border-style:solid;}
-  .upload-box img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:none;
-  }
-  .upload-box .drop-placeholder{
-    color:var(--ink-dim);
-    font-size:13.5px;
-    text-align:center;
-    padding:20px;
-    line-height:1.6;
-  }
-  .remove-img-btn{
-    position:absolute;
-    top:10px; right:10px;
-    width:28px; height:28px;
-    border-radius:50%;
-    background:rgba(10,10,9,0.75);
-    border:1px solid var(--line);
-    color:var(--ink);
-    cursor:pointer;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    font-size:13px;
-    z-index:2;
-  }
-
-  .result-label{
-    font-size:12px;
-    color:var(--gold);
-    text-transform:uppercase;
-    letter-spacing:0.06em;
-  }
-  .result-box{
-    position:relative;
-    background:#0d0d0b;
-    border:1px solid var(--line);
-    border-radius:8px;
-    padding:18px;
-    font-size:13.5px;
-    line-height:1.7;
-    color:var(--ink);
-    min-height:260px;
-    max-height:260px;
-    overflow-y:auto;
-    white-space:pre-wrap;
-  }
-  .result-box.empty-state{
-    color:var(--ink-dim);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-  }
-  .copy-icon-btn{
-    position:absolute;
-    top:10px; right:10px;
-    width:26px; height:26px;
-    border-radius:6px;
-    background:rgba(10,10,9,0.7);
-    border:1px solid var(--line);
-    color:var(--ink-dim);
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:12px;
-  }
-  .copy-icon-btn:hover{color:var(--ink); border-color:var(--ink-dim);}
-  .result-actions{display:flex; gap:10px;}
-  .result-actions .btn{flex:1;}
-
-  .tip-box{
-    display:flex;
-    gap:12px;
-    background:rgba(199,161,94,0.06);
-    border:1px solid rgba(199,161,94,0.2);
-    border-radius:8px;
-    padding:16px;
-    font-size:12.5px;
-    color:var(--ink-dim);
-    line-height:1.6;
-  }
-  .tip-box .tip-icon{font-size:16px; flex-shrink:0;}
-  .tip-box strong{color:var(--ink); display:block; margin-bottom:4px; font-size:13px;}
-
-  .maker-status{
-    font-size:13px;
-    color:var(--ink-dim);
-    min-height:16px;
-  }
-
-  .maker-features{
-    max-width:1280px;
-    margin:0 auto;
-    padding:0 32px 60px;
-    margin-top:36px;
-    display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:24px;
-    border-top:1px solid var(--line);
-    padding-top:32px;
-  }
-  @media (max-width:760px){ .maker-features{grid-template-columns:1fr;} }
-  .feature{display:flex; gap:12px;}
-  .feature-icon{
-    width:36px; height:36px;
-    border-radius:50%;
-    background:rgba(199,161,94,0.1);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-shrink:0;
-    font-size:15px;
-  }
-  .feature strong{font-size:13.5px; display:block; margin-bottom:4px;}
-  .feature p{font-size:12.5px; color:var(--ink-dim); line-height:1.5;}
-
-  /* ---- Görsel Oluşturucu ---- */
-  .gen-header{
-    max-width:1400px;
-    margin:0 auto;
-    padding:44px 32px 8px;
-  }
-  .gen-header h1{
-    font-family:'Fraunces', serif;
-    font-size:32px;
-    font-weight:500;
-    margin-bottom:10px;
-  }
-  .gen-header p{
-    font-size:14px;
-    color:var(--ink-dim);
-    line-height:1.6;
-    max-width:640px;
-  }
-
-  .gen-layout{
-    max-width:1400px;
-    margin:0 auto;
-    padding:28px 32px 0;
-    display:flex;
-    align-items:flex-start;
-    gap:24px;
-  }
-  @media (max-width:1000px){ .gen-layout{flex-direction:column;} }
-
-  .gen-left{
-    width:440px;
-    flex-shrink:0;
-    display:flex;
-    flex-direction:column;
-    gap:22px;
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:12px;
-    padding:24px;
-  }
-  @media (max-width:1000px){ .gen-left{width:100%;} }
-
-  .gen-right{
-    flex:1;
-    min-width:0;
-    display:flex;
-    flex-direction:column;
-    gap:16px;
-    position:sticky;
-    top:88px;
-  }
-  @media (max-width:1000px){ .gen-right{position:static;} }
-
-  .gen-block-label{
-    font-size:13px;
-    font-weight:600;
-    color:var(--ink);
-    margin-bottom:6px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-  }
-  .gen-block-hint{
-    font-size:11.5px;
-    color:var(--ink-dim);
-    margin-bottom:10px;
-    line-height:1.5;
-  }
-  .optional-badge{
-    font-size:10.5px;
-    font-weight:400;
-    color:var(--ink-dim);
-  }
-
-  .gen-textarea{
-    width:100%;
-    min-height:110px;
-    resize:vertical;
-    background:#0d0d0b;
-    border:1px solid var(--line);
-    border-radius:8px;
-    padding:14px;
-    color:var(--ink);
-    font-family:'Inter', sans-serif;
-    font-size:13.5px;
-    line-height:1.6;
-  }
-  .gen-textarea:focus{outline:none; border-color:var(--gold);}
-  .gen-textarea::placeholder{color:var(--ink-dim);}
-
-  .gen-textarea-toolbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-top:10px;
-    flex-wrap:wrap;
-    gap:8px;
-  }
-  .chip-btn-row{display:flex; gap:8px; flex-wrap:wrap;}
-  .chip-btn{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    font-family:'Inter', sans-serif;
-    font-size:12px;
-    padding:8px 12px;
-    border-radius:8px;
-    border:1px solid var(--line);
-    background:transparent;
-    color:var(--ink-dim);
-    cursor:pointer;
-  }
-  .chip-btn:hover{border-color:var(--gold); color:var(--ink);}
-  .char-count{font-size:11px; color:var(--ink-dim); white-space:nowrap;}
-
-  .opt-grid{
-    display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:8px;
-  }
-  .opt-btn{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    padding:14px 6px;
-    border-radius:9px;
-    border:1px solid var(--line);
-    background:#0d0d0b;
-    color:var(--ink-dim);
-    cursor:pointer;
-    font-size:11.5px;
-    font-family:'Inter', sans-serif;
-    transition:all 0.15s ease;
-  }
-  .opt-btn:hover{border-color:var(--ink-dim); color:var(--ink);}
-  .opt-btn.active{border-color:var(--gold); color:var(--gold); background:rgba(199,161,94,0.08);}
-  .opt-btn .ratio-icon{border:1.5px solid currentColor; border-radius:2px;}
-  .opt-btn[data-ratio="1:1"] .ratio-icon{width:20px; height:20px;}
-  .opt-btn[data-ratio="3:4"] .ratio-icon{width:16px; height:20px;}
-  .opt-btn[data-ratio="4:3"] .ratio-icon{width:20px; height:16px;}
-  .opt-btn[data-ratio="9:16"] .ratio-icon{width:12px; height:20px;}
-  .opt-btn[data-ratio="16:9"] .ratio-icon{width:22px; height:13px;}
-  .opt-btn[data-ratio="custom"] .ratio-icon{width:16px; height:16px; border-style:dashed;}
-
-  .count-row{display:flex; gap:8px;}
-  .count-btn{
-    flex:1;
-    padding:12px;
-    border-radius:9px;
-    border:1px solid var(--line);
-    background:#0d0d0b;
-    color:var(--ink-dim);
-    cursor:pointer;
-    font-family:'Inter', sans-serif;
-    font-size:13px;
-    font-weight:600;
-  }
-  .count-btn:hover{border-color:var(--ink-dim); color:var(--ink);}
-  .count-btn.active{border-color:var(--gold); color:var(--gold); background:rgba(199,161,94,0.08);}
-
-  .model-select-wrap{position:relative;}
-  .model-select-btn{
-    width:100%;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:13px 14px;
-    border-radius:9px;
-    border:1px solid var(--line);
-    background:#0d0d0b;
-    color:var(--ink);
-    cursor:pointer;
-    font-family:'Inter', sans-serif;
-    font-size:13.5px;
-  }
-  .model-select-btn:hover{border-color:var(--ink-dim);}
-  .model-current{display:flex; align-items:center; gap:10px;}
-  .model-badge-new{
-    font-size:10px;
-    font-weight:700;
-    color:#0A0A09;
-    background:var(--gold);
-    padding:2px 7px;
-    border-radius:10px;
-  }
-  .model-desc{font-size:11.5px; color:var(--ink-dim); margin-top:7px; line-height:1.5;}
-  .model-menu{
-    position:absolute;
-    top:calc(100% + 6px);
-    left:0; right:0;
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:9px;
-    padding:6px;
-    display:none;
-    flex-direction:column;
-    z-index:30;
-    max-height:260px;
-    overflow-y:auto;
-  }
-  .model-menu.open{display:flex;}
-  .model-option{
-    display:flex;
-    flex-direction:column;
-    gap:2px;
-    text-align:left;
-    background:none;
-    border:none;
-    padding:10px 12px;
-    border-radius:6px;
-    cursor:pointer;
-    font-family:'Inter', sans-serif;
-    width:100%;
-  }
-  .model-option:hover{background:var(--bg);}
-  .model-option .m-name{font-size:13px; color:var(--ink); font-weight:500; display:flex; align-items:center; gap:8px;}
-  .model-option .m-desc{font-size:11px; color:var(--ink-dim);}
-
-  .accordion{border-top:1px solid var(--line); padding-top:6px;}
-  .acc-item{border-bottom:1px solid var(--line);}
-  .acc-item:last-child{border-bottom:none;}
-  .acc-trigger{
-    width:100%;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    background:none;
-    border:none;
-    padding:14px 2px;
-    cursor:pointer;
-    color:var(--ink);
-    font-size:13.5px;
-    font-weight:600;
-    font-family:'Inter', sans-serif;
-  }
-  .acc-trigger .acc-right{display:flex; align-items:center; gap:10px;}
-  .acc-trigger .acc-count{
-    font-size:11px;
-    color:var(--gold);
-    background:rgba(199,161,94,0.12);
-    padding:2px 8px;
-    border-radius:10px;
-    display:none;
-  }
-  .acc-trigger .acc-count.show{display:inline-block;}
-  .acc-chev{color:var(--ink-dim); font-size:11px; transition:transform 0.15s ease;}
-  .acc-panel{display:none; padding:0 2px 18px;}
-  .acc-panel.open{display:block;}
-  .acc-trigger.open .acc-chev{transform:rotate(180deg);}
-
-  .chip-multi{display:flex; flex-wrap:wrap; gap:8px;}
-  .chip-multi .chip{
-    font-family:'Inter', sans-serif;
-    font-size:12px;
-    padding:8px 14px;
-    border-radius:20px;
-    border:1px solid var(--line);
-    background:transparent;
-    color:var(--ink-dim);
-    cursor:pointer;
-  }
-  .chip-multi .chip:hover{border-color:var(--ink-dim); color:var(--ink);}
-  .chip-multi .chip.active{background:var(--gold); border-color:var(--gold); color:#0A0A09; font-weight:500;}
-
-  .ref-upload-box{
-    border:1.5px dashed var(--line);
-    border-radius:9px;
-    padding:18px;
-    text-align:center;
-    cursor:pointer;
-    color:var(--ink-dim);
-    font-size:12px;
-    position:relative;
-    min-height:100px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-  .ref-upload-box:hover{border-color:var(--gold);}
-  .ref-upload-box img{max-height:180px; width:100%; object-fit:cover; border-radius:6px; display:none;}
-  .ref-upload-box.has-img{border-style:solid; padding:0;}
-  .ref-remove-btn{
-    position:absolute; top:8px; right:8px;
-    width:24px; height:24px; border-radius:50%;
-    background:rgba(10,10,9,0.75); border:1px solid var(--line);
-    color:var(--ink); display:none; align-items:center; justify-content:center;
-    font-size:11px; cursor:pointer; z-index:2;
-  }
-
-  .char-list{display:flex; flex-direction:column; gap:12px;}
-  .char-row{
-    display:flex;
-    gap:10px;
-    align-items:center;
-    background:#0d0d0b;
-    border:1px solid var(--line);
-    border-radius:9px;
-    padding:12px;
-  }
-  .char-thumb{
-    width:52px; height:52px;
-    flex-shrink:0;
-    border-radius:7px;
-    border:1px dashed var(--line);
-    background:var(--surface);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:var(--ink-dim);
-    font-size:16px;
-    cursor:pointer;
-    overflow:hidden;
-  }
-  .char-thumb img{width:100%; height:100%; object-fit:cover;}
-  .char-fields{flex:1; display:flex; flex-direction:column; gap:6px; min-width:0;}
-  .char-fields input{
-    width:100%;
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:6px;
-    padding:8px 10px;
-    color:var(--ink);
-    font-size:12.5px;
-    font-family:'Inter', sans-serif;
-  }
-  .char-fields input:focus{outline:none; border-color:var(--gold);}
-  .char-remove{
-    width:26px; height:26px;
-    border-radius:50%;
-    border:1px solid var(--line);
-    background:transparent;
-    color:var(--ink-dim);
-    cursor:pointer;
-    flex-shrink:0;
-    font-size:12px;
-  }
-  .char-remove:hover{border-color:#C77B62; color:#C77B62;}
-  .add-char-btn{
-    width:100%;
-    padding:11px;
-    border-radius:8px;
-    border:1px dashed var(--line);
-    background:transparent;
-    color:var(--ink-dim);
-    cursor:pointer;
-    font-size:12.5px;
-    font-family:'Inter', sans-serif;
-  }
-  .add-char-btn:hover{border-color:var(--gold); color:var(--gold);}
-  .add-char-btn:disabled{opacity:0.4; cursor:not-allowed;}
-
-  .gen-submit-btn{
-    width:100%;
-    padding:15px;
-    border-radius:9px;
-    border:none;
-    background:var(--gold);
-    color:#0A0A09;
-    font-family:'Inter', sans-serif;
-    font-weight:700;
-    font-size:14px;
-    cursor:pointer;
-  }
-  .gen-submit-btn:hover{opacity:0.88;}
-  .gen-submit-btn:disabled{opacity:0.4; cursor:not-allowed;}
-  .gen-quota-note{text-align:center; font-size:12px; color:var(--ink-dim);}
-
-  .gen-right-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-  }
-  .gen-right-title{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-size:15px;
-    font-weight:600;
-  }
-  .gen-count-badge{
-    font-size:11.5px;
-    color:var(--ink-dim);
-    background:var(--surface);
-    border:1px solid var(--line);
-    padding:2px 9px;
-    border-radius:10px;
-  }
-
-  .gen-canvas{
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:12px;
-    min-height:520px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:32px;
-  }
-  .gen-empty{
-    text-align:center;
-    max-width:340px;
-  }
-  .gen-empty-icon{
-    width:64px; height:64px;
-    margin:0 auto 20px;
-    border-radius:14px;
-    border:1.5px dashed var(--line);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:var(--ink-dim);
-    font-size:24px;
-  }
-  .gen-empty h3{
-    font-family:'Fraunces', serif;
-    font-size:19px;
-    font-weight:500;
-    color:var(--gold);
-    margin-bottom:8px;
-  }
-  .gen-empty p{font-size:13px; color:var(--ink-dim); line-height:1.6;}
-
-  .gen-results-grid{
-    width:100%;
-    display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(220px,1fr));
-    gap:14px;
-  }
-  .gen-tile{
-    position:relative;
-    border-radius:9px;
-    overflow:hidden;
-    background:#0d0d0b;
-    border:1px solid var(--line);
-    aspect-ratio:1/1;
-  }
-  .gen-tile img{width:100%; height:100%; object-fit:cover; display:block;}
-  .gen-tile.loading{display:flex; align-items:center; justify-content:center; color:var(--ink-dim); font-size:12px; text-align:center;}
-  .gen-tile-actions{
-    position:absolute;
-    bottom:8px; right:8px;
-    display:flex;
-    gap:6px;
-    opacity:0;
-    transition:opacity 0.15s ease;
-  }
-  .gen-tile:hover .gen-tile-actions{opacity:1;}
-
-  .gen-lower-banner{
-    max-width:1400px;
-    margin:0 auto;
-    padding:36px 32px 60px;
-  }
-
-  /* ---- AI Avatar / Karakter Oluşturucu ---- */
-  .field-group{display:flex; flex-direction:column; gap:6px;}
-  .field-row{display:flex; gap:12px;}
-  .field-row .field-group{flex:1; min-width:0;}
-  .field-label{font-size:12.5px; font-weight:600; color:var(--ink);}
-  .field-input, .select-input{
-    width:100%;
-    background:#0d0d0b;
-    border:1px solid var(--line);
-    border-radius:8px;
-    padding:11px 12px;
-    color:var(--ink);
-    font-family:'Inter', sans-serif;
-    font-size:13px;
-  }
-  .field-input:focus, .select-input:focus{outline:none; border-color:var(--gold);}
-  .field-input::placeholder{color:var(--ink-dim);}
-  .select-input{cursor:pointer;}
-  .select-input option{background:var(--surface); color:var(--ink);}
-
-  .gender-row{display:flex; gap:8px;}
-  .gender-btn{
-    flex:1;
-    padding:12px;
-    border-radius:9px;
-    border:1px solid var(--line);
-    background:#0d0d0b;
-    color:var(--ink-dim);
-    cursor:pointer;
-    font-size:13px;
-    font-family:'Inter', sans-serif;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:6px;
-  }
-  .gender-btn:hover{border-color:var(--ink-dim); color:var(--ink);}
-  .gender-btn.active{border-color:var(--gold); color:var(--gold); background:rgba(199,161,94,0.08); font-weight:600;}
-
-  .swatch-row{display:flex; gap:9px; flex-wrap:wrap;}
-  .swatch{
-    width:30px; height:30px;
-    border-radius:50%;
-    border:2px solid var(--line);
-    cursor:pointer;
-    flex-shrink:0;
-    padding:0;
-  }
-  .swatch.active{border-color:var(--gold); box-shadow:0 0 0 3px rgba(199,161,94,0.25);}
-
-  .avatar-panel-title{
-    font-family:'Fraunces', serif;
-    font-size:15.5px;
-    margin-bottom:2px;
-  }
-
-  .sheet-panel{
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:12px;
-    padding:22px;
-  }
-  .sheet-panel + .sheet-panel{margin-top:16px;}
-
-  .sheet-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:16px;
-    flex-wrap:wrap;
-    gap:10px;
-  }
-  .sheet-title{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-size:15px;
-    font-weight:600;
-  }
-  .sheet-title .new-badge{
-    font-size:10px;
-    font-weight:700;
-    color:#0A0A09;
-    background:var(--gold);
-    padding:2px 8px;
-    border-radius:10px;
-  }
-  .sheet-actions{display:flex; gap:8px; flex-wrap:wrap;}
-  .sheet-actions .btn{padding:10px 16px; font-size:12.5px;}
-
-  .sheet-grid{display:grid; grid-template-columns:280px 1fr; gap:16px;}
-  @media (max-width:900px){ .sheet-grid{grid-template-columns:1fr;} }
-
-  .sheet-block-label{
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:0.06em;
-    color:var(--ink-dim);
-    margin-bottom:8px;
-  }
-  .sheet-portrait{
-    border-radius:10px;
-    overflow:hidden;
-    background:#0d0d0b;
-    border:1px solid var(--line);
-    aspect-ratio:3/4;
-  }
-  .sheet-portrait img{width:100%; height:100%; object-fit:cover; display:block;}
-
-  .sheet-views-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:10px;}
-  @media (max-width:700px){ .sheet-views-grid{grid-template-columns:repeat(2,1fr);} }
-  .sheet-view-item{background:#0d0d0b; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
-  .sheet-view-item img{width:100%; aspect-ratio:3/4; object-fit:cover; display:block;}
-  .sheet-view-item span{display:block; text-align:center; font-size:10px; letter-spacing:0.04em; text-transform:uppercase; color:var(--ink-dim); padding:7px 4px;}
-
-  .sheet-strip-block{margin-top:20px;}
-  .sheet-strip{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
-  @media (max-width:600px){ .sheet-strip{grid-template-columns:repeat(2,1fr);} }
-  .sheet-strip-item{background:#0d0d0b; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
-  .sheet-strip-item img{width:100%; aspect-ratio:1/1; object-fit:cover; display:block;}
-  .sheet-strip-item span{display:block; text-align:center; font-size:10px; text-transform:uppercase; letter-spacing:0.03em; color:var(--ink-dim); padding:6px 4px;}
-
-  .sheet-palette{display:flex; gap:8px; flex-wrap:wrap;}
-  .sheet-palette .swatch-dot{width:32px; height:32px; border-radius:8px; border:1px solid var(--line); flex-shrink:0;}
-
-  .sheet-info-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px 24px;}
-  @media (max-width:500px){ .sheet-info-grid{grid-template-columns:1fr;} }
-  .sheet-info-item dt{font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-dim); margin-bottom:3px;}
-  .sheet-info-item dd{font-size:13px; color:var(--ink);}
-
-  .sheet-uses{display:flex; flex-wrap:wrap; gap:8px;}
-
-  .avatar-empty-sheet{
-    text-align:center;
-    padding:80px 20px;
-    color:var(--ink-dim);
-  }
-  .avatar-empty-sheet .gen-empty-icon{margin:0 auto 20px;}
-  .avatar-empty-sheet h3{
-    font-family:'Fraunces', serif;
-    font-size:19px;
-    font-weight:500;
-    color:var(--gold);
-    margin-bottom:8px;
-  }
-  .avatar-empty-sheet p{font-size:13px; color:var(--ink-dim); line-height:1.6; max-width:340px; margin:0 auto;}
-
-  .save-login-hint{
-    font-size:11.5px;
-    color:var(--ink-dim);
-    text-align:right;
-  }
-</style>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-</head>
-<body>
-
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="mark"><span class="mark-jg">JG</span> Studio</div>
-
-    <div class="search-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="searchInput" placeholder="Arama yapın (ör. minimalist çanta, street style...)" oninput="onSearchInput(this.value)">
-    </div>
-
-    <button class="icon-square-btn" id="sidebarToggleBtn" title="Filtreler" onclick="toggleSidebar()">
-      <svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-    </button>
-
-    <button class="icon-square-btn" id="densityToggleBtn" title="Görünümü değiştir" onclick="toggleDensity()">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    </button>
-
-    <button class="icon-square-btn" title="Yenile" onclick="loadData()">
-      <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-    </button>
-
-    <div class="sort-wrap">
-      <button class="sort-btn" onclick="toggleSortMenu()"><span id="sortLabel">En yeni</span> ⌄</button>
-      <div class="sort-menu" id="sortMenu">
-        <button id="sortNewestBtn" class="active" onclick="setSort('newest')">En yeni</button>
-        <button id="sortOldestBtn" onclick="setSort('oldest')">En eski</button>
-      </div>
-    </div>
-
-    <span class="free-pill" id="freePill">⚡ <span id="freePillText"></span></span>
-
-    <button class="upload-cta" onclick="triggerUploadFlow()">+ Yükle</button>
-
-    <button class="bell-btn" title="Yakında aktif olacak" disabled>🔔</button>
-
-    <div id="authArea"></div>
-  </div>
-</header>
-
-<div class="tabbar">
-  <button class="tab-btn active" data-tab="gallery" onclick="switchTab('gallery')">Galeri</button>
-  <button class="tab-btn" data-tab="maker" onclick="switchTab('maker')">Prompt Üretici</button>
-  <button class="tab-btn" data-tab="visual" onclick="switchTab('visual')">Görsel Oluşturucu</button>
-  <button class="tab-btn" data-tab="avatar" onclick="switchTab('avatar')">AI Avatar / Karakter Oluşturucu</button>
-</div>
-
-<div id="galleryView" class="gallery-layout">
-
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-meta">
-      <span id="countLabel"></span>
-    </div>
-
-    <div class="sidebar-section">
-      <button class="sidebar-header" onclick="toggleSection('cat')">
-        <span>Kategoriler</span><span class="chev" id="catChev">⌄</span>
-      </button>
-      <div class="cat-list" id="catBody"></div>
-    </div>
-
-    <div class="sidebar-section">
-      <button class="sidebar-header" onclick="toggleSection('tag')">
-        <span>Popüler Etiketler</span><span class="chev" id="tagChev">⌄</span>
-      </button>
-      <div id="tagBody">
-        <div class="tag-cloud" id="tagCloud"></div>
-        <button class="see-all-tags" id="seeAllTagsBtn" onclick="toggleAllTags()">Tüm etiketleri gör</button>
-      </div>
-    </div>
-
-    <div class="upgrade-card">
-      <div class="upgrade-icon">👑</div>
-      <div class="upgrade-title">Daha fazlasını keşfet</div>
-      <div class="upgrade-desc">Sınırsız kaydetme, gelişmiş filtreler ve daha fazlası için JG Plus'a yükseltin.</div>
-      <button class="upgrade-btn" title="Yakında aktif olacak" disabled>JG Plus'a yükselt</button>
-    </div>
-  </aside>
-
-  <div class="gallery-main">
-    <div class="status" id="status"></div>
-    <div class="masonry" id="grid"></div>
-  </div>
-
-</div>
-
-<div id="makerView" style="display:none">
-
-  <div class="maker-header">
-    <h1>Prompt Üretici</h1>
-    <p>Görselini yükle, stilini koruyarak ürününü sahneye yerleştirecek promptu senin için üretelim.</p>
-  </div>
-
-  <div class="maker-columns">
-
-    <div class="maker-col">
-      <div class="col-header"><span class="col-num">1</span> Görsel Yükle</div>
-
-      <div id="makerDropZone" class="upload-box" onclick="document.getElementById('makerFileInput').click()" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleMakerDrop(event)">
-        <img id="makerPreview" alt="yüklenen görsel">
-        <button class="remove-img-btn" id="removeImgBtn" onclick="event.stopPropagation(); resetMaker()">✕</button>
-        <div class="drop-placeholder" id="makerPlaceholder">Bir görsel sürükle ya da tıklayıp seç</div>
-      </div>
-      <input type="file" id="makerFileInput" accept="image/*" style="display:none" onchange="handleMakerFile(event)">
-
-      <button class="btn" style="width:100%" onclick="document.getElementById('makerFileInput').click()">⭱ Görseli Değiştir</button>
-    </div>
-
-    <div class="maker-arrow">→</div>
-
-    <div class="maker-col">
-      <div class="col-header-row">
-        <div class="col-header"><span class="col-num">2</span> Prompt Oluştur</div>
-        <button class="btn primary" id="makerGenerateBtn" onclick="generatePrompt()" disabled>✨ Prompt Oluştur</button>
-      </div>
-
-      <div class="maker-status" id="makerStatus"></div>
-
-      <div class="result-label">Oluşturulan Prompt</div>
-      <div class="result-box empty-state" id="makerResultBox">
-        <span id="makerEmptyMsg">Prompt üretildiğinde burada görünecek.</span>
-      </div>
-
-      <div class="result-actions">
-        <button class="btn primary" id="makerCopyBtn" onclick="copyMakerPrompt()" disabled>Kopyala</button>
-        <button class="btn" id="makerDownloadBtn" onclick="downloadMakerPrompt()" disabled>⬇ İndir (.txt)</button>
-      </div>
-
-      <div class="tip-box">
-        <span class="tip-icon">💡</span>
-        <div>
-          <strong>İpucu</strong>
-          Daha iyi sonuçlar için görselinizin net, iyi ışıklandırılmış ve ürünün detaylarını gösteren bir açıdan olması önerilir.
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="maker-features">
-    <div class="feature">
-      <span class="feature-icon">🛡️</span>
-      <div>
-        <strong>Güvenli & Gizli</strong>
-        <p>Yüklediğiniz görseller sadece sizin tarafınızdan görülebilir ve işlenir.</p>
-      </div>
-    </div>
-    <div class="feature">
-      <span class="feature-icon">⚡</span>
-      <div>
-        <strong id="featureFreeTitle">3 Ücretsiz Hakkınız Var</strong>
-        <p>Her gün 3 adet ücretsiz prompt oluşturabilirsiniz.</p>
-      </div>
-    </div>
-    <div class="feature">
-      <span class="feature-icon">🕐</span>
-      <div>
-        <strong>Günlük Sıfırlanır</strong>
-        <p>Haklarınız her gün 00:00'da yenilenir.</p>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<div id="visualView" style="display:none">
-
-  <div class="gen-header">
-    <h1>Görsel Oluşturucu</h1>
-    <p>Promptunu yaz, ayarlarını seç ve hayalindeki görseli yapay zeka ile birkaç saniyede oluştur.</p>
-  </div>
-
-  <div class="gen-layout">
-
-    <div class="gen-left">
-
-      <div>
-        <div class="gen-block-label">Prompt</div>
-        <div class="gen-block-hint">Ne görmek istersiniz? Detaylı yazmanız daha iyi sonuçlar verir.</div>
-        <textarea class="gen-textarea" id="genPromptInput" maxlength="2000" placeholder="Örn. Gün batımında sahilde yürüyen bir kadın, sinematik, warm tones..." oninput="onGenPromptInput()"></textarea>
-        <div class="gen-textarea-toolbar">
-          <div class="chip-btn-row">
-            <button type="button" class="chip-btn" onclick="suggestGenPrompt()">✨ Öneri Al</button>
-            <button type="button" class="chip-btn" onclick="usePromptFromMaker()">⭱ Prompt Üretici'den Al</button>
-          </div>
-          <span class="char-count" id="genCharCount">0 / 2000</span>
-        </div>
-      </div>
-
-      <div>
-        <div class="gen-block-label">Görsel Boyutu</div>
-        <div class="opt-grid" id="genSizeGrid">
-          <button type="button" class="opt-btn active" data-ratio="1:1" onclick="setGenSize('1:1', this)"><span class="ratio-icon"></span>1:1</button>
-          <button type="button" class="opt-btn" data-ratio="3:4" onclick="setGenSize('3:4', this)"><span class="ratio-icon"></span>3:4</button>
-          <button type="button" class="opt-btn" data-ratio="4:3" onclick="setGenSize('4:3', this)"><span class="ratio-icon"></span>4:3</button>
-          <button type="button" class="opt-btn" data-ratio="9:16" onclick="setGenSize('9:16', this)"><span class="ratio-icon"></span>9:16</button>
-          <button type="button" class="opt-btn" data-ratio="16:9" onclick="setGenSize('16:9', this)"><span class="ratio-icon"></span>16:9</button>
-          <button type="button" class="opt-btn" data-ratio="custom" onclick="setGenSize('custom', this)"><span class="ratio-icon"></span>Özel</button>
-        </div>
-      </div>
-
-      <div>
-        <div class="gen-block-label">Görsel Adeti</div>
-        <div class="count-row" id="genCountRow">
-          <button type="button" class="count-btn" onclick="setGenCount(1, this)">1</button>
-          <button type="button" class="count-btn" onclick="setGenCount(2, this)">2</button>
-          <button type="button" class="count-btn active" onclick="setGenCount(4, this)">4</button>
-          <button type="button" class="count-btn" onclick="setGenCount(8, this)">8</button>
-        </div>
-      </div>
-
-      <div>
-        <div class="gen-block-label">Kullanılan AI</div>
-        <div class="model-select-wrap">
-          <button type="button" class="model-select-btn" onclick="toggleModelMenu()">
-            <span class="model-current"><span id="genModelIcon">🎨</span> <span id="genModelName">DALL·E 3</span> <span class="model-badge-new" id="genModelBadge">New</span></span>
-            <span>⌄</span>
-          </button>
-          <div class="model-menu" id="genModelMenu"></div>
-        </div>
-        <div class="model-desc" id="genModelDesc">Daha yüksek kalite ve detay için en iyi seçim.</div>
-      </div>
-
-      <div class="accordion">
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" onclick="toggleAcc('camera')">
-            <span>📷 Kamera Açısı</span>
-            <span class="acc-right"><span class="acc-count" id="cameraAccCount"></span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="cameraAccPanel">
-            <div class="chip-multi" id="cameraChips"></div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" onclick="toggleAcc('effects')">
-            <span>✨ Efektler</span>
-            <span class="acc-right"><span class="acc-count" id="effectsAccCount"></span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="effectsAccPanel">
-            <div class="chip-multi" id="effectsChips"></div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" onclick="toggleAcc('poses')">
-            <span>🧍 Pozlar</span>
-            <span class="acc-right"><span class="acc-count" id="posesAccCount"></span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="posesAccPanel">
-            <div class="chip-multi" id="posesChips"></div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" onclick="toggleAcc('style')">
-            <span>🎬 Görsel Türü</span>
-            <span class="acc-right"><span class="acc-count" id="styleAccCount"></span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="styleAccPanel">
-            <div class="chip-multi" id="styleChips"></div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" onclick="toggleAcc('ref')">
-            <span>🖼 Referans Görsel</span>
-            <span class="acc-right"><span class="optional-badge">İsteğe bağlı</span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="refAccPanel">
-            <div class="gen-block-hint">Benzetmek istediğiniz bir görsel, kişi ya da sahne varsa ekleyin.</div>
-            <div class="ref-upload-box" id="refUploadBox" onclick="document.getElementById('refFileInput').click()">
-              <img id="refPreviewImg" alt="referans">
-              <button type="button" class="ref-remove-btn" id="refRemoveBtn" onclick="event.stopPropagation(); removeRefImage()">✕</button>
-              <span id="refPlaceholder">Görsel yüklemek için tıklayın</span>
-            </div>
-            <input type="file" id="refFileInput" accept="image/*" style="display:none" onchange="handleRefFile(event)">
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" onclick="toggleAcc('char')">
-            <span>👤 Karakter Ekle</span>
-            <span class="acc-right"><span class="optional-badge">İsteğe bağlı</span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="charAccPanel">
-            <div class="gen-block-hint">Görsele eklemek istediğiniz karakterleri tanımlayın; isteğe bağlı özel isim ve referans görsel verebilirsiniz.</div>
-            <div class="char-list" id="charList"></div>
-            <button type="button" class="add-char-btn" id="addCharBtn" onclick="addCharacterRow()" style="margin-top:10px;">+ Karakter Ekle</button>
-          </div>
-        </div>
-
-      </div>
-
-      <button type="button" class="gen-submit-btn" id="genSubmitBtn" onclick="generateVisual()" disabled>✨ Görseli Oluştur</button>
-      <div class="gen-quota-note" id="genQuotaNote">5 görsel hakkınız kaldı (24 saatte yenilenir)</div>
-
-    </div>
-
-    <div class="gen-right">
-      <div class="gen-right-header">
-        <div class="gen-right-title">Oluşturulan Görseller <span class="gen-count-badge" id="genResultCount">0</span></div>
-        <button class="btn" disabled title="Yakında aktif olacak">🕐 Geçmişi Gör</button>
-      </div>
-
-      <div class="gen-canvas" id="genCanvas">
-        <div class="gen-empty" id="genEmptyState">
-          <div class="gen-empty-icon">🖼</div>
-          <h3>İlk görselini oluştur</h3>
-          <p>Promptunu yaz, ayarlarını seç ve hayalindeki görseli gerçeğe dönüştür.</p>
-        </div>
-        <div class="gen-results-grid" id="genResultsGrid" style="display:none"></div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="gen-lower-banner">
-    <div class="maker-features" style="max-width:none; margin:0; padding:32px 0 0; border-top:1px solid var(--line);">
-      <div class="feature">
-        <span class="feature-icon">👑</span>
-        <div>
-          <strong>Daha fazlasını istiyorsan, JG Plus tam sana göre!</strong>
-          <p>Günlük 100 görsel üretme hakkı ve daha hızlı oluşturma önceliği.</p>
-        </div>
-      </div>
-      <div class="feature">
-        <span class="feature-icon">⚡</span>
-        <div>
-          <strong>Yüksek Çözünürlük</strong>
-          <p>Plus üyeler tüm gelişmiş AI modelleriyle yüksek çözünürlüklü indirme yapabilir.</p>
-        </div>
-      </div>
-      <div class="feature" style="align-items:center;">
-        <button class="upgrade-btn" style="width:auto; padding:12px 22px; white-space:nowrap;" title="Yakında aktif olacak" disabled>👑 JG Plus'a yükselt</button>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<div id="avatarView" style="display:none">
-
-  <div class="gen-header">
-    <h1>AI Avatar / Karakter Oluşturucu</h1>
-    <p>Karakterinin özelliklerini tanımla, istersen bir referans görsel ekle; portreden tam vücut görünümlerine kadar eksiksiz bir karakter sheet'i senin için oluşturalım.</p>
-  </div>
-
-  <div class="gen-layout">
-
-    <div class="gen-left">
-
-      <div>
-        <div class="avatar-panel-title">Karakter Bilgileri</div>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Cinsiyet</div>
-        <div class="gender-row" id="avatarGenderRow">
-          <button type="button" class="gender-btn active" onclick="setAvatarGender('Kadın', this)">♀ Kadın</button>
-          <button type="button" class="gender-btn" onclick="setAvatarGender('Erkek', this)">♂ Erkek</button>
-          <button type="button" class="gender-btn" onclick="setAvatarGender('Diğer', this)">⚧ Diğer</button>
-        </div>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Ad <span class="optional-badge">(isteğe bağlı)</span></div>
-        <input type="text" class="field-input" id="avatarNameInput" placeholder="Örn. Elara" maxlength="40">
-      </div>
-
-      <div class="field-row">
-        <div class="field-group">
-          <div class="field-label">Yaş</div>
-          <input type="number" class="field-input" id="avatarAgeInput" placeholder="28" min="1" max="99">
-        </div>
-        <div class="field-group">
-          <div class="field-label">Boy (cm)</div>
-          <input type="number" class="field-input" id="avatarHeightInput" placeholder="168" min="100" max="230">
-        </div>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Irk / Köken</div>
-        <select class="select-input" id="avatarEthnicitySelect">
-          <option>Avrupa - Akdeniz</option>
-          <option>Avrupa - Kuzey</option>
-          <option>Asya - Doğu</option>
-          <option>Asya - Güney</option>
-          <option>Orta Doğu</option>
-          <option>Afrika</option>
-          <option>Latin Amerika</option>
-          <option>Karma</option>
-        </select>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Ten Rengi</div>
-        <div class="swatch-row" id="avatarSkinRow"></div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-group">
-          <div class="field-label">Saç Rengi</div>
-          <select class="select-input" id="avatarHairColorSelect">
-            <option>Siyah</option>
-            <option>Koyu Kahverengi</option>
-            <option>Açık Kahverengi</option>
-            <option>Kumral</option>
-            <option>Sarı</option>
-            <option>Kızıl</option>
-            <option>Gri / Beyaz</option>
-            <option>Renkli</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <div class="field-label">Saç Tipi</div>
-          <select class="select-input" id="avatarHairTypeSelect">
-            <option>Düz</option>
-            <option>Dalgalı</option>
-            <option>Kıvırcık</option>
-            <option>Afro</option>
-            <option>Kısa</option>
-            <option>Uzun</option>
-            <option>Örgülü</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-group">
-          <div class="field-label">Göz Rengi</div>
-          <select class="select-input" id="avatarEyeColorSelect">
-            <option>Kahverengi</option>
-            <option>Ela</option>
-            <option>Yeşil</option>
-            <option>Mavi</option>
-            <option>Gri</option>
-            <option>Siyah</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <div class="field-label">Vücut Yapısı</div>
-          <select class="select-input" id="avatarBodyTypeSelect">
-            <option>İnce / Atletik</option>
-            <option>Ortalama</option>
-            <option>Kaslı</option>
-            <option>Dolgun</option>
-            <option>Uzun / İnce</option>
-            <option>Kısa / Tıknaz</option>
-          </select>
-        </div>
-      </div>
-
-      <div>
-        <div class="gen-block-label">Görsel Üretim Servisi</div>
-        <div class="model-select-wrap" id="avatarProviderWrap">
-          <button type="button" class="model-select-btn" onclick="toggleAvatarProviderMenu()">
-            <span class="model-current"><span id="avatarProviderIcon">✨</span> <span id="avatarProviderName">Gemini (Ücretsiz)</span> <span class="model-badge-new" id="avatarProviderBadge">Free</span></span>
-            <span>⌄</span>
-          </button>
-          <div class="model-menu" id="avatarProviderMenu"></div>
-        </div>
-        <div class="model-desc" id="avatarProviderDesc"></div>
-      </div>
-
-      <div class="accordion">
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" onclick="toggleAcc('face')">
-            <span>😊 Yüz Detayları</span>
-            <span class="acc-right"><span class="acc-count" id="faceAccCount"></span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="faceAccPanel">
-            <div class="chip-multi" id="faceChips"></div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" onclick="toggleAcc('avstyle')">
-            <span>👗 Stil & Giyim</span>
-            <span class="acc-right"><span class="acc-count" id="avstyleAccCount"></span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="avstyleAccPanel">
-            <div class="chip-multi" id="avstyleChips"></div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" onclick="toggleAcc('personality')">
-            <span>🧠 Kişilik & Özellikler</span>
-            <span class="acc-right"><span class="acc-count" id="personalityAccCount"></span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="personalityAccPanel">
-            <div class="chip-multi" id="personalityChips"></div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" onclick="toggleAcc('otherdetail')">
-            <span>📌 Diğer Detaylar</span>
-            <span class="acc-right"><span class="optional-badge">İsteğe bağlı</span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="otherdetailAccPanel">
-            <div class="gen-block-hint">Meslek, ilgi alanı veya karaktere özgü ek detaylar seçebilirsiniz.</div>
-            <div class="chip-multi" id="otherdetailChips"></div>
-            <div class="field-group" style="margin-top:12px;">
-              <div class="field-label">Ek notlar</div>
-              <textarea class="gen-textarea" id="avatarExtraNotes" style="min-height:70px;" maxlength="400" placeholder="Karakterle ilgili eklemek istediğin başka bir detay varsa buraya yaz..."></textarea>
-            </div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" onclick="toggleAcc('avref')">
-            <span>🖼 Referans Görsel</span>
-            <span class="acc-right"><span class="optional-badge">İsteğe bağlı</span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="avrefAccPanel">
-            <div class="gen-block-hint">Benzetmek istediğin gerçek ya da hayali bir karakter görseli varsa ekle; en ince detaylarına kadar incelenir.</div>
-            <div class="ref-upload-box" id="avatarRefUploadBox" onclick="document.getElementById('avatarRefFileInput').click()">
-              <img id="avatarRefPreviewImg" alt="referans">
-              <button type="button" class="ref-remove-btn" id="avatarRefRemoveBtn" onclick="event.stopPropagation(); removeAvatarRefImage()">✕</button>
-              <span id="avatarRefPlaceholder">Görsel yüklemek için tıklayın</span>
-            </div>
-            <input type="file" id="avatarRefFileInput" accept="image/*" style="display:none" onchange="handleAvatarRefFile(event)">
-          </div>
-        </div>
-
-      </div>
-
-      <button type="button" class="gen-submit-btn" id="avatarSubmitBtn" onclick="generateCharacter()">✨ Karakter Oluştur</button>
-      <div class="gen-quota-note" id="avatarQuotaNote"></div>
-
-    </div>
-
-    <div class="gen-right">
-      <div class="gen-right-header">
-        <div class="gen-right-title">Karakter Sheet</div>
-        <button class="btn" disabled title="Yakında aktif olacak">🕐 Geçmişi Gör</button>
-      </div>
-
-      <div class="gen-canvas" id="avatarCanvas" style="align-items:stretch; min-height:auto;">
-        <div class="avatar-empty-sheet" id="avatarEmptyState" style="margin:auto;">
-          <div class="gen-empty-icon">🧬</div>
-          <h3>İlk karakterini oluştur</h3>
-          <p>Soldaki bilgileri doldur, "Karakter Oluştur" butonuna bas; portre, tam vücut görünümleri ve yüz/saç detaylarıyla eksiksiz bir sheet burada belirecek.</p>
-        </div>
-
-        <div id="avatarSheetResult" style="display:none; width:100%;">
-
-          <div class="sheet-panel">
-            <div class="sheet-header">
-              <div class="sheet-title">Oluşturulan Karakter Sheet <span class="new-badge">Yeni</span></div>
-              <div class="sheet-actions">
-                <button class="btn" onclick="downloadCharacterSheet()">⬇ Tümünü İndir</button>
-                <button class="btn" onclick="shareCharacterSheet()">⇗ Paylaş</button>
-                <button class="btn" id="avatarSaveBtn" disabled title="Yakında aktif olacak">💾 Profile Kaydet</button>
-              </div>
-            </div>
-
-            <div class="sheet-grid">
-              <div>
-                <div class="sheet-block-label">Portre</div>
-                <div class="sheet-portrait"><img id="sheetPortraitImg" alt="karakter portresi"></div>
-              </div>
-              <div>
-                <div class="sheet-block-label">Görünümler</div>
-                <div class="sheet-views-grid" id="sheetViewsGrid"></div>
-              </div>
-            </div>
-
-            <div class="sheet-strip-block">
-              <div class="sheet-block-label">Yüz Detayları</div>
-              <div class="sheet-strip" id="sheetFaceStrip"></div>
-            </div>
-
-            <div class="sheet-strip-block">
-              <div class="sheet-block-label">Saç Detayları</div>
-              <div class="sheet-strip" id="sheetHairStrip"></div>
-            </div>
-
-            <div class="sheet-strip-block">
-              <div class="sheet-block-label">Renk Paleti</div>
-              <div class="sheet-palette" id="sheetPalette"></div>
-            </div>
-          </div>
-
-          <div class="sheet-panel" style="display:flex; gap:20px; flex-wrap:wrap;">
-            <div style="flex:1; min-width:240px;">
-              <div class="sheet-block-label">Karakter Bilgileri</div>
-              <dl class="sheet-info-grid" id="sheetInfoGrid"></dl>
-            </div>
-            <div style="flex:1; min-width:200px;">
-              <div class="sheet-block-label">Önerilen Kullanımlar</div>
-              <div class="sheet-uses" id="sheetUses"></div>
-              <div class="save-login-hint" id="avatarSaveHint" style="margin-top:14px;">Profile kaydetme yakında eklenecek. Şimdilik karakterini indirebilirsin.</div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="gen-lower-banner">
-    <div class="maker-features" style="max-width:none; margin:0; padding:32px 0 0; border-top:1px solid var(--line);">
-      <div class="feature">
-        <span class="feature-icon">🛡️</span>
-        <div>
-          <strong>Detaylı & Tutarlı</strong>
-          <p>Karakterin yüz, saç ve vücut detayları tüm görünümlerde tutarlı kalacak şekilde üretilir.</p>
-        </div>
-      </div>
-      <div class="feature">
-        <span class="feature-icon">⚡</span>
-        <div>
-          <strong>Günde 1 Ücretsiz Sheet</strong>
-          <p>24 saatte 1 adet karakter sheet'ini ücretsiz oluşturabilirsin.</p>
-        </div>
-      </div>
-      <div class="feature" style="align-items:center;">
-        <button class="upgrade-btn" style="width:auto; padding:12px 22px; white-space:nowrap;" title="Yakında aktif olacak" disabled>👑 JG Plus'a yükselt</button>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this) closeModal()">
-  <div class="modal">
-    <div class="modal-img-wrap">
-      <img id="modalImg" src="" alt="referans görsel">
-    </div>
-    <div class="modal-body">
-      <div class="modal-eyebrow" id="modalDate"></div>
-      <div class="modal-tags" id="modalTags"></div>
-
-      <div id="promptSection" style="display:flex; flex-direction:column; flex:1;">
-        <div class="modal-prompt" id="modalPrompt"></div>
-        <div class="modal-actions">
-          <button class="btn" onclick="closeModal()">← Geri</button>
-          <button class="btn primary" id="copyBtn" onclick="copyPrompt()">Kopyala</button>
-        </div>
-      </div>
-
-      <div id="paywallSection" style="display:none; flex-direction:column; flex:1; justify-content:center;">
-        <div id="paywallPanel" style="display:flex; flex-direction:column;">
-          <div class="paywall-title">Bu prompt kilitli</div>
-          <div class="paywall-desc">Bu prompt premium arşivin bir parçası. Şu an için sadece koduna sahip olanlar açabilir.</div>
-          <div class="paywall-actions">
-            <button class="btn" disabled title="Yakında aktif olacak">Bu prompt için öde <span class="btn-soon-label">(yakında)</span></button>
-            <button class="btn" disabled title="Yakında aktif olacak">Premium üyeliğe kaydol <span class="btn-soon-label">(yakında)</span></button>
-            <button class="btn primary" onclick="showCodePanel()">Bu prompt'a sahip ol</button>
-            <button class="btn" onclick="closeModal()">Geri</button>
-          </div>
-        </div>
-
-        <div id="codePanel" style="display:none; flex-direction:column;">
-          <div class="paywall-title">Bu prompt'a sahip ol</div>
-          <div class="paywall-desc">
-            Aşağıdaki IBAN'a ödeme yaptıktan sonra dekontu WhatsApp'tan <strong>@kullaniciadi</strong> hesabına gönder. Sana bir kod ileteceğiz, o kodu aşağıya girip promptu açabilirsin.
-          </div>
-          <div class="paywall-desc" style="background:var(--surface); border:1px solid var(--line); border-radius:7px; padding:14px; margin-bottom:24px;">
-            <strong>Alıcı:</strong> [Ad Soyad]<br>
-            <strong>IBAN:</strong> TR00 0000 0000 0000 0000 0000 00<br>
-            <strong>Banka:</strong> [Banka Adı]<br>
-            <strong>Tutar:</strong> [Fiyat]
-          </div>
-          <div class="paywall-title" style="font-size:15px;">Kodun var mı?</div>
-          <div class="code-row">
-            <input type="text" id="codeInput" placeholder="Örn. AB12CD" maxlength="24" onkeydown="if(event.key==='Enter') submitCode()">
-            <button class="btn primary" onclick="submitCode()">Doğrula</button>
-          </div>
-          <div class="code-msg" id="codeMsg"></div>
-          <button class="btn" style="margin-top:16px" onclick="showPaywallActions()">← Geri</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-const SHEET_ID = '1-n0pVWWzNKKodfB9TVXKC7hpQfJDPO_ZtzFE6gDqKBM';
-const SHEET_NAME = 'Sayfa1';
-const MAX_TOP_TAGS = 10;
-
-// n8n webhook URL'leri
-const PREMIUM_LIST_URL = 'https://jemghz.app.n8n.cloud/webhook/premium-list';
-const PREMIUM_VERIFY_URL = 'https://jemghz.app.n8n.cloud/webhook/verify-premium-code';
-const PROMPT_MAKER_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-prompt';
-const GEN_GENERATE_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-visual';
-const IMAGE_DAILY_LIMIT = 5;
-const CHARACTER_GENERATE_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-character';
-const CHARACTER_SAVE_URL = 'https://jemghz.app.n8n.cloud/webhook/save-character';
-const CHARACTER_DAILY_LIMIT = 1;
-
-let allRows = [];
-let visibleRows = [];
-let activeCategory = null;
-let activeTag = null;
-let currentModalRow = null;
-let makerImageBase64 = null;
-let makerImageMime = null;
-let makerGeneratedPrompt = '';
-
-// Yeni: arama / sıralama / yoğunluk / etiket listesi
-let searchTerm = '';
-let sortOrder = 'newest';
-let showAllTags = false;
-
-function setStatus(msg, isError){
-  const el = document.getElementById('status');
-  el.textContent = msg;
-  el.className = 'status show' + (isError ? ' error' : '');
-}
-function clearStatus(){
-  document.getElementById('status').className = 'status';
-}
-function escapeAttr(s){
-  return String(s).replace(/'/g, "\\'").replace(/"/g, '&quot;');
-}
-function escapeHtml(s){
-  const div = document.createElement('div');
-  div.textContent = s;
-  return div.innerHTML;
-}
-
-// n8n Respond to Webhook çıktısı her item'ı {"json": {...}} şeklinde sarmalıyor.
-// Bu yüzden ham veriden gerçek alanları çıkarmak için bu yardımcıyı kullanıyoruz.
-function unwrap(raw){
-  return raw && raw.json ? raw.json : raw;
-}
-
-async function fetchPublicRows(){
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
-  const res = await fetch(url);
-  if(!res.ok) throw new Error('Sheet okunamadı.');
-  const text = await res.text();
-  const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
-  const data = JSON.parse(jsonStr);
-
-  const rows = data.table.rows.map((r, i) => {
-    const cells = r.c.map(c => c ? (c.v ?? '') : '');
-    return {
-      id: 'pub_' + i,
-      tarih: cells[0] || '',
-      etiketler: cells[1] || '',
-      promptText: cells[2] || '',
-      gorselLink: cells[3] || '',
-      chatId: cells[4] || '',
-      kategori: (cells[5] || '').trim(),
-      isPremium: false
-    };
-  }).filter(r => r.promptText);
-
-  return rows.reverse();
-}
-
-async function fetchPremiumList(){
-  if(!PREMIUM_LIST_URL || PREMIUM_LIST_URL.includes('YOUR-N8N-URL')) return [];
-  try{
-    const res = await fetch(PREMIUM_LIST_URL);
-    if(!res.ok) throw new Error('premium liste okunamadı');
-    const data = await res.json();
-
-    return (Array.isArray(data) ? data : []).map(raw => {
-      const p = unwrap(raw);
-      return {
-        id: String(p.id ?? ''),
-        tarih: p.tarih || '',
-        etiketler: p.etiketler || '',
-        promptText: '',
-        gorselLink: p.gorselLink || '',
-        chatId: '',
-        kategori: (p.kategori || '').trim(),
-        isPremium: true
-      };
-    });
-  }catch(err){
-    console.warn('Premium liste alınamadı:', err.message);
-    return [];
-  }
-}
-
-async function loadData(){
-  setStatus('Yükleniyor...');
-  document.getElementById('grid').innerHTML = '';
-
-  try{
-    const [publicRows, premiumRows] = await Promise.all([fetchPublicRows(), fetchPremiumList()]);
-
-    allRows = [...publicRows, ...premiumRows];
-    sortOrder = 'newest';
-    applySortOrder();
-
-    activeCategory = null;
-    activeTag = null;
-    searchTerm = '';
-    document.getElementById('searchInput').value = '';
-    clearStatus();
-    document.getElementById('countLabel').textContent = allRows.length + ' kayıt';
-
-    if(allRows.length === 0){
-      document.getElementById('grid').innerHTML = '<div class="empty">Henüz kayıt yok. Bota bir görsel gönder, buraya düşer.</div>';
-      document.getElementById('catBody').innerHTML = '';
-      document.getElementById('tagCloud').innerHTML = '';
-      return;
-    }
-    renderFilters();
-    applyFiltersAndRender();
-  }catch(err){
-    setStatus('Hata: ' + err.message, true);
-  }
-}
-
-function applySortOrder(){
-  allRows.sort((a, b) => {
-    const da = new Date(a.tarih).getTime() || 0;
-    const db = new Date(b.tarih).getTime() || 0;
-    return sortOrder === 'newest' ? db - da : da - db;
-  });
-}
-
-function getCategoryCounts(){
-  const counts = {};
-  allRows.forEach(r => { if(r.kategori) counts[r.kategori] = (counts[r.kategori] || 0) + 1; });
-  return counts;
-}
-
-function getTagFrequency(){
-  const freq = {};
-  allRows.forEach(r => {
-    r.etiketler.split(',').map(t => t.trim()).filter(Boolean).forEach(t => {
-      freq[t] = (freq[t] || 0) + 1;
-    });
-  });
-  return Object.entries(freq).sort((a, b) => b[1] - a[1]);
-}
-
-function renderFilters(){
-  const counts = getCategoryCounts();
-  const categories = Object.keys(counts).sort();
-  const freq = getTagFrequency();
-  const tagsToShow = showAllTags ? freq : freq.slice(0, MAX_TOP_TAGS);
-
-  const catBody = document.getElementById('catBody');
-  let catHtml = `<button class="cat-item ${!activeCategory ? 'active' : ''}" onclick="setCategory(null)"><span>Tümü</span></button>`;
-  catHtml += categories.map(c => `
-    <button class="cat-item ${activeCategory === c ? 'active' : ''}" onclick="setCategory('${escapeAttr(c)}')">
-      <span>${escapeHtml(c)}</span><span class="cat-count">${counts[c]}</span>
-    </button>`).join('');
-  catBody.innerHTML = catHtml;
-
-  const tagCloud = document.getElementById('tagCloud');
-  tagCloud.innerHTML = tagsToShow.map(([t]) => `<button class="chip ${activeTag === t ? 'active' : ''}" onclick="setTag('${escapeAttr(t)}')">${escapeHtml(t)}</button>`).join('');
-
-  document.getElementById('seeAllTagsBtn').textContent = showAllTags ? 'Daha az göster' : 'Tüm etiketleri gör';
-}
-
-function setCategory(c){
-  activeCategory = c;
-  renderFilters();
-  applyFiltersAndRender();
-}
-
-function setTag(t){
-  activeTag = (activeTag === t) ? null : t;
-  renderFilters();
-  applyFiltersAndRender();
-}
-
-function toggleAllTags(){
-  showAllTags = !showAllTags;
-  renderFilters();
-}
-
-function onSearchInput(v){
-  searchTerm = v.trim().toLowerCase();
-  applyFiltersAndRender();
-}
-
-function toggleSortMenu(){
-  document.getElementById('sortMenu').classList.toggle('open');
-}
-function setSort(order){
-  sortOrder = order;
-  document.getElementById('sortLabel').textContent = order === 'newest' ? 'En yeni' : 'En eski';
-  document.getElementById('sortNewestBtn').classList.toggle('active', order === 'newest');
-  document.getElementById('sortOldestBtn').classList.toggle('active', order === 'oldest');
-  document.getElementById('sortMenu').classList.remove('open');
-  applySortOrder();
-  applyFiltersAndRender();
-}
-document.addEventListener('click', (e) => {
-  const wrap = document.querySelector('.sort-wrap');
-  if(wrap && !wrap.contains(e.target)) document.getElementById('sortMenu').classList.remove('open');
-});
-
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-}
-
-function toggleDensity(){
-  const grid = document.getElementById('grid');
-  const nowWide = grid.classList.toggle('wide');
-  document.getElementById('densityToggleBtn').classList.toggle('active', nowWide);
-}
-
-function toggleSection(key){
-  const body = document.getElementById(key + 'Body');
-  const chev = document.getElementById(key + 'Chev');
-  const isOpen = body.style.display !== 'none';
-  body.style.display = isOpen ? 'none' : (key === 'cat' ? 'flex' : 'block');
-  chev.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
-}
-
-function applyFiltersAndRender(){
-  visibleRows = allRows.filter(r => {
-    const matchesCategory = !activeCategory || r.kategori === activeCategory;
-    const tags = r.etiketler.split(',').map(t => t.trim());
-    const matchesTag = !activeTag || tags.includes(activeTag);
-    const haystack = (r.promptText + ' ' + r.etiketler + ' ' + r.kategori).toLowerCase();
-    const matchesSearch = !searchTerm || haystack.includes(searchTerm);
-    return matchesCategory && matchesTag && matchesSearch;
-  });
-  renderGrid();
-}
-
-// Görüntülenme/beğeni sayıları - id'ye göre sabit kalan sözde-rastgele değerler
-const statCache = {};
-function seededRandom(seed, min, max){
-  let hash = 0;
-  for(let i = 0; i < seed.length; i++){
-    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
-  }
-  return min + (hash % (max - min + 1));
-}
-function getViewCount(id){
-  const key = 'v_' + id;
-  if(!(key in statCache)) statCache[key] = seededRandom(key, 40, 2400);
-  return statCache[key];
-}
-function getLikeCount(id){
-  const key = 'l_' + id;
-  if(!(key in statCache)) statCache[key] = seededRandom(key, 3, 180);
-  return statCache[key];
-}
-function formatCount(n){
-  if(n >= 1000) return (n/1000).toFixed(1).replace('.0','') + 'b';
-  return String(n);
-}
-
-// Beğen / Kaydet - tarayıcıda kalıcı, hesap gerektirmez (şimdilik)
-function getLikedSet(){
-  try{ return new Set(JSON.parse(localStorage.getItem('likedIds') || '[]')); }catch(e){ return new Set(); }
-}
-function getSavedSet(){
-  try{ return new Set(JSON.parse(localStorage.getItem('savedIds') || '[]')); }catch(e){ return new Set(); }
-}
-function isLiked(id){ return getLikedSet().has(String(id)); }
-function isSaved(id){ return getSavedSet().has(String(id)); }
-function toggleLike(id){
-  const set = getLikedSet();
-  const key = String(id);
-  if(set.has(key)) set.delete(key); else set.add(key);
-  try{ localStorage.setItem('likedIds', JSON.stringify([...set])); }catch(e){}
-  renderGrid();
-}
-function toggleSave(id){
-  const set = getSavedSet();
-  const key = String(id);
-  if(set.has(key)) set.delete(key); else set.add(key);
-  try{ localStorage.setItem('savedIds', JSON.stringify([...set])); }catch(e){}
-  renderGrid();
-}
-
-function renderGrid(){
-  const grid = document.getElementById('grid');
-
-  if(visibleRows.length === 0){
-    grid.innerHTML = '<div class="empty">Bu filtrelere uyan kayıt yok.</div>';
-    return;
-  }
-
-  grid.innerHTML = visibleRows.map((r, i) => {
-    const tags = r.etiketler.split(',').map(t => t.trim()).filter(Boolean);
-    const firstTag = tags[0] || (r.isPremium ? 'Premium' : '');
-    const imgSrc = r.gorselLink || '';
-    const lockBadge = r.isPremium && !getUnlockedPrompt(r.id) ? '<div class="lock-badge">🔒</div>' : '';
-    const views = formatCount(getViewCount(r.id));
-    const likes = formatCount(getLikeCount(r.id) + (isLiked(r.id) ? 1 : 0));
-    const statBadges = `
-      <div class="stat-badges">
-        <span class="stat-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>${views}</span>
-        <span class="stat-badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-6.7-4.35-9.3-8.1C.8 9.9 1.7 6.4 4.6 5.1c2.1-.95 4.2-.1 5.4 1.6.4.55.8 1.1 1 1.5.2-.4.6-.95 1-1.5 1.2-1.7 3.3-2.55 5.4-1.6 2.9 1.3 3.8 4.8 1.9 7.8C18.7 16.65 12 21 12 21z"/></svg>${likes}</span>
-      </div>`;
-    const cardActions = `
-      <div class="card-actions">
-        <button class="icon-btn like-btn ${isLiked(r.id) ? 'active' : ''}" onclick="event.stopPropagation(); toggleLike('${r.id}')" title="Beğen">
-          <svg viewBox="0 0 24 24"><path d="M12 21s-6.7-4.35-9.3-8.1C.8 9.9 1.7 6.4 4.6 5.1c2.1-.95 4.2-.1 5.4 1.6.4.55.8 1.1 1 1.5.2-.4.6-.95 1-1.5 1.2-1.7 3.3-2.55 5.4-1.6 2.9 1.3 3.8 4.8 1.9 7.8C18.7 16.65 12 21 12 21z"/></svg>
-        </button>
-        <button class="icon-btn save-btn ${isSaved(r.id) ? 'active' : ''}" onclick="event.stopPropagation(); toggleSave('${r.id}')" title="Kaydet">
-          <svg viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>
-        </button>
-      </div>`;
-    return `
-      <div class="tile ${r.isPremium ? 'locked' : ''}" onclick="openModal(${i})">
-        <img src="${imgSrc}" alt="referans görsel" loading="lazy" onerror="this.closest('.tile').style.display='none'">
-        ${lockBadge}
-        ${statBadges}
-        ${cardActions}
-        <div class="tile-hint"><span>${escapeHtml(firstTag)}</span></div>
-      </div>
-    `;
-  }).join('');
-}
-
-function openModal(idx){
-  const r = visibleRows[idx];
-  currentModalRow = r;
-  const tags = r.etiketler.split(',').map(t => t.trim()).filter(Boolean);
-
-  document.getElementById('modalImg').src = r.gorselLink || '';
-  document.getElementById('modalDate').textContent = r.tarih
-    ? new Date(r.tarih).toLocaleDateString('tr-TR', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})
-    : '';
-
-  const maxEtiket = r.kategori ? 3 : 4;
-  let tagsHtml = tags.slice(0, maxEtiket).map(t => {
-    const isPerson = t.includes('model');
-    return `<span class="tag${isPerson ? ' person' : ''}">${escapeHtml(t)}</span>`;
-  }).join('');
-  if(r.kategori){
-    tagsHtml = `<span class="tag person">${escapeHtml(r.kategori)}</span>` + tagsHtml;
-  }
-  document.getElementById('modalTags').innerHTML = tagsHtml;
-
-  const unlocked = r.isPremium ? getUnlockedPrompt(r.id) : null;
-  if(r.isPremium && !unlocked){
-    showPaywallSection();
-  }else{
-    showPromptSection(r.isPremium ? unlocked : r.promptText);
-  }
-
-  document.getElementById('modalBackdrop').classList.add('open');
-}
-
-function closeModal(){
-  document.getElementById('modalBackdrop').classList.remove('open');
-}
-
-// ---- Premium / paywall ----
-
-function getUnlockedPrompt(id){
-  try{ return sessionStorage.getItem('unlocked_' + id); }catch(e){ return null; }
-}
-function setUnlockedPrompt(id, promptText){
-  try{ sessionStorage.setItem('unlocked_' + id, promptText); }catch(e){}
-}
-
-function showPromptSection(promptText){
-  document.getElementById('promptSection').style.display = 'flex';
-  document.getElementById('paywallSection').style.display = 'none';
-  document.getElementById('modalPrompt').textContent = promptText || '';
-  const copyBtn = document.getElementById('copyBtn');
-  copyBtn.textContent = 'Kopyala';
-  copyBtn.classList.remove('copied');
-  copyBtn.dataset.prompt = promptText || '';
-}
-
-function showPaywallSection(){
-  document.getElementById('promptSection').style.display = 'none';
-  document.getElementById('paywallSection').style.display = 'flex';
-  showPaywallActions();
-}
-
-function showPaywallActions(){
-  document.getElementById('paywallPanel').style.display = 'flex';
-  document.getElementById('codePanel').style.display = 'none';
-}
-function showCodePanel(){
-  document.getElementById('paywallPanel').style.display = 'none';
-  document.getElementById('codePanel').style.display = 'flex';
-  const msgEl = document.getElementById('codeMsg');
-  msgEl.textContent = '';
-  msgEl.className = 'code-msg';
-  const input = document.getElementById('codeInput');
-  input.value = '';
-  input.focus();
-}
-
-async function submitCode(){
-  const r = currentModalRow;
-  const code = document.getElementById('codeInput').value.trim();
-  const msgEl = document.getElementById('codeMsg');
-
-  if(!code){
-    msgEl.textContent = 'Kod boş olamaz.';
-    msgEl.className = 'code-msg error';
-    return;
-  }
-  if(!PREMIUM_VERIFY_URL || PREMIUM_VERIFY_URL.includes('YOUR-N8N-URL')){
-    msgEl.textContent = 'Doğrulama servisi henüz bağlanmadı.';
-    msgEl.className = 'code-msg error';
-    return;
-  }
-
-  msgEl.textContent = 'Kontrol ediliyor...';
-  msgEl.className = 'code-msg';
-
-  try{
-    const res = await fetch(PREMIUM_VERIFY_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ id: r.id, code })
-    });
-    const raw = await res.json();
-    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
-
-    if(data.success){
-      setUnlockedPrompt(r.id, data.promptText);
-      msgEl.textContent = 'Kod doğru! Açılıyor...';
-      msgEl.className = 'code-msg success';
-      setTimeout(() => showPromptSection(data.promptText), 500);
-      renderGrid(); // kilit rozetini kaldırmak için tile'ları yenile
-    }else{
-      msgEl.textContent = data.message || 'Kod geçersiz.';
-      msgEl.className = 'code-msg error';
-    }
-  }catch(err){
-    msgEl.textContent = 'Bağlantı hatası: ' + err.message;
-    msgEl.className = 'code-msg error';
-  }
-}
-
-function copyPrompt(){
-  const btn = document.getElementById('copyBtn');
-  navigator.clipboard.writeText(btn.dataset.prompt).then(() => {
-    btn.textContent = 'Kopyalandı ✓';
-    btn.classList.add('copied');
-    setTimeout(() => {
-      btn.textContent = 'Kopyala';
-      btn.classList.remove('copied');
-    }, 1600);
-  });
-}
-
-document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeModal(); });
-
-// ---- Sekmeler ----
-
-function switchTab(tab){
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-  document.getElementById('galleryView').style.display = tab === 'gallery' ? 'flex' : 'none';
-  document.getElementById('makerView').style.display = tab === 'maker' ? 'block' : 'none';
-  document.getElementById('visualView').style.display = tab === 'visual' ? 'block' : 'none';
-  document.getElementById('avatarView').style.display = tab === 'avatar' ? 'block' : 'none';
-  activeQuotaContext = tab;
-  refreshFreePill();
-}
-
-function triggerUploadFlow(){
-  switchTab('maker');
-  setTimeout(() => document.getElementById('makerFileInput').click(), 50);
-}
-
-// ---- Prompt Üretici ----
-
-function getDeviceId(){
-  let id = localStorage.getItem('jg_device_id');
-  if(!id){
-    id = 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2);
-    localStorage.setItem('jg_device_id', id);
-  }
-  return id;
-}
-
-function resizeImageToBase64(file, maxDim){
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('Dosya okunamadı.'));
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = () => reject(new Error('Görsel yüklenemedi.'));
-      img.onload = () => {
-        let { width, height } = img;
-        if(width > maxDim || height > maxDim){
-          const scale = maxDim / Math.max(width, height);
-          width = Math.round(width * scale);
-          height = Math.round(height * scale);
+{
+  "name": "JG Studio - Karakter Olustur",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-character",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook_-_karakter_olustur",
+      "name": "Webhook - Karakter Olustur",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json;\nconst deviceId = body.deviceId || 'unknown';\nconst today = new Date().toISOString().slice(0,10);\n\nconst staticData = $getWorkflowStaticData('global');\nif(!staticData.characterQuota) staticData.characterQuota = {};\nconst record = staticData.characterQuota[deviceId] || { date: today, used: 0 };\nif(record.date !== today){ record.date = today; record.used = 0; }\n\nconst DAILY_LIMIT = 1;\nconst allowed = record.used < DAILY_LIMIT;\nconst remaining = Math.max(0, DAILY_LIMIT - record.used);\n\nconst VALID_PROVIDERS = ['gemini_free', 'gemini_paid', 'openai'];\nconst provider = VALID_PROVIDERS.includes(body.imageProvider) ? body.imageProvider : 'gemini_free';\n\nconst parts = [];\nparts.push((body.gender || 'Kadin') + ' bir karakter');\nif(body.age) parts.push(body.age + ' yasinda');\nif(body.height) parts.push(body.height + ' cm boyunda');\nif(body.ethnicity) parts.push(body.ethnicity + ' etnik koken gorunumunde');\nif(body.skinTone) parts.push('ten tonu ' + body.skinTone);\nif(body.hairColor) parts.push(String(body.hairColor).toLowerCase() + ' sacli');\nif(body.hairType) parts.push(String(body.hairType).toLowerCase() + ' sac yapisinda');\nif(body.eyeColor) parts.push(String(body.eyeColor).toLowerCase() + ' gozlu');\nif(body.bodyType) parts.push(body.bodyType + ' vucut yapisinda');\nif(Array.isArray(body.faceDetails) && body.faceDetails.length) parts.push('yuz ozellikleri: ' + body.faceDetails.join(', '));\nif(Array.isArray(body.style) && body.style.length) parts.push('kiyafet/stil: ' + body.style.join(', '));\nif(Array.isArray(body.personality) && body.personality.length) parts.push('kisilik izlenimi: ' + body.personality.join(', '));\nif(Array.isArray(body.otherDetails) && body.otherDetails.length) parts.push('ek ozellikler: ' + body.otherDetails.join(', '));\nif(body.extraNotes) parts.push(body.extraNotes);\n\nconst bible = 'Fotogercekci, studyo isikli, tutarli bir dijital karakter: ' + parts.join(', ') + '. Tum gorsellerde ayni kisi, ayni yuz ve sac ozellikleriyle gosterilmeli.';\n\nconst panels = [\n  { key:'portrait', label:'Portre', kind:'portrait', size:'1024x1536', instruction:'Yakin plan portre cekimi, dogrudan kameraya bakiyor, omuz ustu kadraj.' },\n  { key:'view_front', label:'On', kind:'view', size:'1024x1536', instruction:'Tam boy, onden cekim, ayakta durus pozu.' },\n  { key:'view_side', label:'Yan', kind:'view', size:'1024x1536', instruction:'Tam boy, yandan (profil) cekim, ayakta durus.' },\n  { key:'view_back', label:'Arka', kind:'view', size:'1024x1536', instruction:'Tam boy, arkadan cekim, ayakta durus.' },\n  { key:'view_34front', label:'3/4 On', kind:'view', size:'1024x1536', instruction:'Tam boy, 3/4 acidan onden cekim.' },\n  { key:'view_34back', label:'3/4 Arka', kind:'view', size:'1024x1536', instruction:'Tam boy, 3/4 acidan arkadan cekim.' },\n  { key:'face_eyes', label:'Gozler', kind:'face', size:'1024x1024', instruction:'Sadece gozlerin cok yakin makro cekimi.' },\n  { key:'face_nose', label:'Burun', kind:'face', size:'1024x1024', instruction:'Sadece burnun cok yakin makro cekimi.' },\n  { key:'face_lips', label:'Dudaklar', kind:'face', size:'1024x1024', instruction:'Sadece dudaklarin cok yakin makro cekimi.' },\n  { key:'face_skin', label:'Cilt Dokusu', kind:'face', size:'1024x1024', instruction:'Yanak bolgesinin cilt dokusunu gosteren cok yakin makro cekim.' },\n  { key:'hair_front', label:'On', kind:'hair', size:'1024x1024', instruction:'Sacin onden yakin cekimi.' },\n  { key:'hair_side', label:'Yan', kind:'hair', size:'1024x1024', instruction:'Sacin yandan yakin cekimi.' },\n  { key:'hair_back', label:'Arka', kind:'hair', size:'1024x1024', instruction:'Sacin arkadan yakin cekimi.' }\n];\n\nreturn [{\n  json: {\n    allowed,\n    remaining,\n    deviceId,\n    provider,\n    bible,\n    panels,\n    hasRef: !!(body.referenceImage && body.referenceImage.base64),\n    refBase64: body.referenceImage ? body.referenceImage.base64 : null,\n    refMime: body.referenceImage ? body.referenceImage.mimeType : null,\n    skinTone: body.skinTone,\n    hairColor: body.hairColor,\n    eyeColor: body.eyeColor\n  }\n}];"
+      },
+      "id": "kota_kontrol_ve_prompt_hazirla",
+      "name": "Kota Kontrol ve Prompt Hazirla",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{$json.allowed}}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
         }
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        resolve({ base64: dataUrl.split(',')[1], mimeType: 'image/jpeg', dataUrl });
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-function handleMakerFile(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  resizeImageToBase64(file, 1600).then(({ base64, mimeType, dataUrl }) => {
-    makerImageBase64 = base64;
-    makerImageMime = mimeType;
-
-    const preview = document.getElementById('makerPreview');
-    preview.src = dataUrl;
-    preview.style.display = 'block';
-    document.getElementById('makerPlaceholder').style.display = 'none';
-    document.getElementById('makerDropZone').classList.add('has-img');
-    document.getElementById('removeImgBtn').style.display = 'flex';
-
-    document.getElementById('makerGenerateBtn').disabled = false;
-    document.getElementById('makerStatus').textContent = '';
-    resetResultPanel();
-  }).catch(err => {
-    document.getElementById('makerStatus').textContent = 'Görsel okunamadı: ' + err.message;
-  });
-}
-
-function handleMakerDrop(e){
-  e.preventDefault();
-  e.currentTarget.classList.remove('dragover');
-  const file = e.dataTransfer.files[0];
-  if(file) handleMakerFile({ target: { files: [file] } });
-}
-
-let activeQuotaContext = 'gallery';
-let promptRemaining = null;
-
-function refreshFreePill(){
-  const pill = document.getElementById('freePillText');
-  if(!pill) return;
-  if(activeQuotaContext === 'visual'){
-    const rem = getImageRemaining();
-    pill.textContent = rem + ' / ' + IMAGE_DAILY_LIMIT + ' görsel hakkınız kaldı';
-  }else if(activeQuotaContext === 'avatar'){
-    const rem = getCharacterRemaining();
-    pill.textContent = rem + ' / ' + CHARACTER_DAILY_LIMIT + ' karakter hakkınız kaldı';
-  }else{
-    if(promptRemaining === null){
-      pill.textContent = '3 ücretsiz hakkınız kaldı';
-    }else if(promptRemaining > 0){
-      pill.textContent = promptRemaining + ' ücretsiz hakkınız kaldı';
-    }else{
-      pill.textContent = 'Bugünlük hakkınız bitti';
-    }
-  }
-}
-
-function updateRemainingLabel(remaining){
-  const featureTitle = document.getElementById('featureFreeTitle');
-  promptRemaining = (remaining === undefined) ? null : remaining;
-  if(featureTitle){
-    if(promptRemaining === null){
-      featureTitle.textContent = '3 Ücretsiz Hakkınız Var';
-    }else if(promptRemaining > 0){
-      featureTitle.textContent = promptRemaining + ' Ücretsiz Hakkınız Var';
-    }else{
-      featureTitle.textContent = 'Bugünlük Hakkınız Bitti';
-    }
-  }
-  refreshFreePill();
-}
-
-function resetResultPanel(){
-  makerGeneratedPrompt = '';
-  const box = document.getElementById('makerResultBox');
-  box.className = 'result-box empty-state';
-  box.innerHTML = '<span id="makerEmptyMsg">Prompt üretildiğinde burada görünecek.</span>';
-  document.getElementById('makerCopyBtn').disabled = true;
-  document.getElementById('makerDownloadBtn').disabled = true;
-}
-
-function showResultPrompt(promptText){
-  makerGeneratedPrompt = promptText || '';
-  const box = document.getElementById('makerResultBox');
-  box.className = 'result-box';
-  box.innerHTML = `<button class="copy-icon-btn" onclick="copyMakerPrompt()" title="Kopyala">📋</button>${escapeHtml(makerGeneratedPrompt)}`;
-  document.getElementById('makerCopyBtn').disabled = false;
-  document.getElementById('makerDownloadBtn').disabled = false;
-  const copyBtn = document.getElementById('makerCopyBtn');
-  copyBtn.textContent = 'Kopyala';
-  copyBtn.classList.remove('copied');
-}
-
-async function generatePrompt(){
-  if(!makerImageBase64) return;
-
-  if(!PROMPT_MAKER_URL || PROMPT_MAKER_URL.includes('YOUR-N8N-URL')){
-    document.getElementById('makerStatus').textContent = 'Prompt üretici servisi henüz bağlanmadı.';
-    return;
-  }
-
-  const btn = document.getElementById('makerGenerateBtn');
-  btn.disabled = true;
-  document.getElementById('makerStatus').textContent = 'Görsel analiz ediliyor, birkaç saniye sürebilir...';
-  resetResultPanel();
-
-  try{
-    const res = await fetch(PROMPT_MAKER_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        deviceId: getDeviceId(),
-        mimeType: makerImageMime,
-        imageBase64: makerImageBase64
-      })
-    });
-    const raw = await res.json();
-    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
-
-    if(!data.allowed){
-      document.getElementById('makerStatus').textContent = 'Bugün için ücretsiz hakkınız kalmadı.';
-      updateRemainingLabel(data.remaining ?? 0);
-      return;
-    }
-
-    document.getElementById('makerStatus').textContent = '';
-    showResultPrompt(data.promptText || '');
-    updateRemainingLabel(data.remaining);
-  }catch(err){
-    document.getElementById('makerStatus').textContent = 'Hata: ' + err.message;
-  }finally{
-    btn.disabled = !makerImageBase64;
-  }
-}
-
-function resetMaker(){
-  makerImageBase64 = null;
-  makerImageMime = null;
-  const preview = document.getElementById('makerPreview');
-  preview.style.display = 'none';
-  preview.src = '';
-  document.getElementById('makerPlaceholder').style.display = 'block';
-  document.getElementById('makerDropZone').classList.remove('has-img');
-  document.getElementById('removeImgBtn').style.display = 'none';
-  document.getElementById('makerGenerateBtn').disabled = true;
-  document.getElementById('makerStatus').textContent = '';
-  document.getElementById('makerFileInput').value = '';
-  resetResultPanel();
-}
-
-function copyMakerPrompt(){
-  if(!makerGeneratedPrompt) return;
-  navigator.clipboard.writeText(makerGeneratedPrompt).then(() => {
-    const btn = document.getElementById('makerCopyBtn');
-    btn.textContent = 'Kopyalandı ✓';
-    btn.classList.add('copied');
-    setTimeout(() => {
-      btn.textContent = 'Kopyala';
-      btn.classList.remove('copied');
-    }, 1600);
-  });
-}
-
-function downloadMakerPrompt(){
-  if(!makerGeneratedPrompt) return;
-  const blob = new Blob([makerGeneratedPrompt], {type:'text/plain'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'prompt.txt';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-// ---- Görsel Oluşturucu ----
-
-const CAMERA_OPTIONS = ['Ön çekim','Yakın plan','Kuş bakışı','Alçak açı','Yandan (profil)','Geniş açı','Makro','Drone çekimi'];
-const EFFECT_OPTIONS = ['Sinematik ışık','Bokeh','Duman / Sis','Neon parıltı','Film grain','Lens flare','Çift pozlama','Uzun pozlama','Yumuşak gölgeler','Yüksek kontrast'];
-const POSE_OPTIONS = ['Ayakta duruş','Yürüyüş','Oturma','Aksiyon / hareket','Doğal & rahat','Editorial poz','Yakın yüz ifadesi','Sırtı dönük'];
-const STYLE_OPTIONS = ['Sinematik','Portre','Thumbnail','Eskiz (Sketch)','Piksel Sanatı','Anime','3D Render','Suluboya','Yağlıboya','Minimalist','Vintage Film','Fantastik','Ürün Fotoğrafçılığı','Moda / Editorial','Siyah-Beyaz','Gerçekçi (Realistic)','Konsept Sanat'];
-
-const AI_MODELS = [
-  { name:'DALL·E 3', icon:'🎨', badge:'New', desc:'Daha yüksek kalite ve detay için en iyi seçim.' },
-  { name:'Midjourney v6', icon:'🌙', badge:'', desc:'Sanatsal ve atmosferik sonuçlar için güçlü seçim.' },
-  { name:'Stable Diffusion XL', icon:'🧬', badge:'', desc:'Hızlı ve esnek, özelleştirmeye açık bir model.' },
-  { name:'Flux Pro', icon:'⚡', badge:'', desc:'Fotogerçekçi sonuçlar ve gelişmiş prompt takibi.' },
-  { name:'Ideogram', icon:'🔤', badge:'', desc:'Görsele metin/yazı eklemek için en iyi seçim.' }
-];
-
-let genSelectedCamera = new Set();
-let genSelectedEffects = new Set();
-let genSelectedPoses = new Set();
-let genSelectedStyles = new Set();
-let genSelectedSize = '1:1';
-let genSelectedCount = 4;
-let genSelectedModelIdx = 0;
-let refImageBase64 = null, refImageMime = null;
-let characters = [];
-let charIdCounter = 0;
-
-function initGenView(){
-  renderChipGroup('cameraChips', CAMERA_OPTIONS, genSelectedCamera, 'camera');
-  renderChipGroup('effectsChips', EFFECT_OPTIONS, genSelectedEffects, 'effects');
-  renderChipGroup('posesChips', POSE_OPTIONS, genSelectedPoses, 'poses');
-  renderChipGroup('styleChips', STYLE_OPTIONS, genSelectedStyles, 'style');
-  renderModelMenu();
-  renderCharList();
-  updateGenSubmitState();
-}
-
-function renderChipGroup(containerId, options, selectedSet, key){
-  const el = document.getElementById(containerId);
-  if(!el) return;
-  el.innerHTML = options.map(opt => `<button type="button" class="chip ${selectedSet.has(opt) ? 'active' : ''}" onclick="toggleChip('${key}','${escapeAttr(opt)}')">${escapeHtml(opt)}</button>`).join('');
-}
-
-function getSetByKey(key){
-  return { camera: genSelectedCamera, effects: genSelectedEffects, poses: genSelectedPoses, style: genSelectedStyles }[key];
-}
-function getOptionsByKey(key){
-  return { camera: CAMERA_OPTIONS, effects: EFFECT_OPTIONS, poses: POSE_OPTIONS, style: STYLE_OPTIONS }[key];
-}
-function getContainerByKey(key){
-  return { camera:'cameraChips', effects:'effectsChips', poses:'posesChips', style:'styleChips' }[key];
-}
-
-function toggleChip(key, opt){
-  const set = getSetByKey(key);
-  if(set.has(opt)) set.delete(opt); else set.add(opt);
-  renderChipGroup(getContainerByKey(key), getOptionsByKey(key), set, key);
-  updateAccCount(key);
-}
-
-function updateAccCount(key){
-  const set = getSetByKey(key);
-  const badge = document.getElementById(key + 'AccCount');
-  if(!badge) return;
-  if(set.size > 0){
-    badge.textContent = set.size;
-    badge.classList.add('show');
-  }else{
-    badge.classList.remove('show');
-  }
-}
-
-function toggleAcc(key){
-  const panel = document.getElementById(key + 'AccPanel');
-  const trigger = panel.previousElementSibling;
-  const isOpen = panel.classList.contains('open');
-  panel.classList.toggle('open', !isOpen);
-  trigger.classList.toggle('open', !isOpen);
-}
-
-function setGenSize(ratio, btn){
-  genSelectedSize = ratio;
-  document.querySelectorAll('#genSizeGrid .opt-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function setGenCount(n, btn){
-  genSelectedCount = n;
-  document.querySelectorAll('#genCountRow .count-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function toggleModelMenu(){
-  document.getElementById('genModelMenu').classList.toggle('open');
-}
-function renderModelMenu(){
-  const menu = document.getElementById('genModelMenu');
-  menu.innerHTML = AI_MODELS.map((m, i) => `
-    <button type="button" class="model-option" onclick="selectModel(${i})">
-      <span class="m-name">${m.icon} ${escapeHtml(m.name)} ${m.badge ? `<span class="model-badge-new">${escapeHtml(m.badge)}</span>` : ''}</span>
-      <span class="m-desc">${escapeHtml(m.desc)}</span>
-    </button>`).join('');
-  selectModel(genSelectedModelIdx, true);
-}
-function selectModel(i, silent){
-  genSelectedModelIdx = i;
-  const m = AI_MODELS[i];
-  document.getElementById('genModelIcon').textContent = m.icon;
-  document.getElementById('genModelName').textContent = m.name;
-  document.getElementById('genModelDesc').textContent = m.desc;
-  const badgeEl = document.getElementById('genModelBadge');
-  badgeEl.style.display = m.badge ? 'inline-block' : 'none';
-  if(!silent) document.getElementById('genModelMenu').classList.remove('open');
-}
-document.addEventListener('click', (e) => {
-  const wrap = document.querySelector('.model-select-wrap');
-  if(wrap && !wrap.contains(e.target)) document.getElementById('genModelMenu').classList.remove('open');
-});
-
-function onGenPromptInput(){
-  const val = document.getElementById('genPromptInput').value;
-  document.getElementById('genCharCount').textContent = val.length + ' / 2000';
-  updateGenSubmitState();
-}
-function updateGenSubmitState(){
-  const val = document.getElementById('genPromptInput').value.trim();
-  document.getElementById('genSubmitBtn').disabled = !val;
-}
-
-function usePromptFromMaker(){
-  if(makerGeneratedPrompt){
-    document.getElementById('genPromptInput').value = makerGeneratedPrompt;
-    onGenPromptInput();
-  }
-  switchTab('visual');
-}
-function suggestGenPrompt(){
-  const ideas = [
-    'Gün batımında sahilde yürüyen bir kadın, sinematik ışık, warm tones',
-    'Yağmurlu bir şehir sokağında neon yansımalar, cyberpunk atmosfer',
-    'Minimalist stüdyoda ürün fotoğrafı, yumuşak gölgeler, temiz arka plan',
-    'Dağ zirvesinde gün doğumu, epik geniş açı, sinematik renk paleti',
-    'Kafede kitap okuyan bir karakter, doğal ışık, sıcak tonlar, portre'
-  ];
-  document.getElementById('genPromptInput').value = ideas[Math.floor(Math.random()*ideas.length)];
-  onGenPromptInput();
-}
-
-// Referans görsel
-function handleRefFile(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  resizeImageToBase64(file, 1200).then(({base64, mimeType, dataUrl}) => {
-    refImageBase64 = base64;
-    refImageMime = mimeType;
-    const img = document.getElementById('refPreviewImg');
-    img.src = dataUrl;
-    img.style.display = 'block';
-    document.getElementById('refPlaceholder').style.display = 'none';
-    document.getElementById('refUploadBox').classList.add('has-img');
-    document.getElementById('refRemoveBtn').style.display = 'flex';
-  }).catch(err => {
-    document.getElementById('genQuotaNote').textContent = 'Referans görsel okunamadı: ' + err.message;
-  });
-}
-function removeRefImage(){
-  refImageBase64 = null; refImageMime = null;
-  const img = document.getElementById('refPreviewImg');
-  img.style.display = 'none'; img.src = '';
-  document.getElementById('refPlaceholder').style.display = 'block';
-  document.getElementById('refUploadBox').classList.remove('has-img');
-  document.getElementById('refRemoveBtn').style.display = 'none';
-  document.getElementById('refFileInput').value = '';
-}
-
-// Karakterler
-function addCharacterRow(){
-  if(characters.length >= 4) return;
-  charIdCounter++;
-  characters.push({ id: charIdCounter, name: '', base64: null, mime: null });
-  renderCharList();
-}
-function removeCharacterRow(id){
-  characters = characters.filter(c => c.id !== id);
-  renderCharList();
-}
-function updateCharName(id, val){
-  const c = characters.find(c => c.id === id);
-  if(c) c.name = val;
-}
-function handleCharFile(id, e){
-  const file = e.target.files[0];
-  if(!file) return;
-  resizeImageToBase64(file, 1000).then(({base64, mimeType}) => {
-    const c = characters.find(c => c.id === id);
-    if(!c) return;
-    c.base64 = base64; c.mime = mimeType;
-    renderCharList();
-  }).catch(err => {
-    document.getElementById('genQuotaNote').textContent = 'Karakter görseli okunamadı: ' + err.message;
-  });
-}
-function renderCharList(){
-  const el = document.getElementById('charList');
-  el.innerHTML = characters.map((c, idx) => `
-    <div class="char-row">
-      <div class="char-thumb" onclick="document.getElementById('charFile_${c.id}').click()">
-        ${c.base64 ? `<img src="data:${c.mime};base64,${c.base64}" alt="">` : '📷'}
-      </div>
-      <input type="file" id="charFile_${c.id}" accept="image/*" style="display:none" onchange="handleCharFile(${c.id}, event)">
-      <div class="char-fields">
-        <input type="text" placeholder="Karakter ${idx+1} (isim, isteğe bağlı)" value="${escapeAttr(c.name)}" oninput="updateCharName(${c.id}, this.value)">
-      </div>
-      <button type="button" class="char-remove" onclick="removeCharacterRow(${c.id})" title="Kaldır">✕</button>
-    </div>`).join('');
-  document.getElementById('addCharBtn').disabled = characters.length >= 4;
-}
-
-// Ücretsiz kota (24 saatte 5 görsel) - n8n yanıtı 'remaining' döndürürse o esas alınır,
-// yoksa tarayıcıda tarihe göre yerel takip yapılır.
-function getImageQuotaState(){
-  const today = new Date().toISOString().slice(0,10);
-  let state;
-  try{ state = JSON.parse(localStorage.getItem('jg_image_quota') || 'null'); }catch(e){ state = null; }
-  if(!state || state.date !== today){
-    state = { date: today, used: 0 };
-    try{ localStorage.setItem('jg_image_quota', JSON.stringify(state)); }catch(e){}
-  }
-  return state;
-}
-function getImageRemaining(){
-  return Math.max(0, IMAGE_DAILY_LIMIT - getImageQuotaState().used);
-}
-function consumeImageQuota(n){
-  const state = getImageQuotaState();
-  state.used += n;
-  try{ localStorage.setItem('jg_image_quota', JSON.stringify(state)); }catch(e){}
-}
-function setImageRemaining(remaining){
-  const state = getImageQuotaState();
-  state.used = Math.max(0, IMAGE_DAILY_LIMIT - remaining);
-  try{ localStorage.setItem('jg_image_quota', JSON.stringify(state)); }catch(e){}
-  updateGenQuotaNote();
-  refreshFreePill();
-}
-function updateGenQuotaNote(){
-  const note = document.getElementById('genQuotaNote');
-  if(!note) return;
-  const rem = getImageRemaining();
-  note.textContent = rem > 0
-    ? rem + ' görsel hakkınız kaldı (24 saatte yenilenir)'
-    : 'Bugünlük görsel hakkınız bitti (24 saatte yenilenir)';
-}
-
-function showGenLoadingTiles(n){
-  document.getElementById('genEmptyState').style.display = 'none';
-  const grid = document.getElementById('genResultsGrid');
-  grid.style.display = 'grid';
-  grid.innerHTML = Array.from({length:n}).map(() => `<div class="gen-tile loading">Oluşturuluyor...</div>`).join('');
-  document.getElementById('genResultCount').textContent = n;
-}
-function showGenEmptyState(){
-  document.getElementById('genEmptyState').style.display = 'block';
-  const grid = document.getElementById('genResultsGrid');
-  grid.style.display = 'none';
-  grid.innerHTML = '';
-  document.getElementById('genResultCount').textContent = '0';
-}
-function renderGenResults(images){
-  if(!images || !images.length){ showGenEmptyState(); return; }
-  const grid = document.getElementById('genResultsGrid');
-  grid.innerHTML = images.map((url, i) => `
-    <div class="gen-tile">
-      <img src="${url}" alt="oluşturulan görsel ${i+1}" loading="lazy">
-      <div class="gen-tile-actions">
-        <button class="icon-btn" onclick="event.stopPropagation(); downloadGenImage('${escapeAttr(url)}', ${i})" title="İndir">⬇</button>
-      </div>
-    </div>`).join('');
-  document.getElementById('genResultCount').textContent = images.length;
-}
-function downloadGenImage(url, idx){
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'jg-studio-gorsel-' + (idx+1) + '.png';
-  a.target = '_blank';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
-async function generateVisual(){
-  const prompt = document.getElementById('genPromptInput').value.trim();
-  if(!prompt) return;
-
-  if(getImageRemaining() <= 0){
-    document.getElementById('genQuotaNote').textContent = 'Bugünlük ücretsiz hakkınız bitti. Yarın tekrar deneyebilir ya da JG Plus\'a yükseltebilirsiniz.';
-    return;
-  }
-
-  if(!GEN_GENERATE_URL || GEN_GENERATE_URL.includes('YOUR-N8N-URL')){
-    document.getElementById('genQuotaNote').textContent = 'Görsel oluşturma servisi henüz bağlanmadı.';
-    return;
-  }
-
-  const btn = document.getElementById('genSubmitBtn');
-  btn.disabled = true;
-  document.getElementById('genQuotaNote').textContent = 'Görsel oluşturuluyor, birkaç saniye sürebilir...';
-  showGenLoadingTiles(genSelectedCount);
-
-  try{
-    const payload = {
-      deviceId: getDeviceId(),
-      prompt: prompt,
-      size: genSelectedSize,
-      count: genSelectedCount,
-      model: AI_MODELS[genSelectedModelIdx].name,
-      camera: [...genSelectedCamera],
-      effects: [...genSelectedEffects],
-      poses: [...genSelectedPoses],
-      styles: [...genSelectedStyles],
-      referenceImage: refImageBase64 ? { base64: refImageBase64, mimeType: refImageMime } : null,
-      characters: characters.map(c => ({ name: c.name, base64: c.base64, mimeType: c.mime }))
-    };
-    const res = await fetch(GEN_GENERATE_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(payload)
-    });
-    const raw = await res.json();
-    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
-
-    if(!data.allowed){
-      document.getElementById('genQuotaNote').textContent = 'Bugün için ücretsiz hakkınız kalmadı.';
-      showGenEmptyState();
-      if(typeof data.remaining === 'number') setImageRemaining(data.remaining);
-      return;
-    }
-
-    consumeImageQuota(genSelectedCount);
-    const finalRemaining = (typeof data.remaining === 'number') ? data.remaining : getImageRemaining();
-    setImageRemaining(finalRemaining);
-    renderGenResults(data.images || []);
-  }catch(err){
-    document.getElementById('genQuotaNote').textContent = 'Hata: ' + err.message;
-    showGenEmptyState();
-  }finally{
-    btn.disabled = false;
-  }
-}
-
-// ---- AI Avatar / Karakter Oluşturucu ----
-
-const FACE_DETAIL_OPTIONS = ['Belirgin çene hattı','Yüksek elmacık kemikleri','Dolgun dudaklar','İnce burun','Yoğun kaşlar','Simetrik yüz','Çil','Gamze','Küçük burun','Badem gözler'];
-const AVATAR_STYLE_OPTIONS = ['Minimal / Modern','Sokak Stili','Klasik / Şık','Spor','Vintage','Lüks','Bohem','İş / Ofis','Gotik','Casual'];
-const PERSONALITY_OPTIONS = ['Özgüvenli','Zeki','Bağımsız','Sıcakkanlı','Gizemli','Enerjik','Sakin','Maceraperest','Alaycı','Duygusal'];
-const OTHER_DETAIL_OPTIONS = ['Fotoğrafçı','Model','Sanatçı','Girişimci','Sporcu','Öğrenci','Yazar','Mühendis','Müzisyen','Aktör/Aktris'];
-const SKIN_TONES = ['#F5D5B8','#E8B88C','#D39C6E','#B57A4A','#8B5A2B','#5C3A1E'];
-
-// Not: Anthropic (Claude) burada listelenmiyor çünkü bir görsel üretim API'si yok.
-const AVATAR_PROVIDERS = [
-  { key:'gemini_free', name:'Gemini (Ücretsiz)', icon:'✨', badge:'Free', desc:'Google Gemini ücretsiz katman; günlük istek limiti ve daha yavaş kuyruk olabilir.' },
-  { key:'gemini_paid', name:'Gemini (Ücretli)', icon:'✨', badge:'Pro', desc:'Google Gemini ücretli/Pro katman; daha yüksek limit ve öncelikli işleme.' },
-  { key:'openai', name:'OpenAI (GPT Image)', icon:'🤖', badge:'', desc:'OpenAI görsel üretim modeli; yüksek detay ve prompt takibi.' },
-  { key:'stability', name:'Stability AI (SDXL)', icon:'🧬', badge:'', desc:'Stable Diffusion tabanlı, esnek ve özelleştirmeye açık model.' },
-  { key:'flux', name:'Flux Pro', icon:'⚡', badge:'', desc:'Fotogerçekçi sonuçlar ve gelişmiş prompt takibi.' }
-];
-let avatarSelectedProviderIdx = 0;
-
-let avatarGender = 'Kadın';
-let avatarSelectedSkinIdx = 0;
-let avatarSelectedFace = new Set();
-let avatarSelectedAvstyle = new Set();
-let avatarSelectedPersonality = new Set();
-let avatarSelectedOtherdetail = new Set();
-let avatarRefImageBase64 = null, avatarRefImageMime = null;
-let lastCharacterSheet = null;
-
-function initAvatarView(){
-  const skinRow = document.getElementById('avatarSkinRow');
-  skinRow.innerHTML = SKIN_TONES.map((hex, i) => `<button type="button" class="swatch ${i === avatarSelectedSkinIdx ? 'active' : ''}" style="background:${hex}" onclick="setAvatarSkin(${i}, this)" title="Ten tonu ${i+1}"></button>`).join('');
-
-  renderChipGroup('faceChips', FACE_DETAIL_OPTIONS, avatarSelectedFace, 'face');
-  renderChipGroup('avstyleChips', AVATAR_STYLE_OPTIONS, avatarSelectedAvstyle, 'avstyle');
-  renderChipGroup('personalityChips', PERSONALITY_OPTIONS, avatarSelectedPersonality, 'personality');
-  renderChipGroup('otherdetailChips', OTHER_DETAIL_OPTIONS, avatarSelectedOtherdetail, 'otherdetail');
-  renderAvatarProviderMenu();
-
-  updateAvatarQuotaNote();
-}
-
-function toggleAvatarProviderMenu(){
-  document.getElementById('avatarProviderMenu').classList.toggle('open');
-}
-function renderAvatarProviderMenu(){
-  const menu = document.getElementById('avatarProviderMenu');
-  menu.innerHTML = AVATAR_PROVIDERS.map((p, i) => `
-    <button type="button" class="model-option" onclick="selectAvatarProvider(${i})">
-      <span class="m-name">${p.icon} ${escapeHtml(p.name)} ${p.badge ? `<span class="model-badge-new">${escapeHtml(p.badge)}</span>` : ''}</span>
-      <span class="m-desc">${escapeHtml(p.desc)}</span>
-    </button>`).join('');
-  selectAvatarProvider(avatarSelectedProviderIdx, true);
-}
-function selectAvatarProvider(i, silent){
-  avatarSelectedProviderIdx = i;
-  const p = AVATAR_PROVIDERS[i];
-  document.getElementById('avatarProviderIcon').textContent = p.icon;
-  document.getElementById('avatarProviderName').textContent = p.name;
-  document.getElementById('avatarProviderDesc').textContent = p.desc;
-  const badgeEl = document.getElementById('avatarProviderBadge');
-  badgeEl.style.display = p.badge ? 'inline-block' : 'none';
-  badgeEl.textContent = p.badge;
-  if(!silent) document.getElementById('avatarProviderMenu').classList.remove('open');
-}
-document.addEventListener('click', (e) => {
-  const wrap = document.getElementById('avatarProviderWrap');
-  if(wrap && !wrap.contains(e.target)) document.getElementById('avatarProviderMenu').classList.remove('open');
-});
-
-// toggleChip/getSetByKey/getOptionsByKey/getContainerByKey (Görsel Oluşturucu'dan) yeni anahtarları da tanısın diye genişletiyoruz
-const _origGetSetByKey = getSetByKey;
-getSetByKey = function(key){
-  const extra = { face: avatarSelectedFace, avstyle: avatarSelectedAvstyle, personality: avatarSelectedPersonality, otherdetail: avatarSelectedOtherdetail };
-  return key in extra ? extra[key] : _origGetSetByKey(key);
-};
-const _origGetOptionsByKey = getOptionsByKey;
-getOptionsByKey = function(key){
-  const extra = { face: FACE_DETAIL_OPTIONS, avstyle: AVATAR_STYLE_OPTIONS, personality: PERSONALITY_OPTIONS, otherdetail: OTHER_DETAIL_OPTIONS };
-  return key in extra ? extra[key] : _origGetOptionsByKey(key);
-};
-const _origGetContainerByKey = getContainerByKey;
-getContainerByKey = function(key){
-  const extra = { face:'faceChips', avstyle:'avstyleChips', personality:'personalityChips', otherdetail:'otherdetailChips' };
-  return key in extra ? extra[key] : _origGetContainerByKey(key);
-};
-
-function setAvatarGender(g, btn){
-  avatarGender = g;
-  document.querySelectorAll('#avatarGenderRow .gender-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-function setAvatarSkin(i, btn){
-  avatarSelectedSkinIdx = i;
-  document.querySelectorAll('#avatarSkinRow .swatch').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function handleAvatarRefFile(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  resizeImageToBase64(file, 1400).then(({base64, mimeType, dataUrl}) => {
-    avatarRefImageBase64 = base64;
-    avatarRefImageMime = mimeType;
-    const img = document.getElementById('avatarRefPreviewImg');
-    img.src = dataUrl;
-    img.style.display = 'block';
-    document.getElementById('avatarRefPlaceholder').style.display = 'none';
-    document.getElementById('avatarRefUploadBox').classList.add('has-img');
-    document.getElementById('avatarRefRemoveBtn').style.display = 'flex';
-  }).catch(err => {
-    document.getElementById('avatarQuotaNote').textContent = 'Referans görsel okunamadı: ' + err.message;
-  });
-}
-function removeAvatarRefImage(){
-  avatarRefImageBase64 = null; avatarRefImageMime = null;
-  const img = document.getElementById('avatarRefPreviewImg');
-  img.style.display = 'none'; img.src = '';
-  document.getElementById('avatarRefPlaceholder').style.display = 'block';
-  document.getElementById('avatarRefUploadBox').classList.remove('has-img');
-  document.getElementById('avatarRefRemoveBtn').style.display = 'none';
-  document.getElementById('avatarRefFileInput').value = '';
-}
-
-// Ücretsiz kota: 24 saatte 1 karakter sheet (takvim gününe göre sıfırlanır, diğer kotalarla aynı mantık)
-function getCharacterQuotaState(){
-  const today = new Date().toISOString().slice(0,10);
-  let state;
-  try{ state = JSON.parse(localStorage.getItem('jg_character_quota') || 'null'); }catch(e){ state = null; }
-  if(!state || state.date !== today){
-    state = { date: today, used: 0 };
-    try{ localStorage.setItem('jg_character_quota', JSON.stringify(state)); }catch(e){}
-  }
-  return state;
-}
-function getCharacterRemaining(){
-  return Math.max(0, CHARACTER_DAILY_LIMIT - getCharacterQuotaState().used);
-}
-function consumeCharacterQuota(){
-  const state = getCharacterQuotaState();
-  state.used += 1;
-  try{ localStorage.setItem('jg_character_quota', JSON.stringify(state)); }catch(e){}
-}
-function setCharacterRemaining(remaining){
-  const state = getCharacterQuotaState();
-  state.used = Math.max(0, CHARACTER_DAILY_LIMIT - remaining);
-  try{ localStorage.setItem('jg_character_quota', JSON.stringify(state)); }catch(e){}
-  updateAvatarQuotaNote();
-  refreshFreePill();
-}
-function updateAvatarQuotaNote(){
-  const note = document.getElementById('avatarQuotaNote');
-  if(!note) return;
-  const rem = getCharacterRemaining();
-  note.textContent = rem > 0
-    ? rem + ' / ' + CHARACTER_DAILY_LIMIT + ' ücretsiz karakter hakkınız kaldı (24 saatte yenilenir)'
-    : 'Bugünlük ücretsiz karakter hakkınız bitti. Yarın tekrar deneyebilir ya da JG Plus\'a yükseltebilirsiniz.';
-}
-
-function isLoggedIn(){
-  try{ return !!localStorage.getItem('userEmail'); }catch(e){ return false; }
-}
-
-async function generateCharacter(){
-  if(getCharacterRemaining() <= 0){
-    updateAvatarQuotaNote();
-    return;
-  }
-  if(!CHARACTER_GENERATE_URL || CHARACTER_GENERATE_URL.includes('YOUR-N8N-URL')){
-    document.getElementById('avatarQuotaNote').textContent = 'Karakter oluşturma servisi henüz bağlanmadı.';
-    return;
-  }
-
-  const btn = document.getElementById('avatarSubmitBtn');
-  btn.disabled = true;
-  document.getElementById('avatarQuotaNote').textContent = 'Karakter sheet oluşturuluyor, bu biraz sürebilir...';
-
-  const payload = {
-    deviceId: getDeviceId(),
-    imageProvider: AVATAR_PROVIDERS[avatarSelectedProviderIdx].key,
-    gender: avatarGender,
-    name: document.getElementById('avatarNameInput').value.trim(),
-    age: document.getElementById('avatarAgeInput').value,
-    height: document.getElementById('avatarHeightInput').value,
-    ethnicity: document.getElementById('avatarEthnicitySelect').value,
-    skinTone: SKIN_TONES[avatarSelectedSkinIdx],
-    hairColor: document.getElementById('avatarHairColorSelect').value,
-    hairType: document.getElementById('avatarHairTypeSelect').value,
-    eyeColor: document.getElementById('avatarEyeColorSelect').value,
-    bodyType: document.getElementById('avatarBodyTypeSelect').value,
-    faceDetails: [...avatarSelectedFace],
-    style: [...avatarSelectedAvstyle],
-    personality: [...avatarSelectedPersonality],
-    otherDetails: [...avatarSelectedOtherdetail],
-    extraNotes: document.getElementById('avatarExtraNotes').value.trim(),
-    referenceImage: avatarRefImageBase64 ? { base64: avatarRefImageBase64, mimeType: avatarRefImageMime } : null
-  };
-
-  try{
-    const res = await fetch(CHARACTER_GENERATE_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(payload)
-    });
-    const raw = await res.json();
-    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
-
-    if(!data.allowed){
-      document.getElementById('avatarQuotaNote').textContent = 'Bugün için ücretsiz karakter hakkınız kalmadı.';
-      if(typeof data.remaining === 'number') setCharacterRemaining(data.remaining);
-      return;
-    }
-
-    consumeCharacterQuota();
-    const finalRemaining = (typeof data.remaining === 'number') ? data.remaining : getCharacterRemaining();
-    setCharacterRemaining(finalRemaining);
-    renderCharacterSheet(data.sheet || {}, payload);
-    document.getElementById('avatarQuotaNote').textContent = '';
-  }catch(err){
-    document.getElementById('avatarQuotaNote').textContent = 'Hata: ' + err.message;
-  }finally{
-    btn.disabled = false;
-  }
-}
-
-function renderCharacterSheet(sheet, inputPayload){
-  lastCharacterSheet = { sheet, input: inputPayload };
-
-  document.getElementById('avatarEmptyState').style.display = 'none';
-  const result = document.getElementById('avatarSheetResult');
-  result.style.display = 'block';
-
-  document.getElementById('sheetPortraitImg').src = sheet.portraitUrl || '';
-
-  const views = sheet.views || [];
-  document.getElementById('sheetViewsGrid').innerHTML = views.map(v => `
-    <div class="sheet-view-item">
-      <img src="${v.url || ''}" alt="${escapeAttr(v.label || '')}">
-      <span>${escapeHtml(v.label || '')}</span>
-    </div>`).join('') || '<div class="gen-block-hint">Görünümler henüz oluşturulmadı.</div>';
-
-  const faceDetails = sheet.faceDetails || [];
-  document.getElementById('sheetFaceStrip').innerHTML = faceDetails.map(f => `
-    <div class="sheet-strip-item">
-      <img src="${f.url || ''}" alt="${escapeAttr(f.label || '')}">
-      <span>${escapeHtml(f.label || '')}</span>
-    </div>`).join('') || '<div class="gen-block-hint">Yüz detayı yok.</div>';
-
-  const hairDetails = sheet.hairDetails || [];
-  document.getElementById('sheetHairStrip').innerHTML = hairDetails.map(h => `
-    <div class="sheet-strip-item">
-      <img src="${h.url || ''}" alt="${escapeAttr(h.label || '')}">
-      <span>${escapeHtml(h.label || '')}</span>
-    </div>`).join('') || '<div class="gen-block-hint">Saç detayı yok.</div>';
-
-  const palette = sheet.palette || [];
-  document.getElementById('sheetPalette').innerHTML = palette.map(hex => `<span class="swatch-dot" style="background:${escapeAttr(hex)}" title="${escapeAttr(hex)}"></span>`).join('') || '<div class="gen-block-hint">Renk paleti yok.</div>';
-
-  const info = {
-    'Ad': inputPayload.name || '—',
-    'Yaş': inputPayload.age || '—',
-    'Boy': inputPayload.height ? inputPayload.height + ' cm' : '—',
-    'Irk / Köken': inputPayload.ethnicity || '—',
-    'Saç Rengi': inputPayload.hairColor || '—',
-    'Vücut Yapısı': inputPayload.bodyType || '—',
-    'Tarz': (inputPayload.style || []).join(', ') || '—',
-    'Kişilik': (inputPayload.personality || []).join(', ') || '—'
-  };
-  document.getElementById('sheetInfoGrid').innerHTML = Object.entries(info).map(([k,v]) => `
-    <div class="sheet-info-item"><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(String(v))}</dd></div>`).join('');
-
-  const uses = sheet.suggestedUses || ['Film / Dizi','Oyun Karakteri','Reklam','Sosyal Medya','Roman / Kitap','Dijital Sanat'];
-  document.getElementById('sheetUses').innerHTML = uses.map(u => `<span class="chip">${escapeHtml(u)}</span>`).join('');
-}
-
-// Not: Profile kaydetme özelliği profil sistemi kurulana kadar devre dışı.
-// Profil sistemi hazır olduğunda bu fonksiyon CHARACTER_SAVE_URL'e POST atacak
-// şekilde geri etkinleştirilebilir (bkz. önceki sürüm / n8n save-character workflow'u).
-async function saveCharacter(){
-  // şimdilik pasif
-}
-
-function downloadCharacterSheet(){
-  if(!lastCharacterSheet) return;
-  const sheet = lastCharacterSheet.sheet;
-  const files = [];
-  if(sheet.portraitUrl) files.push({ url: sheet.portraitUrl, name: 'portre' });
-  (sheet.views || []).forEach((v, i) => { if(v.url) files.push({ url: v.url, name: 'gorunum-' + (i+1) + '-' + (v.label || '') }); });
-  (sheet.faceDetails || []).forEach((f, i) => { if(f.url) files.push({ url: f.url, name: 'yuz-detay-' + (i+1) + '-' + (f.label || '') }); });
-  (sheet.hairDetails || []).forEach((h, i) => { if(h.url) files.push({ url: h.url, name: 'sac-detay-' + (i+1) + '-' + (h.label || '') }); });
-
-  files.forEach((f, i) => {
-    setTimeout(() => {
-      const a = document.createElement('a');
-      a.href = f.url;
-      a.download = 'karakter-' + f.name.replace(/[^a-z0-9-]+/gi, '_') + '.png';
-      a.target = '_blank';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }, i * 250);
-  });
-}
-function shareCharacterSheet(){
-  if(!lastCharacterSheet) return;
-  const url = lastCharacterSheet.sheet.portraitUrl || '';
-  if(navigator.share){
-    navigator.share({ title: 'JG Studio Karakter Sheet', url }).catch(() => {});
-  }else if(url){
-    navigator.clipboard.writeText(url);
-  }
-}
-
-// ---- Google Girişi ----
-const GOOGLE_CLIENT_ID = '1036033399902-fufvgkbifjipd9615d790gkjh8k3u7an.apps.googleusercontent.com';
-
-function decodeJwt(token){
-  try{
-    const payload = token.split('.')[1];
-    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-    return JSON.parse(decoded);
-  }catch(e){ return null; }
-}
-
-function handleGoogleCredential(response){
-  const data = decodeJwt(response.credential);
-  if(!data) return;
-  try{
-    localStorage.setItem('userEmail', data.email || '');
-    localStorage.setItem('userName', data.name || '');
-    localStorage.setItem('userPicture', data.picture || '');
-  }catch(e){}
-  renderAuthArea();
-}
-
-function logout(){
-  try{
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userPicture');
-  }catch(e){}
-  if(window.google && google.accounts && google.accounts.id){
-    google.accounts.id.disableAutoSelect();
-  }
-  renderAuthArea();
-}
-
-function getInitial(name, email){
-  const src = (name || email || 'JG').trim();
-  return src.charAt(0).toUpperCase();
-}
-
-function renderAuthArea(){
-  const area = document.getElementById('authArea');
-  let email = '';
-  try{ email = localStorage.getItem('userEmail') || ''; }catch(e){}
-
-  if(email){
-    const name = (() => { try{ return localStorage.getItem('userName') || ''; }catch(e){ return ''; } })();
-    const picture = (() => { try{ return localStorage.getItem('userPicture') || ''; }catch(e){ return ''; } })();
-    area.innerHTML = `
-      <button class="avatar-circle" title="${escapeAttr(name || email)} — çıkış için tıkla" onclick="logout()">
-        ${picture ? `<img src="${escapeAttr(picture)}" alt="">` : escapeHtml(getInitial(name, email))}
-      </button>`;
-  }else{
-    area.innerHTML = '<button class="avatar-circle" id="googlePromptBtn" title="Giriş yap">JG</button>';
-    if(window.google && google.accounts && google.accounts.id){
-      google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleCredential
-      });
-      const promptBtn = document.getElementById('googlePromptBtn');
-      if(promptBtn){
-        promptBtn.onclick = () => google.accounts.id.prompt();
+      },
+      "id": "kota_uygun_mu",
+      "name": "Kota Uygun mu",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"allowed\": false, \"remaining\": $json.remaining } }}"
+      },
+      "id": "kota_bitti_yaniti",
+      "name": "Kota Bitti Yaniti",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        780,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nreturn item.panels.map(p => ({\n  json: {\n    key: p.key,\n    label: p.label,\n    kind: p.kind,\n    size: p.size,\n    prompt: item.bible + ' ' + p.instruction,\n    provider: item.provider,\n    hasRef: item.hasRef,\n    refBase64: item.refBase64,\n    refMime: item.refMime,\n    skinTone: item.skinTone,\n    hairColor: item.hairColor,\n    eyeColor: item.eyeColor,\n    deviceId: item.deviceId\n  }\n}));"
+      },
+      "id": "panelleri_item_yap",
+      "name": "Panelleri Item Yap",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{$json.provider === 'openai'}}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "servis_openai_mi",
+      "name": "Servis OpenAI mi",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{$json.provider === 'gemini_free'}}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "servis_gemini_ucretsiz_mi",
+      "name": "Servis Gemini Ucretsiz mi",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{$json.hasRef}}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "openai_-_referans_var_mi",
+      "name": "OpenAI - Referans Var mi",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => ({\n  json: item.json,\n  binary: {\n    image: {\n      data: item.json.refBase64,\n      mimeType: item.json.refMime || 'image/png',\n      fileName: 'referans.png'\n    }\n  }\n}));"
+      },
+      "id": "base64_to_binary_ref",
+      "name": "Base64 to Binary (Ref)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1460,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/edits",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "image",
+              "inputDataFieldName": "image"
+            },
+            {
+              "name": "prompt",
+              "value": "={{$json.prompt}}"
+            },
+            {
+              "name": "model",
+              "value": "gpt-image-1.5"
+            },
+            {
+              "name": "size",
+              "value": "={{$json.size}}"
+            },
+            {
+              "name": "n",
+              "value": "1"
+            }
+          ]
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "outputPropertyName": "apiResponse"
+            }
+          }
+        }
+      },
+      "id": "gorsel_uret_-_openai_edits",
+      "name": "Gorsel Uret - OpenAI Edits",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        -140
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PLACEHOLDER",
+          "name": "OpenAI API Key"
+        }
       }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/generations",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"model\": \"gpt-image-1.5\", \"prompt\": $json.prompt, \"size\": $json.size, \"n\": 1 } }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "outputPropertyName": "apiResponse"
+            }
+          }
+        }
+      },
+      "id": "gorsel_uret_-_openai_generations",
+      "name": "Gorsel Uret - OpenAI Generations",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        40
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PLACEHOLDER",
+          "name": "OpenAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 2
+      },
+      "id": "openai_sonuclarini_birlestir",
+      "name": "OpenAI Sonuclarini Birlestir",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1900,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(it => {\n  const resp = it.json.apiResponse || it.json;\n  const b64 = (resp && resp.data && resp.data[0]) ? resp.data[0].b64_json : null;\n  return {\n    json: {\n      key: it.json.key, label: it.json.label, deviceId: it.json.deviceId,\n      skinTone: it.json.skinTone, hairColor: it.json.hairColor, eyeColor: it.json.eyeColor,\n      imageBase64: b64\n    }\n  };\n});"
+      },
+      "id": "normallestir_-_openai",
+      "name": "Normallestir - OpenAI",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2120,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(it => {\n  const parts = [{ text: it.json.prompt }];\n  if(it.json.hasRef && it.json.refBase64){\n    parts.push({ inlineData: { mimeType: it.json.refMime || 'image/png', data: it.json.refBase64 } });\n  }\n  return {\n    json: {\n      ...it.json,\n      geminiBody: {\n        contents: [{ parts }],\n        generationConfig: { responseModalities: ['IMAGE'] }\n      }\n    }\n  };\n});"
+      },
+      "id": "gemini_body_hazirla_ucretsiz",
+      "name": "Gemini Body Hazirla (Ucretsiz)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.geminiBody }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "outputPropertyName": "apiResponse"
+            }
+          }
+        }
+      },
+      "id": "gorsel_uret_-_gemini_ucretsiz",
+      "name": "Gorsel Uret - Gemini Ucretsiz",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1460,
+        380
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PLACEHOLDER",
+          "name": "Gemini API Key (Ucretsiz)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(it => {\n  const resp = it.json.apiResponse || it.json;\n  let b64 = null;\n  try{\n    const parts = resp.candidates[0].content.parts;\n    const imgPart = parts.find(p => p.inlineData);\n    b64 = imgPart ? imgPart.inlineData.data : null;\n  }catch(e){ b64 = null; }\n  return {\n    json: {\n      key: it.json.key, label: it.json.label, deviceId: it.json.deviceId,\n      skinTone: it.json.skinTone, hairColor: it.json.hairColor, eyeColor: it.json.eyeColor,\n      imageBase64: b64\n    }\n  };\n});"
+      },
+      "id": "normallestir_-_gemini_ucretsiz",
+      "name": "Normallestir - Gemini Ucretsiz",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(it => {\n  const parts = [{ text: it.json.prompt }];\n  if(it.json.hasRef && it.json.refBase64){\n    parts.push({ inlineData: { mimeType: it.json.refMime || 'image/png', data: it.json.refBase64 } });\n  }\n  return {\n    json: {\n      ...it.json,\n      geminiBody: {\n        contents: [{ parts }],\n        generationConfig: { responseModalities: ['IMAGE'] }\n      }\n    }\n  };\n});"
+      },
+      "id": "gemini_body_hazirla_ucretli",
+      "name": "Gemini Body Hazirla (Ucretli)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.geminiBody }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "outputPropertyName": "apiResponse"
+            }
+          }
+        }
+      },
+      "id": "gorsel_uret_-_gemini_ucretli",
+      "name": "Gorsel Uret - Gemini Ucretli",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1460,
+        640
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PLACEHOLDER",
+          "name": "Gemini API Key (Ucretli / Pro)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(it => {\n  const resp = it.json.apiResponse || it.json;\n  let b64 = null;\n  try{\n    const parts = resp.candidates[0].content.parts;\n    const imgPart = parts.find(p => p.inlineData);\n    b64 = imgPart ? imgPart.inlineData.data : null;\n  }catch(e){ b64 = null; }\n  return {\n    json: {\n      key: it.json.key, label: it.json.label, deviceId: it.json.deviceId,\n      skinTone: it.json.skinTone, hairColor: it.json.hairColor, eyeColor: it.json.eyeColor,\n      imageBase64: b64\n    }\n  };\n});"
+      },
+      "id": "normallestir_-_gemini_ucretli",
+      "name": "Normallestir - Gemini Ucretli",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 3
+      },
+      "id": "tum_servisleri_birlestir",
+      "name": "Tum Servisleri Birlestir",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        2340,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst byKey = {};\nitems.forEach(it => {\n  byKey[it.json.key] = {\n    label: it.json.label,\n    url: it.json.imageBase64 ? ('data:image/png;base64,' + it.json.imageBase64) : ''\n  };\n});\n\nconst viewKeys = ['view_front','view_side','view_back','view_34front','view_34back'];\nconst faceKeys = ['face_eyes','face_nose','face_lips','face_skin'];\nconst hairKeys = ['hair_front','hair_side','hair_back'];\n\nconst first = items[0] ? items[0].json : {};\n\nconst HAIR_HEX = { 'siyah':'#1B1410','koyu kahverengi':'#3B2A1E','acik kahverengi':'#6B4A32','kumral':'#8A6A45','sari':'#D9B36C','kizil':'#8C4A2B','gri / beyaz':'#C8C3BC','renkli':'#B26FBF' };\nconst EYE_HEX = { 'kahverengi':'#4B3221','ela':'#6B5537','yesil':'#3F6B4A','mavi':'#3C6B8C','gri':'#8C9096','siyah':'#1A1A1A' };\n\nconst hairHex = HAIR_HEX[String(first.hairColor||'').toLowerCase()] || '#3B2A1E';\nconst eyeHex = EYE_HEX[String(first.eyeColor||'').toLowerCase()] || '#4B3221';\nconst skinHex = first.skinTone || '#D39C6E';\n\nreturn [{\n  json: {\n    deviceId: first.deviceId,\n    sheet: {\n      portraitUrl: byKey['portrait'] ? byKey['portrait'].url : '',\n      views: viewKeys.map(k => byKey[k] || { label:k, url:'' }),\n      faceDetails: faceKeys.map(k => byKey[k] || { label:k, url:'' }),\n      hairDetails: hairKeys.map(k => byKey[k] || { label:k, url:'' }),\n      palette: [skinHex, hairHex, eyeHex],\n      suggestedUses: ['Film / Dizi','Oyun Karakteri','Reklam','Sosyal Medya','Roman / Kitap','Dijital Sanat']\n    }\n  }\n}];"
+      },
+      "id": "sheet_json_olustur",
+      "name": "Sheet JSON Olustur",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2560,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const first = $input.first().json;\nconst deviceId = first.deviceId;\nconst sheet = first.sheet;\n\nconst staticData = $getWorkflowStaticData('global');\nif(!staticData.characterQuota) staticData.characterQuota = {};\nconst today = new Date().toISOString().slice(0,10);\nconst record = staticData.characterQuota[deviceId] || { date: today, used: 0 };\nif(record.date !== today){ record.date = today; record.used = 0; }\nrecord.used += 1;\nstaticData.characterQuota[deviceId] = record;\n\nconst DAILY_LIMIT = 1;\nreturn [{\n  json: {\n    allowed: true,\n    remaining: Math.max(0, DAILY_LIMIT - record.used),\n    sheet\n  }\n}];"
+      },
+      "id": "kota_guncelle",
+      "name": "Kota Guncelle",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2780,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "basarili_yanit",
+      "name": "Basarili Yanit",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3000,
+        160
+      ]
     }
+  ],
+  "connections": {
+    "Webhook - Karakter Olustur": {
+      "main": [
+        [
+          {
+            "node": "Kota Kontrol ve Prompt Hazirla",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kota Kontrol ve Prompt Hazirla": {
+      "main": [
+        [
+          {
+            "node": "Kota Uygun mu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kota Uygun mu": {
+      "main": [
+        [
+          {
+            "node": "Panelleri Item Yap",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Kota Bitti Yaniti",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Panelleri Item Yap": {
+      "main": [
+        [
+          {
+            "node": "Servis OpenAI mi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Servis OpenAI mi": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - Referans Var mi",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Servis Gemini Ucretsiz mi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Servis Gemini Ucretsiz mi": {
+      "main": [
+        [
+          {
+            "node": "Gemini Body Hazirla (Ucretsiz)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gemini Body Hazirla (Ucretli)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - Referans Var mi": {
+      "main": [
+        [
+          {
+            "node": "Base64 to Binary (Ref)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gorsel Uret - OpenAI Generations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Base64 to Binary (Ref)": {
+      "main": [
+        [
+          {
+            "node": "Gorsel Uret - OpenAI Edits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gorsel Uret - OpenAI Edits": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Sonuclarini Birlestir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gorsel Uret - OpenAI Generations": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Sonuclarini Birlestir",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI Sonuclarini Birlestir": {
+      "main": [
+        [
+          {
+            "node": "Normallestir - OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Body Hazirla (Ucretsiz)": {
+      "main": [
+        [
+          {
+            "node": "Gorsel Uret - Gemini Ucretsiz",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gorsel Uret - Gemini Ucretsiz": {
+      "main": [
+        [
+          {
+            "node": "Normallestir - Gemini Ucretsiz",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Body Hazirla (Ucretli)": {
+      "main": [
+        [
+          {
+            "node": "Gorsel Uret - Gemini Ucretli",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gorsel Uret - Gemini Ucretli": {
+      "main": [
+        [
+          {
+            "node": "Normallestir - Gemini Ucretli",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normallestir - OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Tum Servisleri Birlestir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normallestir - Gemini Ucretsiz": {
+      "main": [
+        [
+          {
+            "node": "Tum Servisleri Birlestir",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Normallestir - Gemini Ucretli": {
+      "main": [
+        [
+          {
+            "node": "Tum Servisleri Birlestir",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Tum Servisleri Birlestir": {
+      "main": [
+        [
+          {
+            "node": "Sheet JSON Olustur",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet JSON Olustur": {
+      "main": [
+        [
+          {
+            "node": "Kota Guncelle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kota Guncelle": {
+      "main": [
+        [
+          {
+            "node": "Basarili Yanit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "instanceId": "jg-studio"
   }
 }
-
-window.addEventListener('load', () => {
-  updateRemainingLabel();
-  initGenView();
-  initAvatarView();
-  updateGenQuotaNote();
-  refreshFreePill();
-  // Google script'inin yüklenmesini bekle
-  const tryRender = () => {
-    if(window.google && google.accounts && google.accounts.id){
-      renderAuthArea();
-    }else{
-      setTimeout(tryRender, 200);
-    }
-  };
-  tryRender();
-});
-
-loadData();
-</script>
-</body>
-</html>
