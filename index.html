@@ -1902,6 +1902,18 @@
         </div>
       </div>
 
+      <div>
+        <div class="gen-block-label">Görsel Üretim Servisi</div>
+        <div class="model-select-wrap" id="avatarProviderWrap">
+          <button type="button" class="model-select-btn" onclick="toggleAvatarProviderMenu()">
+            <span class="model-current"><span id="avatarProviderIcon">✨</span> <span id="avatarProviderName">Gemini (Ücretsiz)</span> <span class="model-badge-new" id="avatarProviderBadge">Free</span></span>
+            <span>⌄</span>
+          </button>
+          <div class="model-menu" id="avatarProviderMenu"></div>
+        </div>
+        <div class="model-desc" id="avatarProviderDesc"></div>
+      </div>
+
       <div class="accordion">
 
         <div class="acc-item">
@@ -1993,7 +2005,7 @@
               <div class="sheet-actions">
                 <button class="btn" onclick="downloadCharacterSheet()">⬇ Tümünü İndir</button>
                 <button class="btn" onclick="shareCharacterSheet()">⇗ Paylaş</button>
-                <button class="btn primary" id="avatarSaveBtn" onclick="saveCharacter()">💾 Kaydet</button>
+                <button class="btn" id="avatarSaveBtn" disabled title="Yakında aktif olacak">💾 Profile Kaydet</button>
               </div>
             </div>
 
@@ -2032,7 +2044,7 @@
             <div style="flex:1; min-width:200px;">
               <div class="sheet-block-label">Önerilen Kullanımlar</div>
               <div class="sheet-uses" id="sheetUses"></div>
-              <div class="save-login-hint" id="avatarSaveHint" style="margin-top:14px;"></div>
+              <div class="save-login-hint" id="avatarSaveHint" style="margin-top:14px;">Profile kaydetme yakında eklenecek. Şimdilik karakterini indirebilirsin.</div>
             </div>
           </div>
 
@@ -3170,6 +3182,16 @@ const PERSONALITY_OPTIONS = ['Özgüvenli','Zeki','Bağımsız','Sıcakkanlı','
 const OTHER_DETAIL_OPTIONS = ['Fotoğrafçı','Model','Sanatçı','Girişimci','Sporcu','Öğrenci','Yazar','Mühendis','Müzisyen','Aktör/Aktris'];
 const SKIN_TONES = ['#F5D5B8','#E8B88C','#D39C6E','#B57A4A','#8B5A2B','#5C3A1E'];
 
+// Not: Anthropic (Claude) burada listelenmiyor çünkü bir görsel üretim API'si yok.
+const AVATAR_PROVIDERS = [
+  { key:'gemini_free', name:'Gemini (Ücretsiz)', icon:'✨', badge:'Free', desc:'Google Gemini ücretsiz katman; günlük istek limiti ve daha yavaş kuyruk olabilir.' },
+  { key:'gemini_paid', name:'Gemini (Ücretli)', icon:'✨', badge:'Pro', desc:'Google Gemini ücretli/Pro katman; daha yüksek limit ve öncelikli işleme.' },
+  { key:'openai', name:'OpenAI (GPT Image)', icon:'🤖', badge:'', desc:'OpenAI görsel üretim modeli; yüksek detay ve prompt takibi.' },
+  { key:'stability', name:'Stability AI (SDXL)', icon:'🧬', badge:'', desc:'Stable Diffusion tabanlı, esnek ve özelleştirmeye açık model.' },
+  { key:'flux', name:'Flux Pro', icon:'⚡', badge:'', desc:'Fotogerçekçi sonuçlar ve gelişmiş prompt takibi.' }
+];
+let avatarSelectedProviderIdx = 0;
+
 let avatarGender = 'Kadın';
 let avatarSelectedSkinIdx = 0;
 let avatarSelectedFace = new Set();
@@ -3187,9 +3209,38 @@ function initAvatarView(){
   renderChipGroup('avstyleChips', AVATAR_STYLE_OPTIONS, avatarSelectedAvstyle, 'avstyle');
   renderChipGroup('personalityChips', PERSONALITY_OPTIONS, avatarSelectedPersonality, 'personality');
   renderChipGroup('otherdetailChips', OTHER_DETAIL_OPTIONS, avatarSelectedOtherdetail, 'otherdetail');
+  renderAvatarProviderMenu();
 
   updateAvatarQuotaNote();
 }
+
+function toggleAvatarProviderMenu(){
+  document.getElementById('avatarProviderMenu').classList.toggle('open');
+}
+function renderAvatarProviderMenu(){
+  const menu = document.getElementById('avatarProviderMenu');
+  menu.innerHTML = AVATAR_PROVIDERS.map((p, i) => `
+    <button type="button" class="model-option" onclick="selectAvatarProvider(${i})">
+      <span class="m-name">${p.icon} ${escapeHtml(p.name)} ${p.badge ? `<span class="model-badge-new">${escapeHtml(p.badge)}</span>` : ''}</span>
+      <span class="m-desc">${escapeHtml(p.desc)}</span>
+    </button>`).join('');
+  selectAvatarProvider(avatarSelectedProviderIdx, true);
+}
+function selectAvatarProvider(i, silent){
+  avatarSelectedProviderIdx = i;
+  const p = AVATAR_PROVIDERS[i];
+  document.getElementById('avatarProviderIcon').textContent = p.icon;
+  document.getElementById('avatarProviderName').textContent = p.name;
+  document.getElementById('avatarProviderDesc').textContent = p.desc;
+  const badgeEl = document.getElementById('avatarProviderBadge');
+  badgeEl.style.display = p.badge ? 'inline-block' : 'none';
+  badgeEl.textContent = p.badge;
+  if(!silent) document.getElementById('avatarProviderMenu').classList.remove('open');
+}
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('avatarProviderWrap');
+  if(wrap && !wrap.contains(e.target)) document.getElementById('avatarProviderMenu').classList.remove('open');
+});
 
 // toggleChip/getSetByKey/getOptionsByKey/getContainerByKey (Görsel Oluşturucu'dan) yeni anahtarları da tanısın diye genişletiyoruz
 const _origGetSetByKey = getSetByKey;
@@ -3300,6 +3351,7 @@ async function generateCharacter(){
 
   const payload = {
     deviceId: getDeviceId(),
+    imageProvider: AVATAR_PROVIDERS[avatarSelectedProviderIdx].key,
     gender: avatarGender,
     name: document.getElementById('avatarNameInput').value.trim(),
     age: document.getElementById('avatarAgeInput').value,
@@ -3393,66 +3445,35 @@ function renderCharacterSheet(sheet, inputPayload){
 
   const uses = sheet.suggestedUses || ['Film / Dizi','Oyun Karakteri','Reklam','Sosyal Medya','Roman / Kitap','Dijital Sanat'];
   document.getElementById('sheetUses').innerHTML = uses.map(u => `<span class="chip">${escapeHtml(u)}</span>`).join('');
-
-  const saveBtn = document.getElementById('avatarSaveBtn');
-  const saveHint = document.getElementById('avatarSaveHint');
-  if(isLoggedIn()){
-    saveBtn.disabled = false;
-    saveBtn.textContent = '💾 Kaydet';
-    saveHint.textContent = '';
-  }else{
-    saveBtn.disabled = false;
-    saveHint.textContent = 'Kaydetmek için giriş yapmalısınız.';
-  }
 }
 
+// Not: Profile kaydetme özelliği profil sistemi kurulana kadar devre dışı.
+// Profil sistemi hazır olduğunda bu fonksiyon CHARACTER_SAVE_URL'e POST atacak
+// şekilde geri etkinleştirilebilir (bkz. önceki sürüm / n8n save-character workflow'u).
 async function saveCharacter(){
-  if(!lastCharacterSheet) return;
-  if(!isLoggedIn()){
-    document.getElementById('avatarSaveHint').textContent = 'Kaydetmek için önce sağ üstten Google ile giriş yapın.';
-    return;
-  }
-  if(!CHARACTER_SAVE_URL || CHARACTER_SAVE_URL.includes('YOUR-N8N-URL')){
-    document.getElementById('avatarSaveHint').textContent = 'Kaydetme servisi henüz bağlanmadı.';
-    return;
-  }
-  const btn = document.getElementById('avatarSaveBtn');
-  btn.disabled = true;
-  const originalLabel = btn.textContent;
-  btn.textContent = 'Kaydediliyor...';
-  try{
-    const email = localStorage.getItem('userEmail') || '';
-    const res = await fetch(CHARACTER_SAVE_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ email, ...lastCharacterSheet })
-    });
-    const raw = await res.json();
-    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
-    if(data.success){
-      btn.textContent = '✓ Kaydedildi';
-      document.getElementById('avatarSaveHint').textContent = 'Karakter hesabınıza kaydedildi.';
-    }else{
-      btn.textContent = originalLabel;
-      document.getElementById('avatarSaveHint').textContent = data.message || 'Kaydetme başarısız oldu.';
-    }
-  }catch(err){
-    btn.textContent = originalLabel;
-    document.getElementById('avatarSaveHint').textContent = 'Bağlantı hatası: ' + err.message;
-  }finally{
-    btn.disabled = false;
-  }
+  // şimdilik pasif
 }
 
 function downloadCharacterSheet(){
-  if(!lastCharacterSheet || !lastCharacterSheet.sheet.portraitUrl) return;
-  const a = document.createElement('a');
-  a.href = lastCharacterSheet.sheet.portraitUrl;
-  a.download = 'karakter-sheet.png';
-  a.target = '_blank';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  if(!lastCharacterSheet) return;
+  const sheet = lastCharacterSheet.sheet;
+  const files = [];
+  if(sheet.portraitUrl) files.push({ url: sheet.portraitUrl, name: 'portre' });
+  (sheet.views || []).forEach((v, i) => { if(v.url) files.push({ url: v.url, name: 'gorunum-' + (i+1) + '-' + (v.label || '') }); });
+  (sheet.faceDetails || []).forEach((f, i) => { if(f.url) files.push({ url: f.url, name: 'yuz-detay-' + (i+1) + '-' + (f.label || '') }); });
+  (sheet.hairDetails || []).forEach((h, i) => { if(h.url) files.push({ url: h.url, name: 'sac-detay-' + (i+1) + '-' + (h.label || '') }); });
+
+  files.forEach((f, i) => {
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.href = f.url;
+      a.download = 'karakter-' + f.name.replace(/[^a-z0-9-]+/gi, '_') + '.png';
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }, i * 250);
+  });
 }
 function shareCharacterSheet(){
   if(!lastCharacterSheet) return;
