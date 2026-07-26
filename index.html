@@ -1544,8 +1544,6 @@
       </div>
     </div>
 
-    <span class="free-pill" id="freePill">⚡ <span id="freePillText"></span></span>
-
     <div class="credit-pill" id="creditPill">
       <span>💎 <span class="credit-amount" id="creditAmountText">0</span> JG Puanı</span>
       <button class="credit-add-btn" id="creditAddBtn" onclick="openCreditModal()" title="Kredi satın al">+</button>
@@ -1667,17 +1665,17 @@
       </div>
     </div>
     <div class="feature">
-      <span class="feature-icon">⚡</span>
+      <span class="feature-icon">💎</span>
       <div>
-        <strong id="featureFreeTitle">3 Ücretsiz Hakkınız Var</strong>
-        <p>Her gün 3 adet ücretsiz prompt oluşturabilirsiniz.</p>
+        <strong id="featureFreeTitle">Kredi Bakiyenizden Düşülür</strong>
+        <p id="featureFreeDesc">Her prompt üretimi sabit bir kredi tutarı karşılığında yapılır.</p>
       </div>
     </div>
     <div class="feature">
       <span class="feature-icon">🕐</span>
       <div>
-        <strong>Günlük Sıfırlanır</strong>
-        <p>Haklarınız her gün 00:00'da yenilenir.</p>
+        <strong>Anında Sonuç</strong>
+        <p>Kredi bakiyeniz yeterliyse üretim birkaç saniye içinde tamamlanır.</p>
       </div>
     </div>
   </div>
@@ -1815,7 +1813,7 @@
       </div>
 
       <button type="button" class="gen-submit-btn" id="genSubmitBtn" onclick="generateVisual()" disabled>✨ Görseli Oluştur</button>
-      <div class="gen-quota-note" id="genQuotaNote">5 görsel hakkınız kaldı (24 saatte yenilenir)</div>
+      <div class="gen-quota-note" id="genQuotaNote"></div>
 
     </div>
 
@@ -2135,10 +2133,10 @@
         </div>
       </div>
       <div class="feature">
-        <span class="feature-icon">⚡</span>
+        <span class="feature-icon">💎</span>
         <div>
-          <strong>Günde 1 Ücretsiz Sheet</strong>
-          <p>24 saatte 1 adet karakter sheet'ini ücretsiz oluşturabilirsin.</p>
+          <strong>13 Panelin Tamamı Kredi Bakiyenizden Düşülür</strong>
+          <p>Sheet başına toplam maliyet, seçtiğiniz servise göre değişir (aşağıda gösterilir).</p>
         </div>
       </div>
       <div class="feature" style="align-items:center;">
@@ -2271,10 +2269,8 @@ const PREMIUM_LIST_URL = 'https://jemghz.app.n8n.cloud/webhook/premium-list';
 const PREMIUM_VERIFY_URL = 'https://jemghz.app.n8n.cloud/webhook/verify-premium-code';
 const PROMPT_MAKER_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-prompt';
 const GEN_GENERATE_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-visual';
-const IMAGE_DAILY_LIMIT = 5;
 const CHARACTER_GENERATE_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-character';
 const CHARACTER_SAVE_URL = 'https://jemghz.app.n8n.cloud/webhook/save-character';
-const CHARACTER_DAILY_LIMIT = 1;
 
 // ---- Kredi sistemi: n8n webhook URL'leri (henüz bağlanmadıysa placeholder olarak kalır) ----
 // ÖNEMLİ: Bu üç uç, gerçek para hareketinin doğrulandığı yerdir. Bakiye ASLA sadece
@@ -2755,8 +2751,6 @@ function switchTab(tab){
   document.getElementById('makerView').style.display = tab === 'maker' ? 'block' : 'none';
   document.getElementById('visualView').style.display = tab === 'visual' ? 'block' : 'none';
   document.getElementById('avatarView').style.display = tab === 'avatar' ? 'block' : 'none';
-  activeQuotaContext = tab;
-  refreshFreePill();
 }
 
 function triggerUploadFlow(){
@@ -2831,44 +2825,6 @@ function handleMakerDrop(e){
   if(file) handleMakerFile({ target: { files: [file] } });
 }
 
-let activeQuotaContext = 'gallery';
-let promptRemaining = null;
-
-function refreshFreePill(){
-  const pill = document.getElementById('freePillText');
-  if(!pill) return;
-  if(activeQuotaContext === 'visual'){
-    const rem = getImageRemaining();
-    pill.textContent = rem + ' / ' + IMAGE_DAILY_LIMIT + ' görsel hakkınız kaldı';
-  }else if(activeQuotaContext === 'avatar'){
-    const rem = getCharacterRemaining();
-    pill.textContent = rem + ' / ' + CHARACTER_DAILY_LIMIT + ' karakter hakkınız kaldı';
-  }else{
-    if(promptRemaining === null){
-      pill.textContent = '3 ücretsiz hakkınız kaldı';
-    }else if(promptRemaining > 0){
-      pill.textContent = promptRemaining + ' ücretsiz hakkınız kaldı';
-    }else{
-      pill.textContent = 'Bugünlük hakkınız bitti';
-    }
-  }
-}
-
-function updateRemainingLabel(remaining){
-  const featureTitle = document.getElementById('featureFreeTitle');
-  promptRemaining = (remaining === undefined) ? null : remaining;
-  if(featureTitle){
-    if(promptRemaining === null){
-      featureTitle.textContent = '3 Ücretsiz Hakkınız Var';
-    }else if(promptRemaining > 0){
-      featureTitle.textContent = promptRemaining + ' Ücretsiz Hakkınız Var';
-    }else{
-      featureTitle.textContent = 'Bugünlük Hakkınız Bitti';
-    }
-  }
-  refreshFreePill();
-}
-
 function resetResultPanel(){
   makerGeneratedPrompt = '';
   const box = document.getElementById('makerResultBox');
@@ -2893,6 +2849,19 @@ function showResultPrompt(promptText){
 async function generatePrompt(){
   if(!makerImageBase64) return;
 
+  if(!isLoggedIn()){
+    document.getElementById('makerStatus').textContent = 'Prompt üretmek için önce giriş yapmalısın.';
+    openCreditModal();
+    return;
+  }
+
+  const cost = PROMPT_MAKER_CREDIT_COST;
+  if(currentCreditBalance < cost){
+    document.getElementById('makerStatus').textContent = `Yetersiz kredi: bu işlem ${cost} kredi tutuyor, bakiyeniz ${currentCreditBalance}.`;
+    openCreditModal();
+    return;
+  }
+
   if(!PROMPT_MAKER_URL || PROMPT_MAKER_URL.includes('YOUR-N8N-URL')){
     document.getElementById('makerStatus').textContent = 'Prompt üretici servisi henüz bağlanmadı.';
     return;
@@ -2908,23 +2877,26 @@ async function generatePrompt(){
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
+        email: localStorage.getItem('userEmail') || '',
         deviceId: getDeviceId(),
         mimeType: makerImageMime,
-        imageBase64: makerImageBase64
+        imageBase64: makerImageBase64,
+        creditCost: cost
       })
     });
     const raw = await res.json();
     const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
 
     if(!data.allowed){
-      document.getElementById('makerStatus').textContent = 'Bugün için ücretsiz hakkınız kalmadı.';
-      updateRemainingLabel(data.remaining ?? 0);
+      document.getElementById('makerStatus').textContent = data.message || 'Kredi bakiyeniz bu işlem için yetersiz.';
+      if(typeof data.newBalance === 'number') setLocalCreditBalance(data.newBalance);
+      openCreditModal();
       return;
     }
 
     document.getElementById('makerStatus').textContent = '';
     showResultPrompt(data.promptText || '');
-    updateRemainingLabel(data.remaining);
+    if(typeof data.newBalance === 'number') setLocalCreditBalance(data.newBalance);
   }catch(err){
     document.getElementById('makerStatus').textContent = 'Hata: ' + err.message;
   }finally{
@@ -2980,12 +2952,15 @@ const EFFECT_OPTIONS = ['Sinematik ışık','Bokeh','Duman / Sis','Neon parılt�
 const POSE_OPTIONS = ['Ayakta duruş','Yürüyüş','Oturma','Aksiyon / hareket','Doğal & rahat','Editorial poz','Yakın yüz ifadesi','Sırtı dönük'];
 const STYLE_OPTIONS = ['Sinematik','Portre','Thumbnail','Eskiz (Sketch)','Piksel Sanatı','Anime','3D Render','Suluboya','Yağlıboya','Minimalist','Vintage Film','Fantastik','Ürün Fotoğrafçılığı','Moda / Editorial','Siyah-Beyaz','Gerçekçi (Realistic)','Konsept Sanat'];
 
+// creditCost: PLACEHOLDER — göreceli maliyet farkını yansıtan tahmini kredi değerleri.
+// Gerçek API maliyetin netleşince (özellikle Midjourney/Ideogram gibi proxy servisler için)
+// bu sayıları kendi kâr marjına göre güncelle.
 const AI_MODELS = [
-  { name:'DALL·E 3', icon:'🎨', badge:'New', desc:'Daha yüksek kalite ve detay için en iyi seçim.' },
-  { name:'Midjourney v6', icon:'🌙', badge:'', desc:'Sanatsal ve atmosferik sonuçlar için güçlü seçim.' },
-  { name:'Stable Diffusion XL', icon:'🧬', badge:'', desc:'Hızlı ve esnek, özelleştirmeye açık bir model.' },
-  { name:'Flux Pro', icon:'⚡', badge:'', desc:'Fotogerçekçi sonuçlar ve gelişmiş prompt takibi.' },
-  { name:'Ideogram', icon:'🔤', badge:'', desc:'Görsele metin/yazı eklemek için en iyi seçim.' }
+  { name:'DALL·E 3', icon:'🎨', badge:'New', desc:'Daha yüksek kalite ve detay için en iyi seçim.', creditCost:3 },
+  { name:'Midjourney v6', icon:'🌙', badge:'', desc:'Sanatsal ve atmosferik sonuçlar için güçlü seçim.', creditCost:3 },
+  { name:'Stable Diffusion XL', icon:'🧬', badge:'', desc:'Hızlı ve esnek, özelleştirmeye açık bir model.', creditCost:1 },
+  { name:'Flux Pro', icon:'⚡', badge:'', desc:'Fotogerçekçi sonuçlar ve gelişmiş prompt takibi.', creditCost:2 },
+  { name:'Ideogram', icon:'🔤', badge:'', desc:'Görsele metin/yazı eklemek için en iyi seçim.', creditCost:2 }
 ];
 
 let genSelectedCamera = new Set();
@@ -3062,6 +3037,7 @@ function setGenCount(n, btn){
   genSelectedCount = n;
   document.querySelectorAll('#genCountRow .count-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  updateGenQuotaNote();
 }
 
 function toggleModelMenu(){
@@ -3072,7 +3048,7 @@ function renderModelMenu(){
   menu.innerHTML = AI_MODELS.map((m, i) => `
     <button type="button" class="model-option" onclick="selectModel(${i})">
       <span class="m-name">${m.icon} ${escapeHtml(m.name)} ${m.badge ? `<span class="model-badge-new">${escapeHtml(m.badge)}</span>` : ''}</span>
-      <span class="m-desc">${escapeHtml(m.desc)}</span>
+      <span class="m-desc">${escapeHtml(m.desc)} · ${m.creditCost} kredi / görsel</span>
     </button>`).join('');
   selectModel(genSelectedModelIdx, true);
 }
@@ -3081,10 +3057,11 @@ function selectModel(i, silent){
   const m = AI_MODELS[i];
   document.getElementById('genModelIcon').textContent = m.icon;
   document.getElementById('genModelName').textContent = m.name;
-  document.getElementById('genModelDesc').textContent = m.desc;
+  document.getElementById('genModelDesc').textContent = `${m.desc} · ${m.creditCost} kredi / görsel`;
   const badgeEl = document.getElementById('genModelBadge');
   badgeEl.style.display = m.badge ? 'inline-block' : 'none';
   if(!silent) document.getElementById('genModelMenu').classList.remove('open');
+  updateGenQuotaNote();
 }
 document.addEventListener('click', (e) => {
   const wrap = document.querySelector('.model-select-wrap');
@@ -3190,40 +3167,15 @@ function renderCharList(){
   document.getElementById('addCharBtn').disabled = characters.length >= 4;
 }
 
-// Ücretsiz kota (24 saatte 5 görsel) - n8n yanıtı 'remaining' döndürürse o esas alınır,
-// yoksa tarayıcıda tarihe göre yerel takip yapılır.
-function getImageQuotaState(){
-  const today = new Date().toISOString().slice(0,10);
-  let state;
-  try{ state = JSON.parse(localStorage.getItem('jg_image_quota') || 'null'); }catch(e){ state = null; }
-  if(!state || state.date !== today){
-    state = { date: today, used: 0 };
-    try{ localStorage.setItem('jg_image_quota', JSON.stringify(state)); }catch(e){}
-  }
-  return state;
-}
-function getImageRemaining(){
-  return Math.max(0, IMAGE_DAILY_LIMIT - getImageQuotaState().used);
-}
-function consumeImageQuota(n){
-  const state = getImageQuotaState();
-  state.used += n;
-  try{ localStorage.setItem('jg_image_quota', JSON.stringify(state)); }catch(e){}
-}
-function setImageRemaining(remaining){
-  const state = getImageQuotaState();
-  state.used = Math.max(0, IMAGE_DAILY_LIMIT - remaining);
-  try{ localStorage.setItem('jg_image_quota', JSON.stringify(state)); }catch(e){}
-  updateGenQuotaNote();
-  refreshFreePill();
+// ---- Kredi maliyeti hesaplama (Görsel Oluşturucu) ----
+function getVisualGenerationCost(){
+  return AI_MODELS[genSelectedModelIdx].creditCost * genSelectedCount;
 }
 function updateGenQuotaNote(){
   const note = document.getElementById('genQuotaNote');
   if(!note) return;
-  const rem = getImageRemaining();
-  note.textContent = rem > 0
-    ? rem + ' görsel hakkınız kaldı (24 saatte yenilenir)'
-    : 'Bugünlük görsel hakkınız bitti (24 saatte yenilenir)';
+  const cost = getVisualGenerationCost();
+  note.textContent = `Bu üretim ${cost} kredi tutuyor (bakiyeniz: ${currentCreditBalance} kredi).`;
 }
 
 function showGenLoadingTiles(n){
@@ -3266,8 +3218,16 @@ async function generateVisual(){
   const prompt = document.getElementById('genPromptInput').value.trim();
   if(!prompt) return;
 
-  if(getImageRemaining() <= 0){
-    document.getElementById('genQuotaNote').textContent = 'Bugünlük ücretsiz hakkınız bitti. Yarın tekrar deneyebilir ya da JG Plus\'a yükseltebilirsiniz.';
+  if(!isLoggedIn()){
+    document.getElementById('genQuotaNote').textContent = 'Görsel oluşturmak için önce giriş yapmalısın.';
+    openCreditModal();
+    return;
+  }
+
+  const cost = getVisualGenerationCost();
+  if(currentCreditBalance < cost){
+    document.getElementById('genQuotaNote').textContent = `Yetersiz kredi: bu üretim ${cost} kredi tutuyor, bakiyeniz ${currentCreditBalance} kredi.`;
+    openCreditModal();
     return;
   }
 
@@ -3278,16 +3238,19 @@ async function generateVisual(){
 
   const btn = document.getElementById('genSubmitBtn');
   btn.disabled = true;
-  document.getElementById('genQuotaNote').textContent = 'Görsel oluşturuluyor, birkaç saniye sürebilir...';
+  document.getElementById('genQuotaNote').textContent = `Görsel oluşturuluyor (${cost} kredi), birkaç saniye sürebilir...`;
   showGenLoadingTiles(genSelectedCount);
 
   try{
     const payload = {
+      email: localStorage.getItem('userEmail') || '',
       deviceId: getDeviceId(),
       prompt: prompt,
       size: genSelectedSize,
       count: genSelectedCount,
       model: AI_MODELS[genSelectedModelIdx].name,
+      creditCostPerImage: AI_MODELS[genSelectedModelIdx].creditCost,
+      creditCost: cost,
       camera: [...genSelectedCamera],
       effects: [...genSelectedEffects],
       poses: [...genSelectedPoses],
@@ -3304,16 +3267,16 @@ async function generateVisual(){
     const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
 
     if(!data.allowed){
-      document.getElementById('genQuotaNote').textContent = 'Bugün için ücretsiz hakkınız kalmadı.';
+      document.getElementById('genQuotaNote').textContent = data.message || 'Kredi bakiyeniz bu işlem için yetersiz.';
       showGenEmptyState();
-      if(typeof data.remaining === 'number') setImageRemaining(data.remaining);
+      if(typeof data.newBalance === 'number') setLocalCreditBalance(data.newBalance);
+      openCreditModal();
       return;
     }
 
-    consumeImageQuota(genSelectedCount);
-    const finalRemaining = (typeof data.remaining === 'number') ? data.remaining : getImageRemaining();
-    setImageRemaining(finalRemaining);
+    if(typeof data.newBalance === 'number') setLocalCreditBalance(data.newBalance);
     renderGenResults(data.images || []);
+    updateGenQuotaNote();
   }catch(err){
     document.getElementById('genQuotaNote').textContent = 'Hata: ' + err.message;
     showGenEmptyState();
@@ -3330,13 +3293,20 @@ const PERSONALITY_OPTIONS = ['Özgüvenli','Zeki','Bağımsız','Sıcakkanlı','
 const OTHER_DETAIL_OPTIONS = ['Fotoğrafçı','Model','Sanatçı','Girişimci','Sporcu','Öğrenci','Yazar','Mühendis','Müzisyen','Aktör/Aktris'];
 const SKIN_TONES = ['#F5D5B8','#E8B88C','#D39C6E','#B57A4A','#8B5A2B','#5C3A1E'];
 
-// Not: Anthropic (Claude) burada listelenmiyor çünkü bir görsel üretim API'si yok.
+// Karakter sheet'i 13 panelden oluşuyor: 1 portre + 5 tam vücut görünümü + 4 yüz detayı + 3 saç detayı.
+// Bu sabit, n8n workflow'undaki panel bölme mantığıyla birebir eşleşmeli — biri değişirse diğeri de güncellenmeli.
+const CHARACTER_SHEET_PANEL_COUNT = 13;
+
+// creditCostPerImage: PLACEHOLDER — her sağlayıcının panel başına tahmini kredi maliyeti.
+// "Gemini (Ücretsiz)" burada Google'ın kendi API'sindeki muhtemel ücretsiz/düşük maliyetli
+// katmanını temsil eder; JG Studio kullanıcısı için YİNE DE kredi düşülür (senin işletme
+// maliyetin düşük olsa da kullanıcıdan kredi almaman için bir sebep yok).
 const AVATAR_PROVIDERS = [
-  { key:'gemini_free', name:'Gemini (Ücretsiz)', icon:'✨', badge:'Free', desc:'Google Gemini ücretsiz katman; günlük istek limiti ve daha yavaş kuyruk olabilir.' },
-  { key:'gemini_paid', name:'Gemini (Ücretli)', icon:'✨', badge:'Pro', desc:'Google Gemini ücretli/Pro katman; daha yüksek limit ve öncelikli işleme.' },
-  { key:'openai', name:'OpenAI (GPT Image)', icon:'🤖', badge:'', desc:'OpenAI görsel üretim modeli; yüksek detay ve prompt takibi.' },
-  { key:'stability', name:'Stability AI (SDXL)', icon:'🧬', badge:'', desc:'Stable Diffusion tabanlı, esnek ve özelleştirmeye açık model.' },
-  { key:'flux', name:'Flux Pro', icon:'⚡', badge:'', desc:'Fotogerçekçi sonuçlar ve gelişmiş prompt takibi.' }
+  { key:'gemini_free', name:'Gemini (Ücretsiz Katman)', icon:'✨', badge:'Ekonomik', desc:'Google Gemini ücretsiz/düşük maliyetli katman; daha yavaş kuyruk olabilir.', creditCostPerImage:1 },
+  { key:'gemini_paid', name:'Gemini (Ücretli Katman)', icon:'✨', badge:'Pro', desc:'Google Gemini ücretli/Pro katman; daha yüksek limit ve öncelikli işleme.', creditCostPerImage:2 },
+  { key:'openai', name:'OpenAI (GPT Image)', icon:'🤖', badge:'', desc:'OpenAI görsel üretim modeli; yüksek detay ve prompt takibi.', creditCostPerImage:3 },
+  { key:'stability', name:'Stability AI (SDXL)', icon:'🧬', badge:'', desc:'Stable Diffusion tabanlı, esnek ve özelleştirmeye açık model.', creditCostPerImage:1 },
+  { key:'flux', name:'Flux Pro', icon:'⚡', badge:'', desc:'Fotogerçekçi sonuçlar ve gelişmiş prompt takibi.', creditCostPerImage:2 }
 ];
 let avatarSelectedProviderIdx = 0;
 
@@ -3370,7 +3340,7 @@ function renderAvatarProviderMenu(){
   menu.innerHTML = AVATAR_PROVIDERS.map((p, i) => `
     <button type="button" class="model-option" onclick="selectAvatarProvider(${i})">
       <span class="m-name">${p.icon} ${escapeHtml(p.name)} ${p.badge ? `<span class="model-badge-new">${escapeHtml(p.badge)}</span>` : ''}</span>
-      <span class="m-desc">${escapeHtml(p.desc)}</span>
+      <span class="m-desc">${escapeHtml(p.desc)} · ${p.creditCostPerImage} kredi / panel</span>
     </button>`).join('');
   selectAvatarProvider(avatarSelectedProviderIdx, true);
 }
@@ -3379,11 +3349,12 @@ function selectAvatarProvider(i, silent){
   const p = AVATAR_PROVIDERS[i];
   document.getElementById('avatarProviderIcon').textContent = p.icon;
   document.getElementById('avatarProviderName').textContent = p.name;
-  document.getElementById('avatarProviderDesc').textContent = p.desc;
+  document.getElementById('avatarProviderDesc').textContent = `${p.desc} · ${p.creditCostPerImage} kredi / panel`;
   const badgeEl = document.getElementById('avatarProviderBadge');
   badgeEl.style.display = p.badge ? 'inline-block' : 'none';
   badgeEl.textContent = p.badge;
   if(!silent) document.getElementById('avatarProviderMenu').classList.remove('open');
+  updateAvatarQuotaNote();
 }
 document.addEventListener('click', (e) => {
   const wrap = document.getElementById('avatarProviderWrap');
@@ -3444,39 +3415,15 @@ function removeAvatarRefImage(){
   document.getElementById('avatarRefFileInput').value = '';
 }
 
-// Ücretsiz kota: 24 saatte 1 karakter sheet (takvim gününe göre sıfırlanır, diğer kotalarla aynı mantık)
-function getCharacterQuotaState(){
-  const today = new Date().toISOString().slice(0,10);
-  let state;
-  try{ state = JSON.parse(localStorage.getItem('jg_character_quota') || 'null'); }catch(e){ state = null; }
-  if(!state || state.date !== today){
-    state = { date: today, used: 0 };
-    try{ localStorage.setItem('jg_character_quota', JSON.stringify(state)); }catch(e){}
-  }
-  return state;
-}
-function getCharacterRemaining(){
-  return Math.max(0, CHARACTER_DAILY_LIMIT - getCharacterQuotaState().used);
-}
-function consumeCharacterQuota(){
-  const state = getCharacterQuotaState();
-  state.used += 1;
-  try{ localStorage.setItem('jg_character_quota', JSON.stringify(state)); }catch(e){}
-}
-function setCharacterRemaining(remaining){
-  const state = getCharacterQuotaState();
-  state.used = Math.max(0, CHARACTER_DAILY_LIMIT - remaining);
-  try{ localStorage.setItem('jg_character_quota', JSON.stringify(state)); }catch(e){}
-  updateAvatarQuotaNote();
-  refreshFreePill();
+// ---- Kredi maliyeti hesaplama (Karakter Sheet) ----
+function getCharacterGenerationCost(){
+  return AVATAR_PROVIDERS[avatarSelectedProviderIdx].creditCostPerImage * CHARACTER_SHEET_PANEL_COUNT;
 }
 function updateAvatarQuotaNote(){
   const note = document.getElementById('avatarQuotaNote');
   if(!note) return;
-  const rem = getCharacterRemaining();
-  note.textContent = rem > 0
-    ? rem + ' / ' + CHARACTER_DAILY_LIMIT + ' ücretsiz karakter hakkınız kaldı (24 saatte yenilenir)'
-    : 'Bugünlük ücretsiz karakter hakkınız bitti. Yarın tekrar deneyebilir ya da JG Plus\'a yükseltebilirsiniz.';
+  const cost = getCharacterGenerationCost();
+  note.textContent = `Tam sheet (${CHARACTER_SHEET_PANEL_COUNT} panel) ${cost} kredi tutuyor (bakiyeniz: ${currentCreditBalance} kredi).`;
 }
 
 function isLoggedIn(){
@@ -3484,10 +3431,19 @@ function isLoggedIn(){
 }
 
 async function generateCharacter(){
-  if(getCharacterRemaining() <= 0){
-    updateAvatarQuotaNote();
+  if(!isLoggedIn()){
+    document.getElementById('avatarQuotaNote').textContent = 'Karakter oluşturmak için önce giriş yapmalısın.';
+    openCreditModal();
     return;
   }
+
+  const cost = getCharacterGenerationCost();
+  if(currentCreditBalance < cost){
+    document.getElementById('avatarQuotaNote').textContent = `Yetersiz kredi: bu sheet ${cost} kredi tutuyor, bakiyeniz ${currentCreditBalance} kredi.`;
+    openCreditModal();
+    return;
+  }
+
   if(!CHARACTER_GENERATE_URL || CHARACTER_GENERATE_URL.includes('YOUR-N8N-URL')){
     document.getElementById('avatarQuotaNote').textContent = 'Karakter oluşturma servisi henüz bağlanmadı.';
     return;
@@ -3495,11 +3451,16 @@ async function generateCharacter(){
 
   const btn = document.getElementById('avatarSubmitBtn');
   btn.disabled = true;
-  document.getElementById('avatarQuotaNote').textContent = 'Karakter sheet oluşturuluyor, bu biraz sürebilir...';
+  document.getElementById('avatarQuotaNote').textContent = `Karakter sheet oluşturuluyor (${cost} kredi), bu biraz sürebilir...`;
 
+  const provider = AVATAR_PROVIDERS[avatarSelectedProviderIdx];
   const payload = {
+    email: localStorage.getItem('userEmail') || '',
     deviceId: getDeviceId(),
-    imageProvider: AVATAR_PROVIDERS[avatarSelectedProviderIdx].key,
+    imageProvider: provider.key,
+    creditCostPerImage: provider.creditCostPerImage,
+    panelCount: CHARACTER_SHEET_PANEL_COUNT,
+    creditCost: cost,
     gender: avatarGender,
     name: document.getElementById('avatarNameInput').value.trim(),
     age: document.getElementById('avatarAgeInput').value,
@@ -3528,16 +3489,15 @@ async function generateCharacter(){
     const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
 
     if(!data.allowed){
-      document.getElementById('avatarQuotaNote').textContent = 'Bugün için ücretsiz karakter hakkınız kalmadı.';
-      if(typeof data.remaining === 'number') setCharacterRemaining(data.remaining);
+      document.getElementById('avatarQuotaNote').textContent = data.message || 'Kredi bakiyeniz bu işlem için yetersiz.';
+      if(typeof data.newBalance === 'number') setLocalCreditBalance(data.newBalance);
+      openCreditModal();
       return;
     }
 
-    consumeCharacterQuota();
-    const finalRemaining = (typeof data.remaining === 'number') ? data.remaining : getCharacterRemaining();
-    setCharacterRemaining(finalRemaining);
+    if(typeof data.newBalance === 'number') setLocalCreditBalance(data.newBalance);
     renderCharacterSheet(data.sheet || {}, payload);
-    document.getElementById('avatarQuotaNote').textContent = '';
+    updateAvatarQuotaNote();
   }catch(err){
     document.getElementById('avatarQuotaNote').textContent = 'Hata: ' + err.message;
   }finally{
@@ -3633,9 +3593,18 @@ function shareCharacterSheet(){
   }
 }
 
+// ---- Prompt Üretici kredi maliyeti ----
+// PLACEHOLDER — vision-analiz çağrısı görsel üretmediği için düşük ve sabit tutuldu.
+// Prompt Üretici'de şu an kullanıcıya açık bir model seçimi yok (backend tek modelle çalışıyor),
+// bu yüzden değişken değil sabit maliyetlendirildi.
+const PROMPT_MAKER_CREDIT_COST = 1;
+
 // ---- Kredi sistemi ----
-// UYARI: currentCreditBalance sadece arayüz göstergesi. Gerçek bakiye doğrulaması
-// (özellikle üretim işlemlerinden hemen önce) n8n/Supabase tarafında yapılmalı.
+// UYARI: currentCreditBalance sadece arayüz göstergesi. Gerçek bakiye doğrulaması VE düşümü
+// (özellikle her üretim isteğinde) n8n/Supabase tarafında yapılmalı — bkz. generatePrompt/
+// generateVisual/generateCharacter içindeki "data.allowed" ve "data.newBalance" kontrolü.
+// Client'taki setLocalCreditBalance çağrıları sadece n8n'in döndürdüğü gerçek bakiyeyi
+// ekrana yansıtır; kendi başına bir yetkilendirme mekanizması DEĞİLDİR.
 let currentCreditBalance = 0;
 
 function getLocalCreditBalance(){
@@ -3645,6 +3614,8 @@ function setLocalCreditBalance(n){
   currentCreditBalance = Math.max(0, n);
   try{ localStorage.setItem('jg_credit_balance', String(currentCreditBalance)); }catch(e){}
   renderCreditPill();
+  updateGenQuotaNote();
+  updateAvatarQuotaNote();
 }
 function renderCreditPill(){
   const el = document.getElementById('creditAmountText');
@@ -3878,13 +3849,11 @@ function renderAuthArea(){
 }
 
 window.addEventListener('load', () => {
-  updateRemainingLabel();
   initGenView();
   initAvatarView();
-  updateGenQuotaNote();
-  refreshFreePill();
   currentCreditBalance = getLocalCreditBalance();
   renderCreditPill();
+  updateGenQuotaNote();
   // Google script'inin yüklenmesini bekle
   const tryRender = () => {
     if(window.google && google.accounts && google.accounts.id){
