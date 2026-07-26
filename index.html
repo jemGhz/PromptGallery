@@ -1444,6 +1444,72 @@
     color:var(--ink-dim);
     text-align:right;
   }
+
+  /* ---- Kredi sistemi ---- */
+  .credit-pill{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:rgba(199,161,94,0.1);
+    border:1px solid rgba(199,161,94,0.3);
+    border-radius:20px;
+    padding:6px 8px 6px 14px;
+    font-size:12.5px;
+    color:var(--gold);
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .credit-pill .credit-amount{font-weight:700;}
+  .credit-add-btn{
+    width:24px; height:24px;
+    border-radius:50%;
+    background:var(--gold);
+    color:#0A0A09;
+    border:none;
+    font-size:15px;
+    font-weight:700;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+  }
+  .credit-add-btn:hover{opacity:0.85;}
+
+  .credit-modal{
+    max-width:420px;
+    width:100%;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:32px;
+  }
+  .credit-pkg-list{display:flex; flex-direction:column; gap:10px; margin:20px 0 24px;}
+  .credit-pkg{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 16px;
+    border-radius:9px;
+    border:1px solid var(--line);
+    background:#0d0d0b;
+    cursor:pointer;
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+  }
+  .credit-pkg:hover{border-color:var(--ink-dim);}
+  .credit-pkg.active{border-color:var(--gold); background:rgba(199,161,94,0.08);}
+  .credit-pkg .pkg-credits{font-weight:700; font-size:14px;}
+  .credit-pkg .pkg-price{color:var(--ink-dim); font-size:13px;}
+  .credit-pay-methods{display:flex; flex-direction:column; gap:9px;}
+  .credit-step-label{font-size:12px; color:var(--ink-dim); margin-bottom:4px;}
+  .credit-login-note{
+    font-size:13px;
+    color:var(--ink-dim);
+    line-height:1.6;
+    margin-bottom:20px;
+  }
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -1479,6 +1545,11 @@
     </div>
 
     <span class="free-pill" id="freePill">⚡ <span id="freePillText"></span></span>
+
+    <div class="credit-pill" id="creditPill">
+      <span>💎 <span class="credit-amount" id="creditAmountText">0</span> JG Puanı</span>
+      <button class="credit-add-btn" id="creditAddBtn" onclick="openCreditModal()" title="Kredi satın al">+</button>
+    </div>
 
     <button class="upload-cta" onclick="triggerUploadFlow()">+ Yükle</button>
 
@@ -2131,6 +2202,65 @@
   </div>
 </div>
 
+<!-- ---- Kredi satın alma modalı ---- -->
+<div class="modal-backdrop" id="creditModalBackdrop" onclick="if(event.target===this) closeCreditModal()">
+  <div class="credit-modal">
+
+    <!-- Adım 0: giriş yapılmamışsa -->
+    <div id="creditLoginStep" style="display:none">
+      <div class="paywall-title">Önce giriş yapmalısın</div>
+      <div class="credit-login-note">JG Puanı satın alabilmek ve kullanabilmek için Google hesabınla giriş yapman gerekiyor. Puanların hesabına bağlı olarak tutulur.</div>
+      <div class="paywall-actions">
+        <button class="btn primary" onclick="closeCreditModal(); requestGoogleLogin();">Google ile giriş yap</button>
+        <button class="btn" onclick="closeCreditModal()">Vazgeç</button>
+      </div>
+    </div>
+
+    <!-- Adım 1: paket seçimi -->
+    <div id="creditPkgStep" style="display:none">
+      <div class="paywall-title">JG Puanı Satın Al</div>
+      <div class="paywall-desc">Bir paket seç, ardından ödeme yöntemini belirle.</div>
+      <div class="credit-pkg-list" id="creditPkgList"></div>
+      <div class="paywall-actions">
+        <button class="btn primary" id="creditContinueBtn" onclick="goToCreditPayStep()" disabled>Devam Et</button>
+        <button class="btn" onclick="closeCreditModal()">Vazgeç</button>
+      </div>
+    </div>
+
+    <!-- Adım 2: ödeme yöntemi -->
+    <div id="creditPayStep" style="display:none">
+      <div class="paywall-title">Ödeme Yöntemi</div>
+      <div class="paywall-desc" id="creditPaySummary"></div>
+      <div class="credit-pay-methods">
+        <button class="btn" onclick="startCreditPayment('stripe')">💳 Kredi / Banka Kartı (Stripe)</button>
+        <button class="btn" onclick="startCreditPayment('iban')">🏦 IBAN ile Öde</button>
+        <button class="btn" onclick="backToCreditPkgStep()">← Geri</button>
+      </div>
+    </div>
+
+    <!-- Adım 2a: IBAN akışı (mevcut premium kod mantığıyla aynı) -->
+    <div id="creditIbanStep" style="display:none">
+      <div class="paywall-title">IBAN ile Öde</div>
+      <div class="paywall-desc">
+        Aşağıdaki IBAN'a <strong id="creditIbanAmount"></strong> tutarını gönderip dekontu WhatsApp'tan <strong>@kullaniciadi</strong> hesabına ilet. Sana bir aktivasyon kodu göndereceğiz.
+      </div>
+      <div class="paywall-desc" style="background:#0d0d0b; border:1px solid var(--line); border-radius:7px; padding:14px; margin-bottom:20px;">
+        <strong>Alıcı:</strong> [Ad Soyad]<br>
+        <strong>IBAN:</strong> TR00 0000 0000 0000 0000 0000 00<br>
+        <strong>Banka:</strong> [Banka Adı]
+      </div>
+      <div class="credit-step-label">Aktivasyon kodun var mı?</div>
+      <div class="code-row">
+        <input type="text" id="creditCodeInput" placeholder="Örn. AB12CD" maxlength="24" onkeydown="if(event.key==='Enter') submitCreditCode()">
+        <button class="btn primary" onclick="submitCreditCode()">Doğrula</button>
+      </div>
+      <div class="code-msg" id="creditCodeMsg"></div>
+      <button class="btn" style="margin-top:16px; width:100%;" onclick="backToCreditPayStep()">← Geri</button>
+    </div>
+
+  </div>
+</div>
+
 <script>
 const SHEET_ID = '1-n0pVWWzNKKodfB9TVXKC7hpQfJDPO_ZtzFE6gDqKBM';
 const SHEET_NAME = 'Sayfa1';
@@ -2145,6 +2275,24 @@ const IMAGE_DAILY_LIMIT = 5;
 const CHARACTER_GENERATE_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-character';
 const CHARACTER_SAVE_URL = 'https://jemghz.app.n8n.cloud/webhook/save-character';
 const CHARACTER_DAILY_LIMIT = 1;
+
+// ---- Kredi sistemi: n8n webhook URL'leri (henüz bağlanmadıysa placeholder olarak kalır) ----
+// ÖNEMLİ: Bu üç uç, gerçek para hareketinin doğrulandığı yerdir. Bakiye ASLA sadece
+// tarayıcıda (localStorage) tutulup satış/üretim kararı buna göre verilmemeli;
+// n8n tarafında Supabase'deki gerçek bakiye satırı kontrol edilmeden generateCharacter /
+// generateVisual gibi ücretli işlemler ÇALIŞTIRILMAMALI. Buradaki localStorage sadece
+// arayüzde "son bilinen bakiyeyi" göstermek için var, güvenlik sınırı DEĞİLDİR.
+const CREDIT_BALANCE_URL = 'https://jemghz.app.n8n.cloud/webhook/credit-balance';       // GET/POST: {email} -> {balance}
+const CREDIT_STRIPE_CHECKOUT_URL = 'https://jemghz.app.n8n.cloud/webhook/credit-stripe-checkout'; // POST: {email, packageId} -> {checkoutUrl}
+const CREDIT_VERIFY_CODE_URL = 'https://jemghz.app.n8n.cloud/webhook/credit-verify-code'; // POST: {email, code, packageId} -> {success, newBalance}
+
+// Kredi paketleri - fiyatları kendi maliyet hesabına göre güncelle
+const CREDIT_PACKAGES = [
+  { id:'pkg_10', credits:10, price:'99 TL' },
+  { id:'pkg_25', credits:25, price:'199 TL' },
+  { id:'pkg_60', credits:60, price:'399 TL' }
+];
+let selectedCreditPkgIdx = null;
 
 let allRows = [];
 let visibleRows = [];
@@ -3485,6 +3633,182 @@ function shareCharacterSheet(){
   }
 }
 
+// ---- Kredi sistemi ----
+// UYARI: currentCreditBalance sadece arayüz göstergesi. Gerçek bakiye doğrulaması
+// (özellikle üretim işlemlerinden hemen önce) n8n/Supabase tarafında yapılmalı.
+let currentCreditBalance = 0;
+
+function getLocalCreditBalance(){
+  try{ return parseInt(localStorage.getItem('jg_credit_balance') || '0', 10) || 0; }catch(e){ return 0; }
+}
+function setLocalCreditBalance(n){
+  currentCreditBalance = Math.max(0, n);
+  try{ localStorage.setItem('jg_credit_balance', String(currentCreditBalance)); }catch(e){}
+  renderCreditPill();
+}
+function renderCreditPill(){
+  const el = document.getElementById('creditAmountText');
+  if(el) el.textContent = String(currentCreditBalance);
+}
+
+// Giriş yapıldıysa gerçek bakiyeyi n8n'den çek (localStorage sadece geçici gösterim)
+async function refreshCreditBalanceFromServer(){
+  if(!isLoggedIn()) return;
+  if(!CREDIT_BALANCE_URL || CREDIT_BALANCE_URL.includes('YOUR-N8N-URL')) return;
+  try{
+    const email = localStorage.getItem('userEmail') || '';
+    const res = await fetch(CREDIT_BALANCE_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email })
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+    if(typeof data.balance === 'number') setLocalCreditBalance(data.balance);
+  }catch(err){
+    console.warn('Kredi bakiyesi alınamadı:', err.message);
+  }
+}
+
+function openCreditModal(){
+  document.getElementById('creditModalBackdrop').classList.add('open');
+  document.getElementById('creditLoginStep').style.display = 'none';
+  document.getElementById('creditPkgStep').style.display = 'none';
+  document.getElementById('creditPayStep').style.display = 'none';
+  document.getElementById('creditIbanStep').style.display = 'none';
+
+  if(!isLoggedIn()){
+    document.getElementById('creditLoginStep').style.display = 'block';
+    return;
+  }
+  selectedCreditPkgIdx = null;
+  renderCreditPkgList();
+  document.getElementById('creditPkgStep').style.display = 'block';
+}
+function closeCreditModal(){
+  document.getElementById('creditModalBackdrop').classList.remove('open');
+}
+
+function renderCreditPkgList(){
+  const list = document.getElementById('creditPkgList');
+  list.innerHTML = CREDIT_PACKAGES.map((p, i) => `
+    <button type="button" class="credit-pkg ${selectedCreditPkgIdx === i ? 'active' : ''}" onclick="selectCreditPkg(${i})">
+      <span class="pkg-credits">${p.credits} Kredi</span>
+      <span class="pkg-price">${escapeHtml(p.price)}</span>
+    </button>`).join('');
+}
+function selectCreditPkg(i){
+  selectedCreditPkgIdx = i;
+  renderCreditPkgList();
+  document.getElementById('creditContinueBtn').disabled = false;
+}
+
+function goToCreditPayStep(){
+  if(selectedCreditPkgIdx === null) return;
+  const pkg = CREDIT_PACKAGES[selectedCreditPkgIdx];
+  document.getElementById('creditPkgStep').style.display = 'none';
+  document.getElementById('creditPayStep').style.display = 'block';
+  document.getElementById('creditPaySummary').textContent = `${pkg.credits} Kredi — ${pkg.price}`;
+}
+function backToCreditPkgStep(){
+  document.getElementById('creditPayStep').style.display = 'none';
+  document.getElementById('creditPkgStep').style.display = 'block';
+}
+function backToCreditPayStep(){
+  document.getElementById('creditIbanStep').style.display = 'none';
+  document.getElementById('creditPayStep').style.display = 'block';
+}
+
+async function startCreditPayment(method){
+  const pkg = CREDIT_PACKAGES[selectedCreditPkgIdx];
+  if(!pkg) return;
+
+  if(method === 'iban'){
+    document.getElementById('creditPayStep').style.display = 'none';
+    document.getElementById('creditIbanStep').style.display = 'block';
+    document.getElementById('creditIbanAmount').textContent = pkg.price;
+    document.getElementById('creditCodeInput').value = '';
+    document.getElementById('creditCodeMsg').textContent = '';
+    document.getElementById('creditCodeMsg').className = 'code-msg';
+    return;
+  }
+
+  // Stripe — Türkiye'de Stripe doğrudan para tahsilatı/hesap açma desteklemiyor;
+  // bu buton gerçek entegrasyon (Stripe veya iyzico/PayTR gibi bir Türkiye
+  // uyumlu sağlayıcı) bağlanana kadar bilgilendirme mesajı gösterir.
+  if(!CREDIT_STRIPE_CHECKOUT_URL || CREDIT_STRIPE_CHECKOUT_URL.includes('YOUR-N8N-URL')){
+    document.getElementById('creditPaySummary').textContent = 'Kart ile ödeme henüz aktif değil. Şimdilik IBAN ile devam edebilirsin.';
+    return;
+  }
+  try{
+    const email = localStorage.getItem('userEmail') || '';
+    const res = await fetch(CREDIT_STRIPE_CHECKOUT_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email, packageId: pkg.id })
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+    if(data.checkoutUrl){
+      window.location.href = data.checkoutUrl;
+    }else{
+      document.getElementById('creditPaySummary').textContent = data.message || 'Ödeme başlatılamadı.';
+    }
+  }catch(err){
+    document.getElementById('creditPaySummary').textContent = 'Hata: ' + err.message;
+  }
+}
+
+async function submitCreditCode(){
+  const pkg = CREDIT_PACKAGES[selectedCreditPkgIdx];
+  const code = document.getElementById('creditCodeInput').value.trim();
+  const msgEl = document.getElementById('creditCodeMsg');
+
+  if(!code){
+    msgEl.textContent = 'Kod boş olamaz.';
+    msgEl.className = 'code-msg error';
+    return;
+  }
+  if(!CREDIT_VERIFY_CODE_URL || CREDIT_VERIFY_CODE_URL.includes('YOUR-N8N-URL')){
+    msgEl.textContent = 'Doğrulama servisi henüz bağlanmadı.';
+    msgEl.className = 'code-msg error';
+    return;
+  }
+
+  msgEl.textContent = 'Kontrol ediliyor...';
+  msgEl.className = 'code-msg';
+
+  try{
+    const email = localStorage.getItem('userEmail') || '';
+    const res = await fetch(CREDIT_VERIFY_CODE_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email, code, packageId: pkg ? pkg.id : null })
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+
+    if(data.success){
+      msgEl.textContent = 'Kod doğru! Krediler ekleniyor...';
+      msgEl.className = 'code-msg success';
+      if(typeof data.newBalance === 'number') setLocalCreditBalance(data.newBalance);
+      setTimeout(closeCreditModal, 700);
+    }else{
+      msgEl.textContent = data.message || 'Kod geçersiz.';
+      msgEl.className = 'code-msg error';
+    }
+  }catch(err){
+    msgEl.textContent = 'Bağlantı hatası: ' + err.message;
+    msgEl.className = 'code-msg error';
+  }
+}
+
+function requestGoogleLogin(){
+  if(window.google && google.accounts && google.accounts.id){
+    google.accounts.id.prompt();
+  }
+}
+
 // ---- Google Girişi ----
 const GOOGLE_CLIENT_ID = '1036033399902-fufvgkbifjipd9615d790gkjh8k3u7an.apps.googleusercontent.com';
 
@@ -3505,6 +3829,7 @@ function handleGoogleCredential(response){
     localStorage.setItem('userPicture', data.picture || '');
   }catch(e){}
   renderAuthArea();
+  refreshCreditBalanceFromServer();
 }
 
 function logout(){
@@ -3516,6 +3841,7 @@ function logout(){
   if(window.google && google.accounts && google.accounts.id){
     google.accounts.id.disableAutoSelect();
   }
+  setLocalCreditBalance(0);
   renderAuthArea();
 }
 
@@ -3557,10 +3883,13 @@ window.addEventListener('load', () => {
   initAvatarView();
   updateGenQuotaNote();
   refreshFreePill();
+  currentCreditBalance = getLocalCreditBalance();
+  renderCreditPill();
   // Google script'inin yüklenmesini bekle
   const tryRender = () => {
     if(window.google && google.accounts && google.accounts.id){
       renderAuthArea();
+      refreshCreditBalanceFromServer();
     }else{
       setTimeout(tryRender, 200);
     }
