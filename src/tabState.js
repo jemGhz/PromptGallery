@@ -19,6 +19,8 @@ export function switchTab(tab) {
   document.getElementById(VIEWS.maker).style.display = tab === 'maker' ? 'block' : 'none';
   document.getElementById(VIEWS.visual).style.display = tab === 'visual' ? 'block' : 'none';
   document.getElementById(VIEWS.avatar).style.display = tab === 'avatar' ? 'block' : 'none';
-  document.getElementById(VIEWS.profile).style.display = tab === 'profile' ? 'block' : 'none';
+  // profileView bir grid container (.profile-layout); 'block' verilirse
+  // sidebar + main düz akışta üst üste diziliyordu.
+  document.getElementById(VIEWS.profile).style.display = tab === 'profile' ? 'grid' : 'none';
   notifyTabChange(tab);
 }
