@@ -3,11 +3,14 @@
 // çağırıyor; switchTab main.js'te olsaydı main.js -> visualGenerator.js -> main.js
 // döngüsü oluşurdu. Bu yüzden sekme geçişi kendi başına bağımsız bir modül.
 
+import { notifyTabChange } from './state.js';
+
 const VIEWS = {
   gallery: 'galleryView',
   maker: 'makerView',
   visual: 'visualView',
-  avatar: 'avatarView'
+  avatar: 'avatarView',
+  profile: 'profileView'
 };
 
 export function switchTab(tab) {
@@ -16,4 +19,6 @@ export function switchTab(tab) {
   document.getElementById(VIEWS.maker).style.display = tab === 'maker' ? 'block' : 'none';
   document.getElementById(VIEWS.visual).style.display = tab === 'visual' ? 'block' : 'none';
   document.getElementById(VIEWS.avatar).style.display = tab === 'avatar' ? 'block' : 'none';
+  document.getElementById(VIEWS.profile).style.display = tab === 'profile' ? 'block' : 'none';
+  notifyTabChange(tab);
 }

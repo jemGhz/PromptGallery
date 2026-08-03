@@ -7,11 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!--
-  NOT: CSS burada değil; src/style.css (ve styles/base|gallery|generator|avatar|credits.css)
-  içinde olduğu varsayılıyor — "Tamamlanan dosyalar" listesine göre bu iş zaten bitmişti.
-  main.js zaten `import './style.css'` yapıyor, o yüzden burada <style>/<link> gerekmiyor.
-  Eğer o dosyalar bu haliyle eşleşmiyorsa, orijinal monolitik <style> bloğunu style.css'e
-  aktarman gerekir (aşağıdaki sınıf/id isimleri o bloktakiyle birebir aynı kaldı).
+  NOT: CSS burada değil; src/style.css (ve styles/base|gallery|generator|avatar|credits|profile.css)
+  içinde. main.js zaten `import './style.css'` yapıyor, o yüzden burada <style>/<link> gerekmiyor.
 -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -643,6 +640,56 @@
       </div>
       <div class="feature" style="align-items:center;">
         <button class="upgrade-btn" style="width:auto; padding:12px 22px; white-space:nowrap;" title="Yakında aktif olacak" disabled>👑 JG Plus'a yükselt</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- ↑ avatarView burada kapanıyor -->
+
+<div id="profileView" style="display:none" class="profile-layout">
+
+  <aside class="profile-sidebar" id="profileSidebar">
+    <!-- profile.js tarafından doldurulur -->
+  </aside>
+
+  <div class="profile-main">
+    <div class="profile-welcome">
+      <h1>Hoş geldin, <span id="profileWelcomeName">Kullanıcı</span> 👋</h1>
+      <p>Yaratıcılığını keşfetmeye devam et.</p>
+    </div>
+
+    <div class="profile-filter-row">
+      <button class="profile-filter-chip active">Tümü</button>
+      <button class="profile-filter-chip" disabled title="Yakında aktif olacak">Promptlar</button>
+      <button class="profile-filter-chip" disabled title="Yakında aktif olacak">Görseller</button>
+      <button class="profile-filter-chip" disabled title="Yakında aktif olacak">Karakterler</button>
+      <button class="profile-filter-chip" disabled title="Yakında aktif olacak">Sosyal İçerikler</button>
+      <button class="profile-filter-chip" disabled title="Yakında aktif olacak">Yüklemeler</button>
+      <button class="profile-filter-chip" disabled title="Yakında aktif olacak">Favoriler</button>
+    </div>
+
+    <div class="profile-content-placeholder">
+      İçerik galerisi (promptların/görsellerin/karakterlerin listesi) yakında burada görünecek.
+    </div>
+
+    <div class="profile-widgets-row">
+      <div class="profile-widget">
+        <div class="profile-widget-title">Son Aktiviteler</div>
+        <div id="profileActivityList"></div>
+      </div>
+      <div class="profile-widget">
+        <div class="profile-widget-title">En Çok Kullandığın Araçlar</div>
+        <div id="profileToolsList"></div>
+      </div>
+      <div class="profile-widget">
+        <div class="profile-widget-title">Hızlı İşlemler</div>
+        <div class="profile-quick-actions">
+          <button class="profile-quick-action" data-tab="maker">📝 Prompt Oluşturucuya Git <span>→</span></button>
+          <button class="profile-quick-action" data-tab="visual">🖼️ Yeni Görsel Oluştur <span>→</span></button>
+          <button class="profile-quick-action" data-tab="avatar">🧬 Karakter Sheet Oluştur <span>→</span></button>
+          <button class="profile-quick-action" disabled title="Yakında aktif olacak">📱 Sosyal Medya İçeriği Oluştur <span>→</span></button>
+        </div>
       </div>
     </div>
   </div>

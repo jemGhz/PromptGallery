@@ -8,6 +8,7 @@ import { loadData, initGallery } from './tabs/gallery.js';
 import { initPromptGenerator, triggerMakerUpload } from './tabs/promptGenerator.js';
 import { initVisualGenerator } from './tabs/visualGenerator.js';
 import { initCharacterGenerator } from './tabs/characterGenerator.js';
+import { initProfile } from './tabs/profile.js';
 
 function $(id) {
   return document.getElementById(id);
@@ -34,6 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initVisualGenerator();
   initCharacterGenerator();
   initCreditModal();
+  initProfile();
+
 
   loadData();
 });

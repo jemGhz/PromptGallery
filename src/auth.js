@@ -8,6 +8,7 @@ import {
 } from './config.js';
 import { escapeAttr, escapeHtml, unwrap } from './utils.js';
 import { appState } from './state.js';
+import { switchTab } from './tabState.js';
 
 const balanceListeners = new Set();
 /** Bakiye her değiştiğinde çağrılacak fonksiyonları kaydet (ör. gen/avatar quota notu güncellemesi). */
@@ -63,8 +64,6 @@ export async function refreshCreditBalanceFromServer() {
   }
 }
 
-
-
 async function handleGoogleCredential(response) {
   try {
     const res = await fetch(GOOGLE_LOGIN_VERIFY_URL, {
@@ -102,6 +101,7 @@ export function logout() {
   }
   setLocalCreditBalance(0);
   renderAuthArea();
+  switchTab('gallery');
 }
 
 export function renderGoogleButton(containerId, options = {}) {
@@ -125,7 +125,7 @@ export function renderGoogleButton(containerId, options = {}) {
   });
 }
 
-function getInitial(name, email) {
+export function getInitial(name, email) {
   const src = (name || email || 'JG').trim();
   return src.charAt(0).toUpperCase();
 }
@@ -154,10 +154,10 @@ export function renderAuthArea() {
       }
     })();
     area.innerHTML = `
-      <button class="avatar-circle" id="authAvatarBtn" title="${escapeAttr(name || email)} — çıkış için tıkla">
+      <button class="avatar-circle" id="authAvatarBtn" title="${escapeAttr(name || email)} — profiline git">
         ${picture ? `<img src="${escapeAttr(picture)}" alt="">` : escapeHtml(getInitial(name, email))}
       </button>`;
-    document.getElementById('authAvatarBtn').addEventListener('click', logout);
+    document.getElementById('authAvatarBtn').addEventListener('click', () => switchTab('profile'));
   } else {
     area.innerHTML = '<div id="googleSignInBtn"></div>';
   renderGoogleButton('googleSignInBtn', { type: 'icon', shape: 'circle', size: 'medium' });
