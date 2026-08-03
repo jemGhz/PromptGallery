@@ -2,7 +2,7 @@
 
 import { CREDIT_PACKAGES, CREDIT_STRIPE_CHECKOUT_URL, CREDIT_VERIFY_CODE_URL } from './config.js';
 import { escapeHtml, unwrap } from './utils.js';
-import { isLoggedIn, setLocalCreditBalance, requestGoogleLogin } from './auth.js';
+import { isLoggedIn, setLocalCreditBalance, renderGoogleButton } from './auth.js';
 
 let selectedCreditPkgIdx = null;
 
@@ -153,10 +153,7 @@ export function initCreditModal() {
     if (e.target === $('creditModalBackdrop')) closeCreditModal();
   });
 
-  $('creditLoginStep').querySelector('.btn.primary').addEventListener('click', () => {
-    closeCreditModal();
-    requestGoogleLogin();
-  });
+  renderGoogleButton('creditGoogleSignInBtn');
   $('creditLoginStep').querySelector('.btn:not(.primary)').addEventListener('click', closeCreditModal);
 
   $('creditPkgList').addEventListener('click', (e) => {

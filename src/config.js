@@ -14,6 +14,7 @@ export const PROMPT_MAKER_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-p
 export const GEN_GENERATE_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-visual';
 export const CHARACTER_GENERATE_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-character';
 export const CHARACTER_SAVE_URL = 'https://jemghz.app.n8n.cloud/webhook/save-character';
+export const GOOGLE_LOGIN_VERIFY_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/verify-google-login';
 
 // ÖNEMLİ: bakiye ASLA sadece tarayıcıda tutulup ücretli işlem kararı buna göre
 // verilmemeli; n8n tarafında Supabase'deki gerçek bakiye kontrol edilmeden
@@ -60,4 +61,4 @@ export const SKIN_TONES = ['#F5D5B8','#E8B88C','#D39C6E','#B57A4A','#8B5A2B','#5
 export const CHARACTER_SHEET_PANEL_COUNT = 13;
 export const PROMPT_MAKER_CREDIT_COST = 1;
 
-export const GOOGLE_CLIENT_ID = '1036033399902-fufvgkbifjipd9615d790gkjh8k3u7an.apps.googleusercontent.com';
+export const GOOGLE_CLIENT_ID = '1036033399902-89l44rn5e77mvg7h71ttb06v3ufgdthq.apps.googleusercontent.com';

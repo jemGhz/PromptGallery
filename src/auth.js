@@ -3,7 +3,8 @@
 
 import {
   CREDIT_BALANCE_URL,
-  GOOGLE_CLIENT_ID
+  GOOGLE_CLIENT_ID,
+  GOOGLE_LOGIN_VERIFY_URL
 } from './config.js';
 import { escapeAttr, escapeHtml, unwrap } from './utils.js';
 import { appState } from './state.js';
@@ -62,24 +63,30 @@ export async function refreshCreditBalanceFromServer() {
   }
 }
 
-function decodeJwt(token) {
-  try {
-    const payload = token.split('.')[1];
-    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-    return JSON.parse(decoded);
-  } catch (e) {
-    return null;
-  }
-}
 
-function handleGoogleCredential(response) {
-  const data = decodeJwt(response.credential);
-  if (!data) return;
+
+async function handleGoogleCredential(response) {
   try {
+    const res = await fetch(GOOGLE_LOGIN_VERIFY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: response.credential })
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+
+    if (!data.verified) {
+      console.warn('Giriş doğrulanamadı:', data.message);
+      return;
+    }
+
     localStorage.setItem('userEmail', data.email || '');
     localStorage.setItem('userName', data.name || '');
     localStorage.setItem('userPicture', data.picture || '');
-  } catch (e) {}
+  } catch (err) {
+    console.warn('Giriş doğrulama hatası:', err.message);
+    return;
+  }
   renderAuthArea();
   refreshCreditBalanceFromServer();
 }
@@ -97,10 +104,25 @@ export function logout() {
   renderAuthArea();
 }
 
-export function requestGoogleLogin() {
-  if (window.google && google.accounts && google.accounts.id) {
-    google.accounts.id.prompt();
+export function renderGoogleButton(containerId, options = {}) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  if (!(window.google && google.accounts && google.accounts.id)) {
+    setTimeout(() => renderGoogleButton(containerId, options), 200);
+    return;
   }
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleGoogleCredential
+  });
+  google.accounts.id.renderButton(container, {
+    type: 'standard',
+    theme: 'outline',
+    size: 'medium',
+    shape: 'pill',
+    text: 'signin',
+    ...options
+  });
 }
 
 function getInitial(name, email) {
@@ -137,17 +159,8 @@ export function renderAuthArea() {
       </button>`;
     document.getElementById('authAvatarBtn').addEventListener('click', logout);
   } else {
-    area.innerHTML = '<button class="avatar-circle" id="googlePromptBtn" title="Giriş yap">JG</button>';
-    if (window.google && google.accounts && google.accounts.id) {
-      google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleCredential
-      });
-      const promptBtn = document.getElementById('googlePromptBtn');
-      if (promptBtn) {
-        promptBtn.addEventListener('click', () => google.accounts.id.prompt());
-      }
-    }
+    area.innerHTML = '<div id="googleSignInBtn"></div>';
+  renderGoogleButton('googleSignInBtn', { type: 'icon', shape: 'circle', size: 'medium' });
   }
 }
 
