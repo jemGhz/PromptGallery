@@ -1,28 +1,21 @@
 // src/tabs/profile.js
-// Profil sayfası: kullanıcı bilgisi (auth.js/localStorage'dan gerçek).
-// Widget verileri (depolama, en çok kullanılan araçlar, son aktiviteler) backend
-// henüz hazır olmadığı için GERÇEK DURUMU yansıtacak şekilde 0 / boş dönüyor.
-// Backend gelince tek fonksiyonu fetch/Supabase çağrısına çevirmek yeterli olacak.
-
-import { escapeHtml } from '../utils.js';
+import { escapeHtml, escapeAttr } from '../utils.js';
 import { onTabChange } from '../state.js';
 import { isLoggedIn, logout, onBalanceChange, getInitial } from '../auth.js';
 import { switchTab } from '../tabState.js';
+import { getGalleryRows, getUserInteractionSets, openModalForRow } from './gallery.js';
+
+let activeSection = 'overview'; // 'overview' | 'liked' | 'saved-purchased'
 
 // ---- Veri katmanı (backend hazır olana kadar gerçek/sıfır değer döner) ----
 
 function getStorageUsage() {
-  // TODO(backend): Supabase storage bucket boyutu — n8n webhook.
   return { usedGB: 0, totalGB: 20, percent: 0 };
 }
-
 function getMostUsedTools() {
-  // TODO(backend): kullanım loglarından hesaplanacak. Şimdilik veri yok.
   return [];
 }
-
 function getRecentActivity() {
-  // TODO(backend): kullanıcıya özel event log tablosundan çekilecek. Şimdilik veri yok.
   return [];
 }
 
@@ -66,9 +59,9 @@ function renderSidebar() {
     </div>
 
     <nav class="profile-nav">
-      <button class="profile-nav-item active">🏠 Overview</button>
-      <button class="profile-nav-item" disabled title="Yakında aktif olacak">🔖 Satın Alınan / Kaydedilen Promptlar</button>
-      <button class="profile-nav-item" disabled title="Yakında aktif olacak">❤️ Beğenilen Promptlar</button>
+      <button class="profile-nav-item ${activeSection === 'overview' ? 'active' : ''}" data-section="overview">🏠 Overview</button>
+      <button class="profile-nav-item ${activeSection === 'saved-purchased' ? 'active' : ''}" data-section="saved-purchased">🔖 Satın Alınan / Kaydedilen Promptlar</button>
+      <button class="profile-nav-item ${activeSection === 'liked' ? 'active' : ''}" data-section="liked">❤️ Beğenilen Promptlar</button>
       <button class="profile-nav-item" disabled title="Yakında aktif olacak">📤 Yüklenen Görseller</button>
       <button class="profile-nav-item" disabled title="Yakında aktif olacak">📝 Oluşturulan Promptlar</button>
       <button class="profile-nav-item" disabled title="Yakında aktif olacak">🖼️ Oluşturulan Görseller</button>
@@ -94,6 +87,13 @@ function renderSidebar() {
   `;
 
   document.getElementById('profileLogoutBtn').addEventListener('click', logout);
+
+  el.querySelectorAll('[data-section]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      activeSection = btn.dataset.section;
+      renderProfilePage();
+    });
+  });
 
   const storage = getStorageUsage();
   document.getElementById('profileStorageLabel').textContent = `${storage.usedGB} / ${storage.totalGB} GB`;
@@ -133,10 +133,105 @@ function renderMain() {
   }
 }
 
+// ---- Beğenilen / Kaydedilen-Satın Alınan panel ----
+
+function getSectionRows(section) {
+  const rows = getGalleryRows();
+  const { likes, saves, purchases } = getUserInteractionSets();
+
+  let keySet;
+  if (section === 'liked') keySet = likes;
+  else if (section === 'saved-purchased') keySet = new Set([...saves, ...purchases]);
+  else return [];
+
+  return rows.filter((r) => {
+    const source = r.isPremium ? 'premium' : 'public';
+    return keySet.has(`${source}:${r.id}`);
+  });
+}
+
+function ensureCollectionPanel() {
+  let panel = document.getElementById('profileCollectionPanel');
+  if (panel) return panel;
+
+  const view = document.getElementById('profileView');
+  if (!view) return null;
+
+  panel = document.createElement('div');
+  panel.id = 'profileCollectionPanel';
+  panel.style.display = 'none';
+  panel.className = 'profile-collection-panel';
+  view.appendChild(panel);
+
+  // Tile'lara tıklayınca ilgili satırı bulup galerideki modalı açan tek seferlik delegation
+  panel.addEventListener('click', (e) => {
+    const tile = e.target.closest('[data-row-id]');
+    if (!tile) return;
+    const { rowId, rowSource } = tile.dataset;
+    const row = getGalleryRows().find(
+      (r) => String(r.id) === rowId && (r.isPremium ? 'premium' : 'public') === rowSource
+    );
+    if (row) openModalForRow(row);
+  });
+
+  return panel;
+}
+
+function renderCollectionPanel(section) {
+  const panel = ensureCollectionPanel();
+  if (!panel) return;
+
+  const rows = getSectionRows(section);
+  const title = section === 'liked' ? 'Beğenilen Promptlar' : 'Satın Alınan / Kaydedilen Promptlar';
+
+  const gridHtml = rows.length
+    ? `<div class="profile-collection-grid">
+        ${rows.map((r) => {
+          const tags = r.etiketler.split(',').map((t) => t.trim()).filter(Boolean);
+          const firstTag = tags[0] || (r.isPremium ? 'Premium' : '');
+          const source = r.isPremium ? 'premium' : 'public';
+          return `
+          <div class="profile-collection-tile" data-row-id="${escapeAttr(r.id)}" data-row-source="${source}">
+            <img src="${r.gorselLink || ''}" alt="" loading="lazy">
+            <div class="profile-collection-tile-hint">${escapeHtml(firstTag)}</div>
+          </div>`;
+        }).join('')}
+      </div>`
+    : `<div class="profile-empty-note">Henüz burada bir şey yok.</div>`;
+
+  panel.innerHTML = `
+    <div class="profile-collection-header">
+      <h2>${escapeHtml(title)}</h2>
+      <span class="profile-collection-count">${rows.length} öğe</span>
+    </div>
+    ${gridHtml}
+  `;
+}
+
+function setMainVisibility(showOverview) {
+  const view = document.getElementById('profileView');
+  const sidebar = document.getElementById('profileSidebar');
+  const panel = document.getElementById('profileCollectionPanel');
+  if (!view || !sidebar) return;
+
+  Array.from(view.children).forEach((child) => {
+    if (child === sidebar || child === panel) return;
+    child.style.display = showOverview ? '' : 'none';
+  });
+  if (panel) panel.style.display = showOverview ? 'none' : '';
+}
+
 function renderProfilePage() {
-  if (!isLoggedIn()) return; // avatar zaten sadece giriş yapılınca göründüğü için normalde buraya düşülmez
+  if (!isLoggedIn()) return;
   renderSidebar();
-  renderMain();
+
+  if (activeSection === 'overview') {
+    setMainVisibility(true);
+    renderMain();
+  } else {
+    setMainVisibility(false);
+    renderCollectionPanel(activeSection);
+  }
 }
 
 function bindQuickActions() {

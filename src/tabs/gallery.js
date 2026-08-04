@@ -1,9 +1,8 @@
 // src/tabs/gallery.js
-import { SHEET_ID, SHEET_NAME, MAX_TOP_TAGS, PREMIUM_LIST_URL, UNLOCK_PREMIUM_URL } from '../config.js';
 import { escapeAttr, escapeHtml, unwrap, getViewCount, getLikeCount, formatCount } from '../utils.js';
-import { isLoggedIn, setLocalCreditBalance, refreshCreditBalanceFromServer, authHeaders } from '../auth.js';
+import { isLoggedIn, setLocalCreditBalance, refreshCreditBalanceFromServer, authHeaders, onBalanceChange } from '../auth.js';
 import { openCreditModal } from '../credits.js';
-
+import { MAX_TOP_TAGS, PUBLIC_LIST_URL, PREMIUM_LIST_URL, UNLOCK_PREMIUM_URL, TOGGLE_INTERACTION_URL, USER_INTERACTIONS_URL } from '../config.js';
 
 let allRows = [];
 let visibleRows = [];
@@ -13,6 +12,11 @@ let currentModalRow = null;
 let searchTerm = '';
 let sortOrder = 'newest';
 let showAllTags = false;
+
+// Sunucudan gelen etkileşim durumu: "public:123" / "premium:45" formatında anahtarlar
+let serverLikes = new Set();
+let serverSaves = new Set();
+let serverPurchases = new Set();
 
 function $(id) {
   return document.getElementById(id);
@@ -28,30 +32,31 @@ function clearStatus() {
 }
 
 async function fetchPublicRows() {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('Sheet okunamadı.');
-  const text = await res.text();
-  const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
-  const data = JSON.parse(jsonStr);
+  if (!PUBLIC_LIST_URL || PUBLIC_LIST_URL.includes('YOUR-N8N-URL')) return [];
+  try {
+    const res = await fetch(PUBLIC_LIST_URL);
+    if (!res.ok) throw new Error('Public liste okunamadı.');
+    const data = await res.json();
 
-  const rows = data.table.rows
-    .map((r, i) => {
-      const cells = r.c.map((c) => (c ? c.v ?? '' : ''));
+    const rows = (Array.isArray(data) ? data : []).map((raw) => {
+      const r = unwrap(raw);
       return {
-        id: 'pub_' + i,
-        tarih: cells[0] || '',
-        etiketler: cells[1] || '',
-        promptText: cells[2] || '',
-        gorselLink: cells[3] || '',
-        chatId: cells[4] || '',
-        kategori: (cells[5] || '').trim(),
+        id: String(r.id ?? ''),
+        tarih: r.tarih || '',
+        etiketler: r.etiketler || '',
+        promptText: r.promptText || '',
+        gorselLink: r.gorselLink || '',
+        chatId: r.chatId || '',
+        kategori: (r.kategori || '').trim(),
         isPremium: false
       };
-    })
-    .filter((r) => r.promptText);
+    }).filter((r) => r.promptText);
 
-  return rows.reverse();
+    return rows.reverse();
+  } catch (err) {
+    console.warn('Public liste alınamadı:', err.message);
+    return [];
+  }
 }
 
 async function fetchPremiumList() {
@@ -81,12 +86,36 @@ async function fetchPremiumList() {
   }
 }
 
+async function fetchUserInteractions() {
+  serverLikes = new Set();
+  serverSaves = new Set();
+  serverPurchases = new Set();
+
+  if (!isLoggedIn()) return;
+  if (!USER_INTERACTIONS_URL || USER_INTERACTIONS_URL.includes('YOUR-N8N-URL')) return;
+
+  try {
+    const res = await fetch(USER_INTERACTIONS_URL, { headers: authHeaders() });
+    if (!res.ok) return; // sessizce boş kalır (401 dahil) — profil/galeri hata göstermesin
+    const data = await res.json();
+    (data.likes || []).forEach((k) => serverLikes.add(k));
+    (data.saves || []).forEach((k) => serverSaves.add(k));
+    (data.purchases || []).forEach((k) => serverPurchases.add(k));
+  } catch (err) {
+    console.warn('Kullanıcı etkileşimleri alınamadı:', err.message);
+  }
+}
+
 export async function loadData() {
   setStatus('Yükleniyor...');
   $('grid').innerHTML = '';
 
   try {
-    const [publicRows, premiumRows] = await Promise.all([fetchPublicRows(), fetchPremiumList()]);
+    const [publicRows, premiumRows] = await Promise.all([
+      fetchPublicRows(),
+      fetchPremiumList(),
+      fetchUserInteractions()
+    ]);
 
     allRows = [...publicRows, ...premiumRows];
     sortOrder = 'newest';
@@ -193,46 +222,80 @@ function applyFiltersAndRender() {
   renderGrid();
 }
 
-// ---- Beğen / Kaydet — tarayıcıda kalıcı, hesap gerektirmez (şimdilik) ----
-function getLikedSet() {
-  try {
-    return new Set(JSON.parse(localStorage.getItem('likedIds') || '[]'));
-  } catch (e) {
-    return new Set();
-  }
+// ---- Beğen / Kaydet — artık sunucu tabanlı, sadece giriş yapan kullanıcı ----
+
+function itemKey(row) {
+  return `${row.isPremium ? 'premium' : 'public'}:${row.id}`;
 }
-function getSavedSet() {
-  try {
-    return new Set(JSON.parse(localStorage.getItem('savedIds') || '[]'));
-  } catch (e) {
-    return new Set();
-  }
+function findRow(id) {
+  return allRows.find((r) => String(r.id) === String(id));
 }
 function isLiked(id) {
-  return getLikedSet().has(String(id));
+  const row = findRow(id);
+  return row ? serverLikes.has(itemKey(row)) : false;
 }
 function isSaved(id) {
-  return getSavedSet().has(String(id));
+  const row = findRow(id);
+  return row ? serverSaves.has(itemKey(row)) : false;
 }
-function toggleLike(id) {
-  const set = getLikedSet();
-  const key = String(id);
-  if (set.has(key)) set.delete(key);
+
+async function toggleInteraction(id, type) {
+  if (!isLoggedIn()) {
+    openCreditModal(); // giriş yapmamış kullanıcı — mevcut login/credit modal'ı tetikler
+    return;
+  }
+  const row = findRow(id);
+  if (!row) return;
+  if (!TOGGLE_INTERACTION_URL || TOGGLE_INTERACTION_URL.includes('YOUR-N8N-URL')) {
+    setStatus('Etkileşim servisi henüz bağlanmadı.', true);
+    return;
+  }
+
+  const key = itemKey(row);
+  const set = type === 'like' ? serverLikes : serverSaves;
+  const wasActive = set.has(key);
+
+  // Optimistic UI
+  if (wasActive) set.delete(key);
   else set.add(key);
-  try {
-    localStorage.setItem('likedIds', JSON.stringify([...set]));
-  } catch (e) {}
   renderGrid();
-}
-function toggleSave(id) {
-  const set = getSavedSet();
-  const key = String(id);
-  if (set.has(key)) set.delete(key);
-  else set.add(key);
+
   try {
-    localStorage.setItem('savedIds', JSON.stringify([...set]));
-  } catch (e) {}
-  renderGrid();
+    const res = await fetch(TOGGLE_INTERACTION_URL, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({
+        item_id: row.id,
+        item_source: row.isPremium ? 'premium' : 'public',
+        interaction_type: type
+      })
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+
+    if (res.status === 401) {
+      // token geçersiz/süresi dolmuş — optimistic değişikliği geri al
+      if (wasActive) set.add(key);
+      else set.delete(key);
+      renderGrid();
+      setStatus('Oturum süresi dolmuş, lütfen tekrar giriş yap.', true);
+      return;
+    }
+    if (!res.ok || data.success === false) throw new Error(data.message || 'İşlem başarısız.');
+
+    // Sunucudan dönen gerçek durum optimistic tahminden farklıysa düzelt
+    if (typeof data.active === 'boolean' && data.active !== set.has(key)) {
+      if (data.active) set.add(key);
+      else set.delete(key);
+      renderGrid();
+    }
+  } catch (err) {
+    // Hata — optimistic değişikliği geri al
+    if (wasActive) set.add(key);
+    else set.delete(key);
+    renderGrid();
+    setStatus('Bağlantı hatası: ' + err.message, true);
+  }
 }
 
 function renderGrid() {
@@ -286,8 +349,14 @@ function renderGrid() {
 
 // ---- Modal (referans görsel + prompt) ----
 
+// visibleRows içindeki index'e göre açar (galeri grid'inden tıklamada kullanılır)
 function openModal(idx) {
-  const r = visibleRows[idx];
+  openModalForRow(visibleRows[idx]);
+}
+
+// Satır objesiyle doğrudan açar — galeri dışından (ör. profil sayfası) da çağrılabilir
+export function openModalForRow(r) {
+  if (!r) return;
   currentModalRow = r;
   const tags = r.etiketler.split(',').map((t) => t.trim()).filter(Boolean);
 
@@ -390,7 +459,7 @@ async function unlockWithCredits() {
       headers: authHeaders(),
       body: JSON.stringify({
         id: r.id,
-        email: localStorage.getItem('userEmail') || '' // sadece UX/log; sunucu token'daki email'i esas alır
+        email: localStorage.getItem('userEmail') || ''
       })
     });
     const raw = await res.json();
@@ -398,11 +467,9 @@ async function unlockWithCredits() {
 
     if (data.success) {
       setUnlockedPrompt(r.id, data.promptText);
+      serverPurchases.add(itemKey(r)); // profil listesi bu oturumda da güncel görünsün
       msgEl.textContent = 'Açıldı!';
       msgEl.className = 'code-msg success';
-      // TODO: Premium_Prompt_Ac_Kredi.json yanıtına `newBalance` eklenirse burada
-      // ekstra sunucu çağrısı yapmadan anında güncelleriz. Eklenene kadar
-      // refreshCreditBalanceFromServer() ayrı bir istekle tazeler.
       if (typeof data.newBalance === 'number') {
         setLocalCreditBalance(data.newBalance);
       } else {
@@ -439,6 +506,14 @@ function copyPrompt() {
       btn.classList.remove('copied');
     }, 1600);
   });
+}
+
+// ---- Profile.js için dışa açılan erişimciler ----
+export function getGalleryRows() {
+  return allRows;
+}
+export function getUserInteractionSets() {
+  return { likes: serverLikes, saves: serverSaves, purchases: serverPurchases };
 }
 
 // ---- Init: tüm statik event binding + delegation burada ----
@@ -483,13 +558,13 @@ export function initGallery() {
     const likeBtn = e.target.closest('[data-like-id]');
     if (likeBtn) {
       e.stopPropagation();
-      toggleLike(likeBtn.dataset.likeId);
+      toggleInteraction(likeBtn.dataset.likeId, 'like');
       return;
     }
     const saveBtn = e.target.closest('[data-save-id]');
     if (saveBtn) {
       e.stopPropagation();
-      toggleSave(saveBtn.dataset.saveId);
+      toggleInteraction(saveBtn.dataset.saveId, 'save');
       return;
     }
     const tile = e.target.closest('[data-open-idx]');
@@ -511,6 +586,12 @@ export function initGallery() {
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeModal();
+  });
+
+  // Giriş/çıkış olduğunda (ör. login sonrası balance event'i) etkileşim setlerini tazele
+  onBalanceChange(async () => {
+    await fetchUserInteractions();
+    renderGrid();
   });
 }
 
