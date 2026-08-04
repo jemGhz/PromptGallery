@@ -1,6 +1,9 @@
 // src/tabs/gallery.js
-import { SHEET_ID, SHEET_NAME, MAX_TOP_TAGS, PREMIUM_LIST_URL, PREMIUM_VERIFY_URL } from '../config.js';
+import { SHEET_ID, SHEET_NAME, MAX_TOP_TAGS, PREMIUM_LIST_URL, UNLOCK_PREMIUM_URL } from '../config.js';
 import { escapeAttr, escapeHtml, unwrap, getViewCount, getLikeCount, formatCount } from '../utils.js';
+import { isLoggedIn, setLocalCreditBalance, refreshCreditBalanceFromServer, authHeaders } from '../auth.js';
+import { openCreditModal } from '../credits.js';
+
 
 let allRows = [];
 let visibleRows = [];
@@ -68,7 +71,8 @@ async function fetchPremiumList() {
         gorselLink: p.gorselLink || '',
         chatId: '',
         kategori: (p.kategori || '').trim(),
-        isPremium: true
+        isPremium: true,
+        cost: Number(p.maliyet) || 50
       };
     });
   } catch (err) {
@@ -345,64 +349,83 @@ function showPromptSection(promptText) {
 function showPaywallSection() {
   $('promptSection').style.display = 'none';
   $('paywallSection').style.display = 'flex';
-  showPaywallActions();
-}
-function showPaywallActions() {
-  $('paywallPanel').style.display = 'flex';
-  $('codePanel').style.display = 'none';
-}
-function showCodePanel() {
-  $('paywallPanel').style.display = 'none';
-  $('codePanel').style.display = 'flex';
-  const msgEl = $('codeMsg');
+
+  const r = currentModalRow;
+  const cost = r?.cost || 50;
+  $('unlockCostText').textContent = `${cost} JG Puanı karşılığında açılır.`;
+
+  const msgEl = $('unlockMsg');
   msgEl.textContent = '';
   msgEl.className = 'code-msg';
-  const input = $('codeInput');
-  input.value = '';
-  input.focus();
+
+  const btn = $('unlockBtn');
+  btn.disabled = false;
+  btn.textContent = 'JG Puanı ile Aç';
 }
 
-async function submitCode() {
+// ---- Kredi ile prompt açma ----
+async function unlockWithCredits() {
   const r = currentModalRow;
-  const code = $('codeInput').value.trim();
-  const msgEl = $('codeMsg');
+  const msgEl = $('unlockMsg');
+  const btn = $('unlockBtn');
 
-  if (!code) {
-    msgEl.textContent = 'Kod boş olamaz.';
+  if (!isLoggedIn()) {
+    openCreditModal();
+    return;
+  }
+  if (!UNLOCK_PREMIUM_URL || UNLOCK_PREMIUM_URL.includes('YOUR-N8N-URL')) {
+    msgEl.textContent = 'Kilit açma servisi henüz bağlanmadı.';
     msgEl.className = 'code-msg error';
     return;
   }
-  if (!PREMIUM_VERIFY_URL || PREMIUM_VERIFY_URL.includes('YOUR-N8N-URL')) {
-    msgEl.textContent = 'Doğrulama servisi henüz bağlanmadı.';
-    msgEl.className = 'code-msg error';
-    return;
-  }
 
-  msgEl.textContent = 'Kontrol ediliyor...';
+  btn.disabled = true;
+  btn.textContent = 'İşleniyor...';
+  msgEl.textContent = '';
   msgEl.className = 'code-msg';
 
   try {
-    const res = await fetch(PREMIUM_VERIFY_URL, {
+    const res = await fetch(UNLOCK_PREMIUM_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: r.id, code })
+      headers: authHeaders(),
+      body: JSON.stringify({
+        id: r.id,
+        email: localStorage.getItem('userEmail') || '' // sadece UX/log; sunucu token'daki email'i esas alır
+      })
     });
     const raw = await res.json();
     const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
 
     if (data.success) {
       setUnlockedPrompt(r.id, data.promptText);
-      msgEl.textContent = 'Kod doğru! Açılıyor...';
+      msgEl.textContent = 'Açıldı!';
       msgEl.className = 'code-msg success';
-      setTimeout(() => showPromptSection(data.promptText), 500);
+      // TODO: Premium_Prompt_Ac_Kredi.json yanıtına `newBalance` eklenirse burada
+      // ekstra sunucu çağrısı yapmadan anında güncelleriz. Eklenene kadar
+      // refreshCreditBalanceFromServer() ayrı bir istekle tazeler.
+      if (typeof data.newBalance === 'number') {
+        setLocalCreditBalance(data.newBalance);
+      } else {
+        refreshCreditBalanceFromServer();
+      }
       renderGrid();
-    } else {
-      msgEl.textContent = data.message || 'Kod geçersiz.';
+      setTimeout(() => showPromptSection(data.promptText), 400);
+    } else if (res.status === 401) {
+      msgEl.textContent = 'Oturum süresi dolmuş, lütfen tekrar giriş yap.';
       msgEl.className = 'code-msg error';
+      btn.disabled = false;
+      btn.textContent = 'JG Puanı ile Aç';
+    } else {
+      msgEl.textContent = data.message || 'Bakiye yetersiz veya bir hata oluştu.';
+      msgEl.className = 'code-msg error';
+      btn.disabled = false;
+      btn.textContent = 'JG Puanı ile Aç';
     }
   } catch (err) {
     msgEl.textContent = 'Bağlantı hatası: ' + err.message;
     msgEl.className = 'code-msg error';
+    btn.disabled = false;
+    btn.textContent = 'JG Puanı ile Aç';
   }
 }
 
@@ -480,15 +503,11 @@ export function initGallery() {
     if (btn.id === 'copyBtn') btn.addEventListener('click', copyPrompt);
     else btn.addEventListener('click', closeModal);
   });
-  $('codeInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') submitCode();
+
+  $('unlockBtn').addEventListener('click', unlockWithCredits);
+  document.querySelectorAll('#paywallSection .btn').forEach((btn) => {
+    if (btn.id !== 'unlockBtn') btn.addEventListener('click', closeModal);
   });
-  document.querySelectorAll('#paywallPanel .btn').forEach((btn) => {
-    if (btn.textContent.includes('sahip ol')) btn.addEventListener('click', showCodePanel);
-    else if (!btn.disabled) btn.addEventListener('click', closeModal);
-  });
-  document.getElementById('codePanel').querySelector('.code-row .btn.primary').addEventListener('click', submitCode);
-  document.getElementById('codePanel').querySelector('.btn:not(.primary)').addEventListener('click', showPaywallActions);
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeModal();

@@ -1,5 +1,6 @@
 // src/auth.js
-// Google Sign-In + kredi bakiyesi (sadece UI göstergesi — gerçek doğrulama n8n/Supabase'de).
+// Google Sign-In + kredi bakiyesi + oturum token'ı.
+// Gerçek yetkilendirme artık jg_session_token'a dayanıyor; email sadece UI için.
 
 import {
   CREDIT_BALANCE_URL,
@@ -16,12 +17,24 @@ export function onBalanceChange(fn) {
   balanceListeners.add(fn);
 }
 
-export function isLoggedIn() {
+export function getSessionToken() {
   try {
-    return !!localStorage.getItem('userEmail');
+    return localStorage.getItem('jg_session_token') || '';
   } catch (e) {
-    return false;
+    return '';
   }
+}
+
+export function isLoggedIn() {
+  return !!getSessionToken();
+}
+
+/** Korunan endpoint'lere gidecek her fetch çağrısı bu header'ı taşımalı. */
+export function authHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + getSessionToken()
+  };
 }
 
 export function getLocalCreditBalance() {
@@ -53,8 +66,8 @@ export async function refreshCreditBalanceFromServer() {
     const email = localStorage.getItem('userEmail') || '';
     const res = await fetch(CREDIT_BALANCE_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
+      headers: authHeaders(),
+      body: JSON.stringify({ email }) // email sadece UX/log amaçlı; sunucu token'daki email'i esas alır
     });
     const raw = await res.json();
     const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
@@ -74,7 +87,7 @@ async function handleGoogleCredential(response) {
     const raw = await res.json();
     const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
 
-    if (!data.verified) {
+    if (!data.verified || !data.token) {
       console.warn('Giriş doğrulanamadı:', data.message);
       return;
     }
@@ -82,6 +95,7 @@ async function handleGoogleCredential(response) {
     localStorage.setItem('userEmail', data.email || '');
     localStorage.setItem('userName', data.name || '');
     localStorage.setItem('userPicture', data.picture || '');
+    localStorage.setItem('jg_session_token', data.token);
   } catch (err) {
     console.warn('Giriş doğrulama hatası:', err.message);
     return;
@@ -95,6 +109,7 @@ export function logout() {
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userName');
     localStorage.removeItem('userPicture');
+    localStorage.removeItem('jg_session_token');
   } catch (e) {}
   if (window.google && google.accounts && google.accounts.id) {
     google.accounts.id.disableAutoSelect();
@@ -138,7 +153,7 @@ export function renderAuthArea() {
     email = localStorage.getItem('userEmail') || '';
   } catch (e) {}
 
-  if (email) {
+  if (email && isLoggedIn()) {
     const name = (() => {
       try {
         return localStorage.getItem('userName') || '';

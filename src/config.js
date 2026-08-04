@@ -8,20 +8,28 @@ export const SHEET_ID = '1-n0pVWWzNKKodfB9TVXKC7hpQfJDPO_ZtzFE6gDqKBM';
 export const SHEET_NAME = 'Sayfa1';
 export const MAX_TOP_TAGS = 10;
 
+// TODO: bu path'i (premium-list) sen n8n'deki gerçek Webhook node'undan teyit et.
 export const PREMIUM_LIST_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/premium-list';
-export const PREMIUM_VERIFY_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/verify-premium-code';
-export const PROMPT_MAKER_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-prompt';
-export const GEN_GENERATE_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-visual';
-export const CHARACTER_GENERATE_URL = 'https://jemghz.app.n8n.cloud/webhook/generate-character';
-export const CHARACTER_SAVE_URL = 'https://jemghz.app.n8n.cloud/webhook/save-character';
+
+// PREMIUM_VERIFY_URL kaldırıldı — eski "kod ile tek prompt açma" sistemi devre dışı,
+// yerini UNLOCK_PREMIUM_URL (kredi ile açma) aldı.
+// TODO: bu path'i (unlock-premium) sen n8n'deki gerçek Webhook node'undan teyit et.
+export const UNLOCK_PREMIUM_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/unlock-premium';
+
+export const PROMPT_MAKER_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/generate-prompt';
+export const GEN_GENERATE_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/generate-visual';
+export const CHARACTER_GENERATE_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/generate-character';
+export const CHARACTER_SAVE_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/save-character';
 export const GOOGLE_LOGIN_VERIFY_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/verify-google-login';
 
 // ÖNEMLİ: bakiye ASLA sadece tarayıcıda tutulup ücretli işlem kararı buna göre
 // verilmemeli; n8n tarafında Supabase'deki gerçek bakiye kontrol edilmeden
 // generateCharacter/generateVisual/generatePrompt ÇALIŞTIRILMAMALI.
-export const CREDIT_BALANCE_URL = 'https://jemghz.app.n8n.cloud/webhook/credit-balance';
-export const CREDIT_STRIPE_CHECKOUT_URL = 'https://jemghz.app.n8n.cloud/webhook/credit-stripe-checkout';
-export const CREDIT_VERIFY_CODE_URL = 'https://jemghz.app.n8n.cloud/webhook/credit-verify-code';
+export const CREDIT_BALANCE_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/credit-balance';
+export const CREDIT_STRIPE_CHECKOUT_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/credit-stripe-checkout';
+// TODO: özet dosyanda bu workflow'un path'i "verify-credit-code" olarak geçiyordu,
+// burada "credit-verify-code" yazıyordu — ikisi farklı. n8n'deki gerçek Path alanına bakıp düzelt.
+export const CREDIT_VERIFY_CODE_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/verify-credit-code';
 
 export const CREDIT_PACKAGES = [
   { id: 'pkg_10', credits: 10, price: '99 TL' },

@@ -713,37 +713,21 @@
         </div>
       </div>
 
+      <!--
+        ESKİ paywallPanel/codePanel (iki adımlı: IBAN bilgisi göster -> kod gir) KALDIRILDI.
+        Yeni model: kullanıcı zaten JG Puanı bakiyesine sahip; burada sadece bu içeriğin
+        maliyetini gösterip tek butonla harcama yapıyoruz. IBAN/kod akışı artık kredi
+        satın alma modalında (creditIbanStep), burada değil.
+      -->
       <div id="paywallSection" style="display:none; flex-direction:column; flex:1; justify-content:center;">
-        <div id="paywallPanel" style="display:flex; flex-direction:column;">
-          <div class="paywall-title">Bu prompt kilitli</div>
-          <div class="paywall-desc">Bu prompt premium arşivin bir parçası. Şu an için sadece koduna sahip olanlar açabilir.</div>
-          <div class="paywall-actions">
-            <button class="btn" disabled title="Yakında aktif olacak">Bu prompt için öde <span class="btn-soon-label">(yakında)</span></button>
-            <button class="btn" disabled title="Yakında aktif olacak">Premium üyeliğe kaydol <span class="btn-soon-label">(yakında)</span></button>
-            <button class="btn primary">Bu prompt'a sahip ol</button>
-            <button class="btn">Geri</button>
-          </div>
+        <div class="paywall-title">Bu prompt kilitli</div>
+        <div class="paywall-desc">Bu prompt premium arşivin bir parçası. JG Puanı bakiyenle açabilirsin.</div>
+        <div class="paywall-desc" id="unlockCostText"></div>
+        <div class="paywall-actions">
+          <button class="btn primary" id="unlockBtn">JG Puanı ile Aç</button>
+          <button class="btn">← Geri</button>
         </div>
-
-        <div id="codePanel" style="display:none; flex-direction:column;">
-          <div class="paywall-title">Bu prompt'a sahip ol</div>
-          <div class="paywall-desc">
-            Aşağıdaki IBAN'a ödeme yaptıktan sonra dekontu WhatsApp'tan <strong>@kullaniciadi</strong> hesabına gönder. Sana bir kod ileteceğiz, o kodu aşağıya girip promptu açabilirsin.
-          </div>
-          <div class="paywall-desc" style="background:var(--surface); border:1px solid var(--line); border-radius:7px; padding:14px; margin-bottom:24px;">
-            <strong>Alıcı:</strong> [Ad Soyad]<br>
-            <strong>IBAN:</strong> TR00 0000 0000 0000 0000 0000 00<br>
-            <strong>Banka:</strong> [Banka Adı]<br>
-            <strong>Tutar:</strong> [Fiyat]
-          </div>
-          <div class="paywall-title" style="font-size:15px;">Kodun var mı?</div>
-          <div class="code-row">
-            <input type="text" id="codeInput" placeholder="Örn. AB12CD" maxlength="24">
-            <button class="btn primary">Doğrula</button>
-          </div>
-          <div class="code-msg" id="codeMsg"></div>
-          <button class="btn" style="margin-top:16px">← Geri</button>
-        </div>
+        <div class="code-msg" id="unlockMsg"></div>
       </div>
     </div>
   </div>

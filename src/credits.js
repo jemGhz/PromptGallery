@@ -2,7 +2,7 @@
 
 import { CREDIT_PACKAGES, CREDIT_STRIPE_CHECKOUT_URL, CREDIT_VERIFY_CODE_URL } from './config.js';
 import { escapeHtml, unwrap } from './utils.js';
-import { isLoggedIn, setLocalCreditBalance, renderGoogleButton } from './auth.js';
+import { isLoggedIn, setLocalCreditBalance, renderGoogleButton, authHeaders } from './auth.js';
 
 let selectedCreditPkgIdx = null;
 
@@ -87,7 +87,7 @@ async function startCreditPayment(method) {
     const email = localStorage.getItem('userEmail') || '';
     const res = await fetch(CREDIT_STRIPE_CHECKOUT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify({ email, packageId: pkg.id })
     });
     const raw = await res.json();
@@ -117,6 +117,11 @@ async function submitCreditCode() {
     msgEl.className = 'code-msg error';
     return;
   }
+  if (!isLoggedIn()) {
+    msgEl.textContent = 'Oturum süresi dolmuş görünüyor, lütfen tekrar giriş yap.';
+    msgEl.className = 'code-msg error';
+    return;
+  }
 
   msgEl.textContent = 'Kontrol ediliyor...';
   msgEl.className = 'code-msg';
@@ -125,7 +130,7 @@ async function submitCreditCode() {
     const email = localStorage.getItem('userEmail') || '';
     const res = await fetch(CREDIT_VERIFY_CODE_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify({ email, code, packageId: pkg ? pkg.id : null })
     });
     const raw = await res.json();
