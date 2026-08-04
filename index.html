@@ -86,13 +86,6 @@
         <button class="see-all-tags" id="seeAllTagsBtn">Tüm etiketleri gör</button>
       </div>
     </div>
-
-    <div class="upgrade-card">
-      <div class="upgrade-icon">👑</div>
-      <div class="upgrade-title">Daha fazlasını keşfet</div>
-      <div class="upgrade-desc">Sınırsız kaydetme, gelişmiş filtreler ve daha fazlası için JG Plus'a yükseltin.</div>
-      <button class="upgrade-btn" title="Yakında aktif olacak" disabled>JG Plus'a yükselt</button>
-    </div>
   </aside>
 
   <div class="gallery-main">
@@ -785,6 +778,53 @@
       <button class="btn" style="margin-top:16px; width:100%;">← Geri</button>
     </div>
 
+  </div>
+</div>
+
+<!-- ---- Karşılama / giriş teşvik modalı (giriş yapmamış kullanıcıya 15sn sonra açılır — bkz. welcomeModal.js) ---- -->
+<div class="modal-backdrop" id="welcomeModalBackdrop">
+  <div class="welcome-modal">
+    <button class="welcome-close-btn" id="welcomeCloseBtn" aria-label="Kapat">✕</button>
+
+    <div class="welcome-modal-eyebrow">👋 Hoş geldin!</div>
+    <h2 class="welcome-modal-title">Yaratıcılığını <span>keşfetmeye başla</span></h2>
+
+    <ul class="welcome-modal-features">
+      <li>
+        <span class="welcome-feature-icon">✨</span>
+        <div>
+          <strong>Sınırsız ilham, profesyonel araçlar</strong>
+          <p>Binlerce görseli keşfet, trendleri yakala.</p>
+        </div>
+      </li>
+      <li>
+        <span class="welcome-feature-icon">🎨</span>
+        <div>
+          <strong>Kendi içeriklerini oluştur ve yönet</strong>
+          <p>Görsel üret, karakter oluştur, her şey tek yerde.</p>
+        </div>
+      </li>
+      <li>
+        <span class="welcome-feature-icon">💾</span>
+        <div>
+          <strong>Kişiselleştir ve favorilerini kaydet</strong>
+          <p>Beğendiklerini kaydet, koleksiyonunu oluştur.</p>
+        </div>
+      </li>
+    </ul>
+
+    <div class="welcome-modal-actions">
+      <div class="welcome-btn-wrap outline">
+        <span class="welcome-btn-label">Giriş Yap</span>
+        <div id="welcomeGoogleSigninBtn" class="welcome-google-overlay"></div>
+      </div>
+      <div class="welcome-btn-wrap filled">
+        <span class="welcome-btn-label">Hesap Oluştur</span>
+        <div id="welcomeGoogleSignupBtn" class="welcome-google-overlay"></div>
+      </div>
+    </div>
+
+    <div class="welcome-modal-footnote">Hesabın yok mu? <strong>Ücretsiz oluştur</strong> ve hemen başla!</div>
   </div>
 </div>
 
