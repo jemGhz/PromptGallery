@@ -4,6 +4,7 @@ import './style.css';
 import { switchTab } from './tabState.js';
 import { initAuth } from './auth.js';
 import { initCreditModal } from './credits.js';
+import { initWelcomeModal } from './welcomeModal.js';
 import { loadData, initGallery } from './tabs/gallery.js';
 import { initPromptGenerator, triggerMakerUpload } from './tabs/promptGenerator.js';
 import { initVisualGenerator } from './tabs/visualGenerator.js';
@@ -37,6 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initCreditModal();
   initProfile();
 
+  // initAuth'tan sonra çağrılıyor ki isLoggedIn() kontrolü doğru sonucu versin
+  // (login olmuş kullanıcıya popup hiç kurulmasın).
+  initWelcomeModal();
 
   loadData();
 });
