@@ -311,7 +311,13 @@ function renderGrid() {
       const tags = r.etiketler.split(',').map((t) => t.trim()).filter(Boolean);
       const firstTag = tags[0] || (r.isPremium ? 'Premium' : '');
       const imgSrc = r.gorselLink || '';
-      const lockBadge = r.isPremium && !getUnlockedPrompt(r.id) ? '<div class="lock-badge">🔒</div>' : '';
+      const lockBadge = r.isPremium && !getUnlockedPrompt(r.id)
+        ? `<div class="premium-badge">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+              <path d="M3 8l4 3 5-6 5 6 4-3-2 10H5L3 8z"/>
+            </svg>
+          </div>`
+        : '';
       const views = formatCount(getViewCount(r.id));
       const likes = formatCount(getLikeCount(r.id) + (isLiked(r.id) ? 1 : 0));
       const statBadges = `
