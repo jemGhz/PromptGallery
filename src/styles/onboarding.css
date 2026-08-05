@@ -1,0 +1,101 @@
+/* src/styles/onboarding.css */
+/* style.css'e eklenecek satır: @import './styles/onboarding.css'; */
+
+#onboardingModalBackdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+#onboardingModalBackdrop.open {
+  display: flex;
+}
+
+.onboarding-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.onboarding-card h2 {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+}
+
+.onboarding-sub {
+  margin: 0 0 20px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.onboarding-section {
+  margin-bottom: 18px;
+}
+
+.onboarding-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.onboarding-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.onboarding-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.onboarding-check input {
+  width: 16px;
+  height: 16px;
+}
+
+.onboarding-select,
+.onboarding-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.onboarding-textarea {
+  resize: vertical;
+}
+
+.onboarding-error {
+  color: #d33;
+  font-size: 0.82rem;
+  min-height: 18px;
+  margin: 0 0 8px;
+}
+
+.onboarding-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+@media (max-width: 480px) {
+  .onboarding-card {
+    padding: 20px;
+  }
+}

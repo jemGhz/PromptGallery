@@ -1,7 +1,7 @@
 // src/auth.js
 // Google Sign-In + kredi bakiyesi + oturum token'ı.
 // Gerçek yetkilendirme artık jg_session_token'a dayanıyor; email sadece UI için.
-
+import { maybeShowOnboarding } from './onboardingModal.js';
 import {
   CREDIT_BALANCE_URL,
   GOOGLE_CLIENT_ID,
@@ -102,6 +102,7 @@ async function handleGoogleCredential(response) {
   }
   renderAuthArea();
   refreshCreditBalanceFromServer();
+  maybeShowOnboarding(data.email, authHeaders());
 }
 
 export function logout() {
@@ -187,6 +188,9 @@ export function initAuth() {
     if (window.google && google.accounts && google.accounts.id) {
       renderAuthArea();
       refreshCreditBalanceFromServer();
+       if (isLoggedIn()) {
+  maybeShowOnboarding(localStorage.getItem('userEmail') || '', authHeaders());
+}
     } else {
       setTimeout(tryRender, 200);
     }

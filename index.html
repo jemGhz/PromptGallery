@@ -831,7 +831,37 @@
 
       <div class="welcome-modal-footnote">Hesabın yok mu? <strong>Ücretsiz oluştur</strong> ve hemen başla!</div>
     </div>
+  </div>
+</div>
+<!-- ↑ welcomeModalBackdrop burada TAM olarak kapanıyor -->
 
+<!-- ---- Onboarding anket modalı (giriş sonrası, sunucu "completed:false" derse açılır — bkz. onboardingModal.js) ---- -->
+<div class="modal-backdrop" id="onboardingModalBackdrop">
+  <div class="onboarding-card">
+    <h2>Aramıza hoş geldin! 👋</h2>
+    <p class="onboarding-sub">Sana daha iyi bir deneyim sunabilmemiz için birkaç kısa soru:</p>
+
+    <div class="onboarding-section">
+      <label class="onboarding-label">Bizi ne için kullanmayı düşünüyorsun? (birden fazla seçebilirsin)</label>
+      <div id="onboardingReasons" class="onboarding-checklist"></div>
+    </div>
+
+    <div class="onboarding-section">
+      <label class="onboarding-label" for="onboardingHeardFrom">Bizi nereden duydun?</label>
+      <select id="onboardingHeardFrom" class="onboarding-select"></select>
+    </div>
+
+    <div class="onboarding-section">
+      <label class="onboarding-label" for="onboardingCustomReason">Eklemek istediğin bir şey var mı? (opsiyonel)</label>
+      <textarea id="onboardingCustomReason" class="onboarding-textarea" rows="2"></textarea>
+    </div>
+
+    <p class="onboarding-error" id="onboardingErrorMsg"></p>
+
+    <div class="onboarding-actions">
+      <button type="button" class="btn" id="onboardingSkipBtn">Şimdi değil</button>
+      <button type="button" class="btn primary" id="onboardingSubmitBtn">Devam et</button>
+    </div>
   </div>
 </div>
 

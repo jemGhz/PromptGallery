@@ -7,7 +7,8 @@
 export const SHEET_ID = '1-n0pVWWzNKKodfB9TVXKC7hpQfJDPO_ZtzFE6gDqKBM';
 export const SHEET_NAME = 'Sayfa1';
 export const MAX_TOP_TAGS = 10;
-
+export const ONBOARDING_STATUS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/onboarding-status';
+export const ONBOARDING_SUBMIT_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/onboarding-submit';
 // TODO: bu path'i (premium-list) sen n8n'deki gerçek Webhook node'undan teyit et.
 export const PREMIUM_LIST_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/premium-list';
 export const PUBLIC_LIST_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/public-list';

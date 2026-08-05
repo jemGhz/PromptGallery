@@ -1,8 +1,7 @@
 // src/main.js — Vite giriş noktası
 import './style.css';
-
-import { switchTab } from './tabState.js';
-import { initAuth } from './auth.js';
+import { initOnboardingModal } from './onboardingModal.js';
+import { authHeaders, initAuth } from './auth.js';import { switchTab } from './tabState.js';
 import { initCreditModal } from './credits.js';
 import { initWelcomeModal } from './welcomeModal.js';
 import { loadData, initGallery } from './tabs/gallery.js';
@@ -36,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initVisualGenerator();
   initCharacterGenerator();
   initCreditModal();
+  initOnboardingModal(authHeaders);
   initProfile();
 
   // initAuth'tan sonra çağrılıyor ki isLoggedIn() kontrolü doğru sonucu versin
