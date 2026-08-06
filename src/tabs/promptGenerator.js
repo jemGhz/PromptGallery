@@ -1,7 +1,7 @@
 // src/tabs/promptGenerator.js
 import { PROMPT_MAKER_URL, PROMPT_MAKER_CREDIT_COST } from '../config.js';
-import { escapeHtml, unwrap, getDeviceId, resizeImageToBase64 } from '../utils.js';
-import { isLoggedIn, setLocalCreditBalance } from '../auth.js';
+import { escapeHtml, unwrap, resizeImageToBase64 } from '../utils.js';
+import { isLoggedIn, setLocalCreditBalance, authHeaders } from '../auth.js';
 import { openCreditModal } from '../credits.js';
 import { appState } from '../state.js';
 
@@ -99,19 +99,25 @@ async function generatePrompt() {
   resetResultPanel();
 
   try {
+    // ÖNEMLİ: authHeaders() eklendi. Backend artık kredi düşürme işlemini
+    // Authorization token'dan çözdüğü email üzerinden yapıyor; token
+    // gitmezse istek 401 ile reddediliyor.
     const res = await fetch(PROMPT_MAKER_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify({
-        email: localStorage.getItem('userEmail') || '',
-        deviceId: getDeviceId(),
         mimeType: makerImageMime,
-        imageBase64: makerImageBase64,
-        creditCost: cost
+        imageBase64: makerImageBase64
       })
     });
     const raw = await res.json();
     const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+
+    if (data.blocked) {
+      // İçerik moderasyonu tarafından reddedildi — kredi harcanmadı.
+      $('makerStatus').textContent = data.message || 'Bu görsel kullanılamıyor.';
+      return;
+    }
 
     if (!data.allowed) {
       $('makerStatus').textContent = data.message || 'Kredi bakiyeniz bu işlem için yetersiz.';
@@ -123,6 +129,9 @@ async function generatePrompt() {
     $('makerStatus').textContent = '';
     showResultPrompt(data.promptText || '');
     if (typeof data.newBalance === 'number') setLocalCreditBalance(data.newBalance);
+    // data.imageUrl da dönüyor (Supabase Storage'a yüklenen görselin public URL'i).
+    // Profildeki galeri, prompt_generations tablosundan bunu zaten okuyacağı için
+    // burada ayrıca bir işlem yapmamıza gerek yok.
   } catch (err) {
     $('makerStatus').textContent = 'Hata: ' + err.message;
   } finally {

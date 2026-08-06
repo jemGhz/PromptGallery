@@ -1,11 +1,13 @@
 // src/tabs/profile.js
-import { escapeHtml, escapeAttr } from '../utils.js';
+import { escapeHtml, escapeAttr, unwrap } from '../utils.js';
 import { onTabChange } from '../state.js';
-import { isLoggedIn, logout, onBalanceChange, getInitial } from '../auth.js';
+import { isLoggedIn, logout, onBalanceChange, getInitial, authHeaders } from '../auth.js';
 import { switchTab } from '../tabState.js';
 import { getGalleryRows, getUserInteractionSets, openModalForRow } from './gallery.js';
+import { GENERATED_PROMPTS_URL } from '../config.js';
 
-let activeSection = 'overview'; // 'overview' | 'liked' | 'saved-purchased'
+let activeSection = 'overview'; // 'overview' | 'liked' | 'saved-purchased' | 'generated-prompts'
+let generatedPromptsLoading = false;
 
 // ---- Veri katmanı (backend hazır olana kadar gerçek/sıfır değer döner) ----
 
@@ -63,7 +65,7 @@ function renderSidebar() {
       <button class="profile-nav-item ${activeSection === 'saved-purchased' ? 'active' : ''}" data-section="saved-purchased">🔖 Satın Alınan / Kaydedilen Promptlar</button>
       <button class="profile-nav-item ${activeSection === 'liked' ? 'active' : ''}" data-section="liked">❤️ Beğenilen Promptlar</button>
       <button class="profile-nav-item" disabled title="Yakında aktif olacak">📤 Yüklenen Görseller</button>
-      <button class="profile-nav-item" disabled title="Yakında aktif olacak">📝 Oluşturulan Promptlar</button>
+      <button class="profile-nav-item ${activeSection === 'generated-prompts' ? 'active' : ''}" data-section="generated-prompts">📝 Oluşturulan Promptlar</button>
       <button class="profile-nav-item" disabled title="Yakında aktif olacak">🖼️ Oluşturulan Görseller</button>
       <button class="profile-nav-item" disabled title="Yakında aktif olacak">🧬 Karakter Sheet'leri</button>
       <button class="profile-nav-item" disabled title="Yakında aktif olacak">📱 Sosyal Medya İçerikleri</button>
@@ -164,9 +166,11 @@ function ensureCollectionPanel() {
   view.appendChild(panel);
 
   // Tile'lara tıklayınca ilgili satırı bulup galerideki modalı açan tek seferlik delegation
+  // (yalnızca 'liked' / 'saved-purchased' bölümlerindeki gallery-row tile'ları için geçerli;
+  // 'generated-prompts' tile'ları kendi click handler'ını ayrıca bağlıyor, bkz. renderGeneratedPromptsPanel)
   panel.addEventListener('click', (e) => {
     const tile = e.target.closest('[data-row-id]');
-    if (!tile) return;
+    if (!tile || tile.dataset.rowSource === 'generated') return;
     const { rowId, rowSource } = tile.dataset;
     const row = getGalleryRows().find(
       (r) => String(r.id) === rowId && (r.isPremium ? 'premium' : 'public') === rowSource
@@ -208,6 +212,101 @@ function renderCollectionPanel(section) {
   `;
 }
 
+// ---- Oluşturulan Promptlar paneli (Supabase'den kullanıcıya özel) ----
+
+async function fetchGeneratedPrompts() {
+  if (!GENERATED_PROMPTS_URL || GENERATED_PROMPTS_URL.includes('YOUR-N8N-URL')) {
+    return { error: 'Servis henüz bağlanmadı.' };
+  }
+  try {
+    const res = await fetch(GENERATED_PROMPTS_URL, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({})
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+    return { rows: Array.isArray(data.rows) ? data.rows : [] };
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+function tileHintForRow(row) {
+  const tags = (row.style_tags || '').split(',').map((t) => t.trim()).filter(Boolean);
+  return row.category || tags[0] || 'Prompt';
+}
+
+function copyGeneratedPromptText(tile, promptText) {
+  if (!promptText) return;
+  navigator.clipboard.writeText(promptText).then(() => {
+    const hint = tile.querySelector('.profile-collection-tile-hint');
+    if (!hint) return;
+    const original = hint.textContent;
+    hint.textContent = 'Kopyalandı ✓';
+    setTimeout(() => {
+      hint.textContent = original;
+    }, 1400);
+  });
+}
+
+async function renderGeneratedPromptsPanel() {
+  const panel = ensureCollectionPanel();
+  if (!panel) return;
+
+  if (generatedPromptsLoading) return;
+  generatedPromptsLoading = true;
+
+  panel.innerHTML = `
+    <div class="profile-collection-header">
+      <h2>Oluşturulan Promptlar</h2>
+      <span class="profile-collection-count">…</span>
+    </div>
+    <div class="profile-empty-note">Yükleniyor...</div>
+  `;
+
+  const { rows, error } = await fetchGeneratedPrompts();
+  generatedPromptsLoading = false;
+
+  // Kullanıcı bu sırada başka bir sekmeye geçmiş olabilir; eski isteğin sonucunu göstermeyelim.
+  if (activeSection !== 'generated-prompts') return;
+
+  if (error) {
+    panel.innerHTML = `
+      <div class="profile-collection-header">
+        <h2>Oluşturulan Promptlar</h2>
+        <span class="profile-collection-count">0 öğe</span>
+      </div>
+      <div class="profile-empty-note">Yüklenemedi: ${escapeHtml(error)}</div>
+    `;
+    return;
+  }
+
+  const gridHtml = rows.length
+    ? `<div class="profile-collection-grid">
+        ${rows.map((r) => `
+          <div class="profile-collection-tile" data-row-id="${escapeAttr(r.id)}" data-row-source="generated" title="Prompt metnini kopyalamak için tıkla">
+            <img src="${escapeAttr(r.image_url || '')}" alt="" loading="lazy">
+            <div class="profile-collection-tile-hint">${escapeHtml(tileHintForRow(r))}</div>
+          </div>`).join('')}
+      </div>`
+    : `<div class="profile-empty-note">Henüz prompt üretmedin. "Prompt Üretici" sekmesinden başlayabilirsin.</div>`;
+
+  panel.innerHTML = `
+    <div class="profile-collection-header">
+      <h2>Oluşturulan Promptlar</h2>
+      <span class="profile-collection-count">${rows.length} öğe</span>
+    </div>
+    ${gridHtml}
+  `;
+
+  panel.querySelectorAll('[data-row-source="generated"]').forEach((tile) => {
+    const row = rows.find((r) => String(r.id) === tile.dataset.rowId);
+    if (!row) return;
+    tile.addEventListener('click', () => copyGeneratedPromptText(tile, row.prompt_text));
+  });
+}
+
 function setMainVisibility(showOverview) {
   const view = document.getElementById('profileView');
   const sidebar = document.getElementById('profileSidebar');
@@ -228,6 +327,9 @@ function renderProfilePage() {
   if (activeSection === 'overview') {
     setMainVisibility(true);
     renderMain();
+  } else if (activeSection === 'generated-prompts') {
+    setMainVisibility(false);
+    renderGeneratedPromptsPanel();
   } else {
     setMainVisibility(false);
     renderCollectionPanel(activeSection);
