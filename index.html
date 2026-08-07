@@ -695,6 +695,9 @@
       <img id="modalImg" src="" alt="referans görsel">
     </div>
     <div class="modal-body">
+      <div class="premium-eyebrow-badge" id="modalPremiumBadge" style="display:none">
+        <span class="premium-eyebrow-icon">◆</span> PREMIUM PROMPT
+      </div>
       <div class="modal-eyebrow" id="modalDate"></div>
       <div class="modal-tags" id="modalTags"></div>
 
@@ -713,13 +716,26 @@
         satın alma modalında (creditIbanStep), burada değil.
       -->
       <div id="paywallSection" style="display:none; flex-direction:column; flex:1; justify-content:center;">
-        <div class="paywall-title">Bu prompt kilitli</div>
-        <div class="paywall-desc">Bu prompt premium arşivin bir parçası. JG Puanı bakiyenle açabilirsin.</div>
-        <div class="paywall-desc" id="unlockCostText"></div>
-        <div class="paywall-actions">
-          <button class="btn primary" id="unlockBtn">JG Puanı ile Aç</button>
-          <button class="btn">← Geri</button>
+        <div class="paywall-title-lg">Bu prompt premium</div>
+        <div class="paywall-desc-lg">Bu premium prompt'un kilidini aç, profesyonel ve yüksek kaliteli içeriğe eriş.</div>
+
+        <div class="paywall-btn-row">
+          <button class="btn primary paywall-unlock-btn" id="unlockBtn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 10V8a6 6 0 1 1 12 0v2h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h1zm2 0h8V8a4 4 0 1 0-8 0v2z"/></svg>
+            <span id="unlockBtnLabel">JG Puanı ile Aç</span>
+          </button>
+          <div class="paywall-cost-box">
+            <span class="paywall-cost-num" id="unlockCostNum">50</span>
+            <span class="paywall-cost-label">JG Puanı</span>
+          </div>
         </div>
+
+        <div class="paywall-balance-note" id="paywallBalanceNote"></div>
+
+        <hr class="paywall-divider">
+
+        <button class="btn paywall-back-btn">← Geri</button>
+
         <div class="code-msg" id="unlockMsg"></div>
       </div>
     </div>
