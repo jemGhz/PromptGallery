@@ -6,10 +6,8 @@ import { switchTab } from '../tabState.js';
 import { getGalleryRows, getUserInteractionSets, openModalForRow } from './gallery.js';
 import { GENERATED_PROMPTS_URL } from '../config.js';
 
-let activeSection = 'overview'; // 'overview' | 'liked' | 'saved-purchased' | 'generated-prompts'
+let activeSection = 'overview'; // 'overview' | 'liked' | 'saved' | 'purchased' | 'generated-prompts'
 let generatedPromptsLoading = false;
-
-// ---- Veri katmanı (backend hazır olana kadar gerçek/sıfır değer döner) ----
 
 function getStorageUsage() {
   return { usedGB: 0, totalGB: 20, percent: 0 };
@@ -20,8 +18,6 @@ function getMostUsedTools() {
 function getRecentActivity() {
   return [];
 }
-
-// ---- Gerçek kullanıcı verisi ----
 
 function getUserInfo() {
   let name = '', email = '', picture = '';
@@ -48,21 +44,15 @@ function renderSidebar() {
       </div>
       <div class="profile-name-row">
         <span class="profile-name">${escapeHtml(displayName)}</span>
-        <span class="profile-plan-badge">Pro</span>
       </div>
       <div class="profile-handle">${escapeHtml(handle)}</div>
       <div class="profile-email">${escapeHtml(email || '—')}</div>
     </div>
 
-    <div class="profile-plus-card">
-      <div class="profile-plus-title">👑 JG Plus</div>
-      <div class="profile-plus-status"><span class="dot"></span> Aktif Üyelik</div>
-      <button class="btn primary" style="width:100%; margin-top:10px;" disabled title="Yakında aktif olacak">Planı Yönet</button>
-    </div>
-
     <nav class="profile-nav">
       <button class="profile-nav-item ${activeSection === 'overview' ? 'active' : ''}" data-section="overview">🏠 Overview</button>
-      <button class="profile-nav-item ${activeSection === 'saved-purchased' ? 'active' : ''}" data-section="saved-purchased">🔖 Satın Alınan / Kaydedilen Promptlar</button>
+      <button class="profile-nav-item ${activeSection === 'purchased' ? 'active' : ''}" data-section="purchased">💳 Satın Alınan Promptlar</button>
+      <button class="profile-nav-item ${activeSection === 'saved' ? 'active' : ''}" data-section="saved">🔖 Kaydedilen Promptlar</button>
       <button class="profile-nav-item ${activeSection === 'liked' ? 'active' : ''}" data-section="liked">❤️ Beğenilen Promptlar</button>
       <button class="profile-nav-item" disabled title="Yakında aktif olacak">📤 Yüklenen Görseller</button>
       <button class="profile-nav-item ${activeSection === 'generated-prompts' ? 'active' : ''}" data-section="generated-prompts">📝 Oluşturulan Promptlar</button>
@@ -102,6 +92,106 @@ function renderSidebar() {
   document.getElementById('profileStorageFill').style.width = `${storage.percent}%`;
 }
 
+// ---- Ortak: satır + tip listesi üretme ----
+
+function getAllCollectionRowsWithType() {
+  const rows = getGalleryRows();
+  const { likes, saves, purchases } = getUserInteractionSets();
+  const out = [];
+  rows.forEach((r) => {
+    const source = r.isPremium ? 'premium' : 'public';
+    const key = `${source}:${r.id}`;
+    if (likes.has(key)) out.push({ row: r, type: 'liked' });
+    if (saves.has(key)) out.push({ row: r, type: 'saved' });
+    if (purchases.has(key)) out.push({ row: r, type: 'purchased' });
+  });
+  return out;
+}
+
+function getSectionRows(section) {
+  const rows = getGalleryRows();
+  const { likes, saves, purchases } = getUserInteractionSets();
+
+  let keySet;
+  if (section === 'liked') keySet = likes;
+  else if (section === 'saved') keySet = saves;
+  else if (section === 'purchased') keySet = purchases;
+  else return [];
+
+  return rows.filter((r) => {
+    const source = r.isPremium ? 'premium' : 'public';
+    return keySet.has(`${source}:${r.id}`);
+  });
+}
+
+const typeLabel = { liked: '❤️ Beğenildi', saved: '🔖 Kaydedildi', purchased: '💳 Satın Alındı' };
+
+function tileHtml(row, extraLabel) {
+  const tags = row.etiketler.split(',').map((t) => t.trim()).filter(Boolean);
+  const firstTag = extraLabel || tags[0] || (row.isPremium ? 'Premium' : '');
+  const source = row.isPremium ? 'premium' : 'public';
+  return `
+    <div class="profile-collection-tile" data-row-id="${escapeAttr(row.id)}" data-row-source="${source}">
+      <img src="${row.gorselLink || ''}" alt="" loading="lazy">
+      <div class="profile-collection-tile-hint">${escapeHtml(firstTag)}</div>
+    </div>`;
+}
+
+function bindRowTileClicks(container) {
+  container.querySelectorAll('[data-row-id]').forEach((tile) => {
+    if (tile.dataset.rowSource === 'generated') return;
+    tile.addEventListener('click', () => {
+      const { rowId, rowSource } = tile.dataset;
+      const row = getGalleryRows().find(
+        (r) => String(r.id) === rowId && (r.isPremium ? 'premium' : 'public') === rowSource
+      );
+      if (row) openModalForRow(row);
+    });
+  });
+}
+
+// ---- Overview: "Tümü" grid'i (widget kutularının ÜSTÜNE yerleşir) ----
+
+function ensureOverviewCollectionPanel() {
+  let panel = document.getElementById('profileOverviewCollection');
+  if (panel) return panel;
+
+  const widgetsRow = document.querySelector('.profile-widgets-row');
+  const placeholder = document.querySelector('.profile-content-placeholder');
+  if (!widgetsRow || !widgetsRow.parentElement) return null;
+
+  // Artık gerçek içerik göstereceğimiz için "yakında burada görünecek" placeholder'ı gizle
+  if (placeholder) placeholder.style.display = 'none';
+
+  panel = document.createElement('div');
+  panel.id = 'profileOverviewCollection';
+  panel.className = 'profile-collection-panel';
+  widgetsRow.parentElement.insertBefore(panel, widgetsRow);
+  return panel;
+}
+
+function renderOverviewCollection() {
+  const panel = ensureOverviewCollectionPanel();
+  if (!panel) return;
+
+  const items = getAllCollectionRowsWithType();
+
+  const gridHtml = items.length
+    ? `<div class="profile-collection-grid">
+        ${items.map(({ row, type }) => tileHtml(row, typeLabel[type])).join('')}
+      </div>`
+    : `<div class="profile-empty-note">Henüz beğenilen, kaydedilen veya satın alınan bir prompt yok.</div>`;
+
+  panel.innerHTML = `
+    <div class="profile-collection-header">
+      <h2>Tümü</h2>
+      <span class="profile-collection-count">${items.length} öğe</span>
+    </div>
+    ${gridHtml}
+  `;
+  bindRowTileClicks(panel);
+}
+
 function renderMain() {
   const { name } = getUserInfo();
   const headerEl = document.getElementById('profileWelcomeName');
@@ -133,24 +223,11 @@ function renderMain() {
       `).join('')
       : `<div class="profile-empty-note">Henüz aktivite yok.</div>`;
   }
+
+  renderOverviewCollection();
 }
 
-// ---- Beğenilen / Kaydedilen-Satın Alınan panel ----
-
-function getSectionRows(section) {
-  const rows = getGalleryRows();
-  const { likes, saves, purchases } = getUserInteractionSets();
-
-  let keySet;
-  if (section === 'liked') keySet = likes;
-  else if (section === 'saved-purchased') keySet = new Set([...saves, ...purchases]);
-  else return [];
-
-  return rows.filter((r) => {
-    const source = r.isPremium ? 'premium' : 'public';
-    return keySet.has(`${source}:${r.id}`);
-  });
-}
+// ---- Beğenilen / Kaydedilen / Satın Alınan panel (ayrı sekmeler) ----
 
 function ensureCollectionPanel() {
   let panel = document.getElementById('profileCollectionPanel');
@@ -164,43 +241,24 @@ function ensureCollectionPanel() {
   panel.style.display = 'none';
   panel.className = 'profile-collection-panel';
   view.appendChild(panel);
-
-  // Tile'lara tıklayınca ilgili satırı bulup galerideki modalı açan tek seferlik delegation
-  // (yalnızca 'liked' / 'saved-purchased' bölümlerindeki gallery-row tile'ları için geçerli;
-  // 'generated-prompts' tile'ları kendi click handler'ını ayrıca bağlıyor, bkz. renderGeneratedPromptsPanel)
-  panel.addEventListener('click', (e) => {
-    const tile = e.target.closest('[data-row-id]');
-    if (!tile || tile.dataset.rowSource === 'generated') return;
-    const { rowId, rowSource } = tile.dataset;
-    const row = getGalleryRows().find(
-      (r) => String(r.id) === rowId && (r.isPremium ? 'premium' : 'public') === rowSource
-    );
-    if (row) openModalForRow(row);
-  });
-
   return panel;
 }
+
+const sectionTitle = {
+  liked: 'Beğenilen Promptlar',
+  saved: 'Kaydedilen Promptlar',
+  purchased: 'Satın Alınan Promptlar'
+};
 
 function renderCollectionPanel(section) {
   const panel = ensureCollectionPanel();
   if (!panel) return;
 
   const rows = getSectionRows(section);
-  const title = section === 'liked' ? 'Beğenilen Promptlar' : 'Satın Alınan / Kaydedilen Promptlar';
+  const title = sectionTitle[section] || '';
 
   const gridHtml = rows.length
-    ? `<div class="profile-collection-grid">
-        ${rows.map((r) => {
-          const tags = r.etiketler.split(',').map((t) => t.trim()).filter(Boolean);
-          const firstTag = tags[0] || (r.isPremium ? 'Premium' : '');
-          const source = r.isPremium ? 'premium' : 'public';
-          return `
-          <div class="profile-collection-tile" data-row-id="${escapeAttr(r.id)}" data-row-source="${source}">
-            <img src="${r.gorselLink || ''}" alt="" loading="lazy">
-            <div class="profile-collection-tile-hint">${escapeHtml(firstTag)}</div>
-          </div>`;
-        }).join('')}
-      </div>`
+    ? `<div class="profile-collection-grid">${rows.map((r) => tileHtml(r)).join('')}</div>`
     : `<div class="profile-empty-note">Henüz burada bir şey yok.</div>`;
 
   panel.innerHTML = `
@@ -210,9 +268,10 @@ function renderCollectionPanel(section) {
     </div>
     ${gridHtml}
   `;
+  bindRowTileClicks(panel);
 }
 
-// ---- Oluşturulan Promptlar paneli (Supabase'den kullanıcıya özel) ----
+// ---- Oluşturulan Promptlar paneli ----
 
 async function fetchGeneratedPrompts() {
   if (!GENERATED_PROMPTS_URL || GENERATED_PROMPTS_URL.includes('YOUR-N8N-URL')) {
@@ -268,7 +327,6 @@ async function renderGeneratedPromptsPanel() {
   const { rows, error } = await fetchGeneratedPrompts();
   generatedPromptsLoading = false;
 
-  // Kullanıcı bu sırada başka bir sekmeye geçmiş olabilir; eski isteğin sonucunu göstermeyelim.
   if (activeSection !== 'generated-prompts') return;
 
   if (error) {

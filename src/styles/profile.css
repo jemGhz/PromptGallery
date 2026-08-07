@@ -205,6 +205,9 @@
 /* ---- Beğenilen / Kaydedilen-Satın Alınan koleksiyon paneli ---- */
 .profile-collection-panel{
   grid-column: 2;
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--line);
 }
 .profile-collection-header{
   display:flex;
@@ -240,12 +243,23 @@
 .profile-collection-tile img{
   width:100%;
   display:block;
+  transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+
+.profile-collection-tile img{
+  width:100%;
+  display:block;
+  transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);
 }
 .profile-collection-tile-hint{
-  position:absolute;
-  left:0; right:0; bottom:0;
-  padding:10px 12px;
-  background:linear-gradient(to top, rgba(10,10,9,0.75) 0%, transparent 70%);
+ position:absolute;
+  inset:0;
+  background:linear-gradient(to top, rgba(10,10,9,0.75) 0%, transparent 55%);
+  opacity:0;
+  transition:opacity 0.2s ease;
+  display:flex;
+  align-items:flex-end;
+  padding:12px;
   font-size:11px;
   color:var(--ink);
 }
@@ -254,4 +268,9 @@
   .profile-layout{grid-template-columns:1fr;}
   .profile-widgets-row{grid-template-columns:1fr;}
   .profile-collection-panel{grid-column:1;}
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .profile-collection-tile:hover img{transform:scale(1.03);}
+  .profile-collection-tile:hover .profile-collection-tile-hint{opacity:1;}
 }
