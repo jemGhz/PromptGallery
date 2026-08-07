@@ -1,0 +1,105 @@
+/* ================================
+   DESTEK & YARDIM MODALI
+   ================================ */
+
+.support-modal{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:14px;
+  width:min(560px, 92vw);
+  max-height:86vh;
+  overflow-y:auto;
+  padding:28px 28px 24px;
+  position:relative;
+}
+
+.support-close-btn{
+  position:absolute;
+  top:18px; right:18px;
+  width:30px; height:30px;
+  border-radius:50%;
+  border:1px solid var(--line);
+  background:var(--bg);
+  color:var(--ink-dim);
+  cursor:pointer;
+  font-size:14px;
+  display:flex; align-items:center; justify-content:center;
+}
+.support-close-btn:hover{color:var(--ink); border-color:var(--gold);}
+
+.support-modal h2{
+  font-family:'Fraunces', serif;
+  font-size:22px;
+  font-weight:500;
+  margin-bottom:4px;
+}
+.support-modal-sub{
+  font-size:13px;
+  color:var(--ink-dim);
+  margin-bottom:20px;
+}
+
+.support-section-label{
+  font-weight:700;
+  font-size:13.5px;
+  margin:22px 0 10px;
+}
+.support-section-label:first-of-type{margin-top:0;}
+
+/* ---- FAQ akordiyon ---- */
+.faq-list{
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+}
+.faq-item{border-bottom:1px solid var(--line);}
+.faq-item:last-child{border-bottom:none;}
+.faq-question{
+  width:100%;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px;
+  text-align:left;
+  font-family:'Inter', sans-serif;
+  font-size:13px;
+  font-weight:600;
+  padding:13px 14px;
+  border:none;
+  background:transparent;
+  color:var(--ink);
+  cursor:pointer;
+}
+.faq-question:hover{background:var(--bg);}
+.faq-chev{
+  color:var(--ink-dim);
+  transition:transform 0.2s ease;
+  flex-shrink:0;
+}
+.faq-item.open .faq-chev{transform:rotate(180deg); color:var(--gold);}
+
+.faq-answer{
+  max-height:0;
+  overflow:hidden;
+  transition:max-height 0.25s ease, padding 0.25s ease;
+  font-size:12.5px;
+  color:var(--ink-dim);
+  line-height:1.55;
+  padding:0 14px;
+}
+.faq-item.open .faq-answer{
+  max-height:300px;
+  padding:0 14px 14px;
+}
+
+/* ---- İletişim formu ---- */
+.support-form-row{
+  display:flex;
+  gap:12px;
+}
+.support-form-row .field-group{flex:1;}
+
+.support-form-actions{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-top:16px;
+}

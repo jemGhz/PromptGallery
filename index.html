@@ -797,6 +797,44 @@
   </div>
 </div>
 
+<!-- ---- Destek & Yardım modalı ---- -->
+<div class="modal-backdrop" id="supportModalBackdrop">
+  <div class="support-modal">
+    <button class="support-close-btn" id="supportCloseBtn" aria-label="Kapat">✕</button>
+
+    <h2>Destek & Yardım</h2>
+    <p class="support-modal-sub">Sık sorulan sorulara göz at ya da bize doğrudan yaz.</p>
+
+    <div class="support-section-label">Sık Sorulan Sorular</div>
+    <div class="faq-list" id="supportFaqList"></div>
+
+    <div class="support-section-label">Bize Ulaş</div>
+    <div class="support-form-row">
+      <div class="field-group">
+        <div class="field-label">Ad Soyad</div>
+        <input type="text" class="field-input" id="supportNameInput" placeholder="Adın (opsiyonel)" maxlength="60">
+      </div>
+      <div class="field-group">
+        <div class="field-label">E-posta</div>
+        <input type="email" class="field-input" id="supportEmailInput" placeholder="ornek@mail.com" maxlength="120">
+      </div>
+    </div>
+    <div class="field-group" style="margin-top:12px;">
+      <div class="field-label">Konu</div>
+      <input type="text" class="field-input" id="supportSubjectInput" placeholder="Kısaca konu (opsiyonel)" maxlength="120">
+    </div>
+    <div class="field-group" style="margin-top:12px;">
+      <div class="field-label">Mesajın</div>
+      <textarea class="gen-textarea" id="supportMessageInput" style="min-height:100px;" maxlength="1000" placeholder="Sorununu ya da sorunu buraya yaz..."></textarea>
+    </div>
+
+    <div class="support-form-actions">
+      <button class="btn primary" id="supportSubmitBtn">Gönder</button>
+      <span class="code-msg" id="supportFormMsg"></span>
+    </div>
+  </div>
+</div>
+
 <!-- ---- Karşılama / giriş teşvik modalı (giriş yapmamış kullanıcıya 15sn sonra açılır — bkz. welcomeModal.js) ---- -->
 <div class="modal-backdrop" id="welcomeModalBackdrop">
   <div class="welcome-modal">

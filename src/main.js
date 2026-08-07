@@ -9,6 +9,7 @@ import { initPromptGenerator, triggerMakerUpload } from './tabs/promptGenerator.
 import { initVisualGenerator } from './tabs/visualGenerator.js';
 import { initCharacterGenerator } from './tabs/characterGenerator.js';
 import { initProfile } from './tabs/profile.js';
+import { initSupportModal } from './support.js';
 
 function $(id) {
   return document.getElementById(id);
@@ -37,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCreditModal();
   initOnboardingModal(authHeaders);
   initProfile();
+  initSupportModal();
 
   // initAuth'tan sonra çağrılıyor ki isLoggedIn() kontrolü doğru sonucu versin
   // (login olmuş kullanıcıya popup hiç kurulmasın).

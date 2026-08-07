@@ -184,8 +184,7 @@ export function renderAuthArea() {
           <button class="avatar-dropdown-item" disabled title="Yakında aktif olacak">⚙️ Ayarlar</button>
           <button class="avatar-dropdown-item" disabled title="Yakında aktif olacak">👤 Hesap Ayarları</button>
           <button class="avatar-dropdown-item" disabled title="Yakında aktif olacak">💳 Fatura ve Ödemeler</button>
-          <button class="avatar-dropdown-item" disabled title="Yakında aktif olacak">❓ Destek & Yardım</button>
-          <div class="avatar-dropdown-sep"></div>
+          <button class="avatar-dropdown-item" id="avatarSupportBtn">❓ Destek & Yardım</button>          <div class="avatar-dropdown-sep"></div>
           <button class="avatar-dropdown-item avatar-dropdown-logout" id="avatarLogoutBtn">↩ Çıkış Yap</button>
         </div>
       </div>`;
