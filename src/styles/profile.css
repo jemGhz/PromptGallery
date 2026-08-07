@@ -246,22 +246,25 @@
   transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);
 }
 
-.profile-collection-tile img{
-  width:100%;
-  display:block;
-  transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);
-}
 .profile-collection-tile-hint{
- position:absolute;
+  position:absolute;
   inset:0;
   background:linear-gradient(to top, rgba(10,10,9,0.75) 0%, transparent 55%);
   opacity:0;
   transition:opacity 0.2s ease;
   display:flex;
-  align-items:flex-end;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:flex-end;
+  gap:6px;
   padding:12px;
   font-size:11px;
   color:var(--ink);
+}
+.profile-tile-badge{
+  background:rgba(10,10,9,0.55);
+  padding:3px 8px;
+  border-radius:20px;
 }
 
 @media (max-width:860px){

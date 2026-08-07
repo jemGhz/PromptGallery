@@ -40,7 +40,7 @@ function renderSidebar() {
   el.innerHTML = `
     <div class="profile-card">
       <div class="profile-avatar-lg">
-        ${picture ? `<img src="${escapeHtml(picture)}" alt="">` : escapeHtml(getInitial(name, email))}
+        ${picture ? `<img src="${escapeAttr(picture)}" alt="">` : escapeHtml(getInitial(name, email))}
       </div>
       <div class="profile-name-row">
         <span class="profile-name">${escapeHtml(displayName)}</span>
@@ -94,16 +94,18 @@ function renderSidebar() {
 
 // ---- Ortak: satır + tip listesi üretme ----
 
-function getAllCollectionRowsWithType() {
+function getAllCollectionRowsWithTypes() {
   const rows = getGalleryRows();
   const { likes, saves, purchases } = getUserInteractionSets();
   const out = [];
   rows.forEach((r) => {
     const source = r.isPremium ? 'premium' : 'public';
     const key = `${source}:${r.id}`;
-    if (likes.has(key)) out.push({ row: r, type: 'liked' });
-    if (saves.has(key)) out.push({ row: r, type: 'saved' });
-    if (purchases.has(key)) out.push({ row: r, type: 'purchased' });
+    const types = [];
+    if (purchases.has(key)) types.push('purchased');
+    if (saves.has(key)) types.push('saved');
+    if (likes.has(key)) types.push('liked');
+    if (types.length) out.push({ row: r, types });
   });
   return out;
 }
@@ -126,14 +128,15 @@ function getSectionRows(section) {
 
 const typeLabel = { liked: '❤️ Beğenildi', saved: '🔖 Kaydedildi', purchased: '💳 Satın Alındı' };
 
-function tileHtml(row, extraLabel) {
+function tileHtml(row, extraLabels) {
   const tags = row.etiketler.split(',').map((t) => t.trim()).filter(Boolean);
-  const firstTag = extraLabel || tags[0] || (row.isPremium ? 'Premium' : '');
   const source = row.isPremium ? 'premium' : 'public';
+  const labels = extraLabels && extraLabels.length ? extraLabels : [tags[0] || (row.isPremium ? 'Premium' : '')];
+  const hintHtml = labels.map((l) => `<span class="profile-tile-badge">${escapeHtml(l)}</span>`).join('');
   return `
     <div class="profile-collection-tile" data-row-id="${escapeAttr(row.id)}" data-row-source="${source}">
-      <img src="${row.gorselLink || ''}" alt="" loading="lazy">
-      <div class="profile-collection-tile-hint">${escapeHtml(firstTag)}</div>
+      <img src="${escapeAttr(row.gorselLink || '')}" alt="" loading="lazy">
+      <div class="profile-collection-tile-hint">${hintHtml}</div>
     </div>`;
 }
 
@@ -174,11 +177,11 @@ function renderOverviewCollection() {
   const panel = ensureOverviewCollectionPanel();
   if (!panel) return;
 
-  const items = getAllCollectionRowsWithType();
+  const items = getAllCollectionRowsWithTypes();
 
   const gridHtml = items.length
     ? `<div class="profile-collection-grid">
-        ${items.map(({ row, type }) => tileHtml(row, typeLabel[type])).join('')}
+        ${items.map(({ row, types }) => tileHtml(row, types.map((t) => typeLabel[t]))).join('')}
       </div>`
     : `<div class="profile-empty-note">Henüz beğenilen, kaydedilen veya satın alınan bir prompt yok.</div>`;
 
