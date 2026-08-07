@@ -61,13 +61,6 @@ function renderSidebar() {
       <button class="profile-nav-item" disabled title="Yakında aktif olacak">📱 Sosyal Medya İçerikleri</button>
     </nav>
 
-    <nav class="profile-nav profile-nav-secondary">
-      <button class="profile-nav-item" disabled title="Yakında aktif olacak">⚙️ Ayarlar</button>
-      <button class="profile-nav-item" disabled title="Yakında aktif olacak">👤 Hesap Ayarları</button>
-      <button class="profile-nav-item" disabled title="Yakında aktif olacak">💳 Fatura ve Ödemeler</button>
-      <button class="profile-nav-item" disabled title="Yakında aktif olacak">❓ Destek & Yardım</button>
-      <button class="profile-nav-item profile-logout" id="profileLogoutBtn">↩ Çıkış Yap</button>
-    </nav>
 
     <div class="profile-storage">
       <div class="profile-storage-row">
@@ -78,7 +71,6 @@ function renderSidebar() {
     </div>
   `;
 
-  document.getElementById('profileLogoutBtn').addEventListener('click', logout);
 
   el.querySelectorAll('[data-section]').forEach((btn) => {
     btn.addEventListener('click', () => {

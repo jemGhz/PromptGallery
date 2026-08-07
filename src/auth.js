@@ -170,11 +170,31 @@ export function renderAuthArea() {
       }
     })();
     area.innerHTML = `
-      <button class="avatar-circle" id="authAvatarBtn" title="${escapeAttr(name || email)} — profiline git">
-        ${picture ? `<img src="${escapeAttr(picture)}" alt="">` : escapeHtml(getInitial(name, email))}
-      </button>`;
+      <div class="avatar-menu-wrap" id="avatarMenuWrap">
+        <button class="avatar-circle" id="authAvatarBtn" title="${escapeAttr(name || email)} — profiline git">
+          ${picture ? `<img src="${escapeAttr(picture)}" alt="">` : escapeHtml(getInitial(name, email))}
+        </button>
+        <div class="avatar-dropdown" id="avatarDropdown">
+          <div class="avatar-dropdown-header">
+            <div class="avatar-dropdown-name">${escapeHtml(name || 'Kullanıcı')}</div>
+            <div class="avatar-dropdown-email">${escapeHtml(email)}</div>
+          </div>
+          <button class="avatar-dropdown-item" data-action="profile">👤 Profilim</button>
+          <div class="avatar-dropdown-sep"></div>
+          <button class="avatar-dropdown-item" disabled title="Yakında aktif olacak">⚙️ Ayarlar</button>
+          <button class="avatar-dropdown-item" disabled title="Yakında aktif olacak">👤 Hesap Ayarları</button>
+          <button class="avatar-dropdown-item" disabled title="Yakında aktif olacak">💳 Fatura ve Ödemeler</button>
+          <button class="avatar-dropdown-item" disabled title="Yakında aktif olacak">❓ Destek & Yardım</button>
+          <div class="avatar-dropdown-sep"></div>
+          <button class="avatar-dropdown-item avatar-dropdown-logout" id="avatarLogoutBtn">↩ Çıkış Yap</button>
+        </div>
+      </div>`;
+
     document.getElementById('authAvatarBtn').addEventListener('click', () => switchTab('profile'));
-  } else {
+    area.querySelector('[data-action="profile"]').addEventListener('click', () => switchTab('profile'));
+    document.getElementById('avatarLogoutBtn').addEventListener('click', logout);
+  } 
+  else {
     area.innerHTML = '<div id="googleSignInBtn"></div>';
   renderGoogleButton('googleSignInBtn', { type: 'icon', shape: 'circle', size: 'medium' });
   }
