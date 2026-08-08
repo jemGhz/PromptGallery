@@ -34,6 +34,8 @@ export const CREDIT_VERIFY_CODE_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/w
 export const TOGGLE_INTERACTION_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/toggle-interaction';
 export const USER_INTERACTIONS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/user-interactions';
 export const GENERATED_PROMPTS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/generated-prompts-list';
+export const NOTIFICATIONS_URL =     'https://jg-n8n-server.tail1c97b1.ts.net/webhook/user-notifications';
+export const MARK_NOTIFICATION_READ_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/mark-notification-read';
 
 export const CREDIT_PACKAGES = [
   { id: 'pkg_10', credits: 10, price: '99 TL' },
