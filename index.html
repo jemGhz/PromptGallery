@@ -811,38 +811,37 @@
   <div class="support-modal">
     <button class="support-close-btn" id="supportCloseBtn" aria-label="Kapat">✕</button>
 
-    <h2>Destek & Yardım</h2>
-    <p class="support-modal-sub">Sık sorulan sorulara göz at ya da bize doğrudan yaz.</p>
+    <aside class="support-sidebar">
+      <div class="support-brand"><span class="support-brand-jg">JG</span> Studio</div>
+      <h2 class="support-title">Destek & Yardım</h2>
+      <p class="support-subtitle">Sık sorulan sorulara göz atın veya bize doğrudan yazın.</p>
 
-    <div class="support-section-label">Sık Sorulan Sorular</div>
-    <div class="faq-list" id="supportFaqList"></div>
+      <nav class="support-nav">
+        <button type="button" class="support-nav-item active" data-support-view="faq">
+          <span class="support-nav-icon">❓</span>
+          <span class="support-nav-label">Sık Sorulan Sorular</span>
+          <span class="support-nav-chev">›</span>
+        </button>
+        <button type="button" class="support-nav-item" data-support-view="contact">
+          <span class="support-nav-icon">🎧</span>
+          <span class="support-nav-label">Bize Ulaşın</span>
+          <span class="support-nav-chev">›</span>
+        </button>
+      </nav>
 
-    <div class="support-section-label">Bize Ulaş</div>
-    <div class="support-form-row">
-      <div class="field-group">
-        <div class="field-label">Ad Soyad</div>
-        <input type="text" class="field-input" id="supportNameInput" placeholder="Adın (opsiyonel)" maxlength="60">
+      <div class="support-quick">
+        <div class="support-quick-label">Hızlı Destek</div>
+        <div class="support-quick-row"><span>📧</span> destek@jgstudio.com</div>
+        <div class="support-quick-row"><span>🕐</span> Hafta içi 09:00 - 18:00</div>
       </div>
-      <div class="field-group">
-        <div class="field-label">E-posta</div>
-        <input type="email" class="field-input" id="supportEmailInput" placeholder="ornek@mail.com" maxlength="120">
-      </div>
-    </div>
-    <div class="field-group" style="margin-top:12px;">
-      <div class="field-label">Konu</div>
-      <input type="text" class="field-input" id="supportSubjectInput" placeholder="Kısaca konu (opsiyonel)" maxlength="120">
-    </div>
-    <div class="field-group" style="margin-top:12px;">
-      <div class="field-label">Mesajın</div>
-      <textarea class="gen-textarea" id="supportMessageInput" style="min-height:100px;" maxlength="1000" placeholder="Sorununu ya da sorunu buraya yaz..."></textarea>
-    </div>
+    </aside>
 
-    <div class="support-form-actions">
-      <button class="btn primary" id="supportSubmitBtn">Gönder</button>
-      <span class="code-msg" id="supportFormMsg"></span>
+    <div class="support-content" id="supportContent">
+      <!-- support.js tarafından doldurulur -->
     </div>
   </div>
 </div>
+<!-- ↑ supportModalBackdrop burada TAM olarak kapanıyor (eklenen kapanış div'i) -->
 
 <!-- ---- Ayarlar modalı (bkz. settingsModal.js) ---- -->
 <div class="modal-backdrop" id="settingsModalBackdrop">

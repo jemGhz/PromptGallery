@@ -38,6 +38,7 @@ export const NOTIFICATIONS_URL =     'https://jg-n8n-server.tail1c97b1.ts.net/we
 export const MARK_NOTIFICATION_READ_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/mark-notification-read';
 export const PURCHASE_HISTORY_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/purchase-history';
 export const DELETE_NOTIFICATION_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/delete-notification';
+export const SUPPORT_FORM_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/support-form';
 export const CREDIT_PACKAGES = [
   { id: 'pkg_10', credits: 10, price: '99 TL' },
   { id: 'pkg_25', credits: 25, price: '199 TL' },
@@ -78,7 +79,6 @@ export const PROMPT_MAKER_CREDIT_COST = 1;
 
 export const GOOGLE_CLIENT_ID = '1036033399902-89l44rn5e77mvg7h71ttb06v3ufgdthq.apps.googleusercontent.com';
 
-export const SUPPORT_FORM_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/support-form';
 
 export const FAQ_ITEMS = [
   { q: 'JG Puanı nedir, nasıl kazanırım?', a: 'JG Puanı, platform içindeki prompt üretimi, görsel oluşturma, karakter sheet\'i ve premium içerik kilidi açma gibi işlemlerde kullanılan sanal kredidir. Sağ üstteki "+" butonundan paket satın alarak bakiyene ekleyebilirsin.' },
