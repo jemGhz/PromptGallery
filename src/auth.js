@@ -10,7 +10,8 @@ import {
 import { escapeAttr, escapeHtml, unwrap } from './utils.js';
 import { appState } from './state.js';
 import { switchTab, requestProfileSection } from './tabState.js';
-import { resetNotifications } from './notifications.js';
+import { resetNotifications, refreshNotifications } from './notifications.js';
+
 
 const balanceListeners = new Set();
 /** Bakiye her değiştiğinde çağrılacak fonksiyonları kaydet (ör. gen/avatar quota notu güncellemesi). */
@@ -103,6 +104,7 @@ async function handleGoogleCredential(response) {
   }
   renderAuthArea();
   refreshCreditBalanceFromServer();
+  refreshNotifications();
   maybeShowOnboarding(data.email, authHeaders());
 }
 
