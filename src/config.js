@@ -36,7 +36,8 @@ export const USER_INTERACTIONS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/we
 export const GENERATED_PROMPTS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/generated-prompts-list';
 export const NOTIFICATIONS_URL =     'https://jg-n8n-server.tail1c97b1.ts.net/webhook/user-notifications';
 export const MARK_NOTIFICATION_READ_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/mark-notification-read';
-
+export const PURCHASE_HISTORY_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/purchase-history';
+export const DELETE_NOTIFICATION_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/delete-notification';
 export const CREDIT_PACKAGES = [
   { id: 'pkg_10', credits: 10, price: '99 TL' },
   { id: 'pkg_25', credits: 25, price: '199 TL' },

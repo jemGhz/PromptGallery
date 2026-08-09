@@ -422,3 +422,38 @@ body{
   opacity: 0.5;
   margin-top: 4px;
 }
+
+/* ---- Bildirim silme butonu ---- */
+.notif-item {
+  position: relative;
+  padding-right: 34px; /* silme butonuna yer aç */
+}
+
+.notif-item-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: var(--ink-dim);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.notif-item:hover .notif-item-delete {
+  opacity: 1;
+}
+
+.notif-item-delete:hover {
+  color: #e5484d;
+  background: rgba(229, 72, 77, 0.1);
+}

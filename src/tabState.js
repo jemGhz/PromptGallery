@@ -2,6 +2,11 @@
 // Neden ayrı dosya: visualGenerator.js "Prompt Üretici'den Al" butonunda switchTab
 // çağırıyor; switchTab main.js'te olsaydı main.js -> visualGenerator.js -> main.js
 // döngüsü oluşurdu. Bu yüzden sekme geçişi kendi başına bağımsız bir modül.
+//
+// Aynı sebeple: auth.js (avatar dropdown menüsü) "Satın Alma Geçmişi" bölümünü
+// doğrudan açmak istiyor, ama profile.js zaten auth.js'i import ediyor
+// (isLoggedIn, authHeaders, vb.). auth.js -> profile.js -> auth.js döngüsü
+// oluşmasın diye, profil bölümü geçişi de burada, nötr bir aracı üzerinden yapılır.
 
 import { notifyTabChange } from './state.js';
 
@@ -23,4 +28,20 @@ export function switchTab(tab) {
   // sidebar + main düz akışta üst üste diziliyordu.
   document.getElementById(VIEWS.profile).style.display = tab === 'profile' ? 'grid' : 'none';
   notifyTabChange(tab);
+}
+
+// ---- Profil bölümü isteği (döngüsel import'tan kaçınmak için) ----
+// profile.js kendi initProfile() içinde onProfileSectionRequest ile bir dinleyici kaydeder.
+// auth.js gibi profile.js'i import etmeden bir bölümü açmak isteyen dosyalar
+// requestProfileSection(section) çağırır.
+
+let profileSectionHandler = null;
+
+export function onProfileSectionRequest(fn) {
+  profileSectionHandler = fn;
+}
+
+export function requestProfileSection(section) {
+  switchTab('profile');
+  if (profileSectionHandler) profileSectionHandler(section);
 }

@@ -9,7 +9,8 @@ import {
 } from './config.js';
 import { escapeAttr, escapeHtml, unwrap } from './utils.js';
 import { appState } from './state.js';
-import { switchTab } from './tabState.js';
+import { switchTab, requestProfileSection } from './tabState.js';
+import { resetNotifications } from './notifications.js';
 
 const balanceListeners = new Set();
 /** Bakiye her değiştiğinde çağrılacak fonksiyonları kaydet (ör. gen/avatar quota notu güncellemesi). */
@@ -116,6 +117,7 @@ export function logout() {
     google.accounts.id.disableAutoSelect();
   }
   setLocalCreditBalance(0);
+  resetNotifications();
   renderAuthArea();
   switchTab('gallery');
 }
@@ -183,14 +185,18 @@ export function renderAuthArea() {
           <div class="avatar-dropdown-sep"></div>
           <button class="avatar-dropdown-item" disabled title="Yakında aktif olacak">⚙️ Ayarlar</button>
           <button class="avatar-dropdown-item" disabled title="Yakında aktif olacak">👤 Hesap Ayarları</button>
-          <button class="avatar-dropdown-item" disabled title="Yakında aktif olacak">💳 Fatura ve Ödemeler</button>
-          <button class="avatar-dropdown-item" id="avatarSupportBtn">❓ Destek & Yardım</button>          <div class="avatar-dropdown-sep"></div>
+          <button class="avatar-dropdown-item" data-action="purchase-history">💳 Fatura ve Ödemeler</button>
+          <button class="avatar-dropdown-item" id="avatarSupportBtn">❓ Destek & Yardım</button>
+          <div class="avatar-dropdown-sep"></div>
           <button class="avatar-dropdown-item avatar-dropdown-logout" id="avatarLogoutBtn">↩ Çıkış Yap</button>
         </div>
       </div>`;
 
     document.getElementById('authAvatarBtn').addEventListener('click', () => switchTab('profile'));
     area.querySelector('[data-action="profile"]').addEventListener('click', () => switchTab('profile'));
+    area.querySelector('[data-action="purchase-history"]').addEventListener('click', () => {
+      requestProfileSection('purchase-history');
+    });
     document.getElementById('avatarLogoutBtn').addEventListener('click', logout);
   } 
   else {
