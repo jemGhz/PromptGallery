@@ -2,6 +2,7 @@
 // Google Sign-In + kredi bakiyesi + oturum token'ı.
 // Gerçek yetkilendirme artık jg_session_token'a dayanıyor; email sadece UI için.
 import { maybeShowOnboarding } from './onboardingModal.js';
+import { openSettingsModal } from './settingsModal.js';
 import {
   CREDIT_BALANCE_URL,
   GOOGLE_CLIENT_ID,
@@ -185,9 +186,8 @@ export function renderAuthArea() {
           </div>
           <button class="avatar-dropdown-item" data-action="profile">👤 Profilim</button>
           <div class="avatar-dropdown-sep"></div>
-          <button class="avatar-dropdown-item" disabled title="Yakında aktif olacak">⚙️ Ayarlar</button>
-          <button class="avatar-dropdown-item" disabled title="Yakında aktif olacak">👤 Hesap Ayarları</button>
-          <button class="avatar-dropdown-item" data-action="purchase-history">💳 Fatura ve Ödemeler</button>
+          <button class="avatar-dropdown-item" data-action="settings">⚙️ Ayarlar</button>
+          <div class="avatar-dropdown-sep"></div>
           <button class="avatar-dropdown-item" id="avatarSupportBtn">❓ Destek & Yardım</button>
           <div class="avatar-dropdown-sep"></div>
           <button class="avatar-dropdown-item avatar-dropdown-logout" id="avatarLogoutBtn">↩ Çıkış Yap</button>
@@ -196,9 +196,7 @@ export function renderAuthArea() {
 
     document.getElementById('authAvatarBtn').addEventListener('click', () => switchTab('profile'));
     area.querySelector('[data-action="profile"]').addEventListener('click', () => switchTab('profile'));
-    area.querySelector('[data-action="purchase-history"]').addEventListener('click', () => {
-      requestProfileSection('purchase-history');
-    });
+    area.querySelector('[data-action="settings"]').addEventListener('click', () => openSettingsModal('profile'));
     document.getElementById('avatarLogoutBtn').addEventListener('click', logout);
   } 
   else {

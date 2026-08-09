@@ -11,7 +11,7 @@ import { initCharacterGenerator } from './tabs/characterGenerator.js';
 import { initProfile } from './tabs/profile.js';
 import { initSupportModal } from './support.js';
 import { initNotifications } from './notifications.js';  
-
+import { initSettingsModal } from './settingsModal.js';
 
 function $(id) {
   return document.getElementById(id);
@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initOnboardingModal(authHeaders);
   initProfile();
   initSupportModal();
+  initSettingsModal();
   initNotifications();
   // initAuth'tan sonra çağrılıyor ki isLoggedIn() kontrolü doğru sonucu versin
   // (login olmuş kullanıcıya popup hiç kurulmasın).
