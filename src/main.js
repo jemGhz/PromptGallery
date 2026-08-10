@@ -12,6 +12,9 @@ import { initProfile } from './tabs/profile.js';
 import { initSupportModal } from './support.js';
 import { initNotifications } from './notifications.js';  
 import { initSettingsModal } from './settingsModal.js';
+import { initTheme } from './state.js';
+
+initTheme();
 
 function $(id) {
   return document.getElementById(id);

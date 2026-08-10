@@ -1,10 +1,13 @@
 // src/settingsModal.js
 // "Ayarlar" modalı — Profil Bilgileri, Güvenlik, Bildirim Tercihleri, Görünüm,
 // JG Plus & Ödemeler, Bağlı Hesaplar, Kullanım, Hesabı Sil sekmeleri.
-// Şu an için sadece Profil Bilgileri ve Güvenlik sekmeleri içerik gösteriyor;
-// "Değişiklikleri Kaydet" backend'e henüz bağlı değil (bilinçli olarak).
+// Profil Bilgileri artık get-profile/save-profile'a bağlı (name + username).
+// Bio ve avatar backend'de henüz desteklenmiyor, bilinçli olarak disabled bırakıldı.
 import './styles/settings.css';
-import { escapeAttr, escapeHtml } from './utils.js';
+import { escapeAttr, escapeHtml, unwrap } from './utils.js';
+import { authHeaders, renderAuthArea } from './auth.js';
+import { GET_PROFILE_URL, SAVE_PROFILE_URL } from './config.js';
+import { getStoredTheme, setStoredTheme, applyTheme, getStoredDensity, setStoredDensity, applyDensity } from './state.js';
 
 const ICONS = {
   profile: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>',
@@ -32,6 +35,10 @@ const TABS = [
 let activeTab = 'profile';
 let pendingAvatarDataUrl = null;
 
+// Sunucudan (get-profile) gelen taze veri. Ilk render'da bos, fetch bitince doluyor.
+let serverProfile = { loaded: false, name: '', username: '', picture: '' };
+let profileSave = { loading: false, error: '' };
+
 function getUser() {
   let name = '', email = '', picture = '';
   try {
@@ -55,6 +62,11 @@ function renderNav() {
 
 function panelProfile() {
   const { name, email, picture } = getUser();
+  // Sunucudan taze veri geldiyse onu kullan; gelmediyse (henuz fetch bitmedi) localStorage'daki
+  // bayat degeri gecici gosterge olarak kullan.
+  const displayName = serverProfile.loaded ? serverProfile.name : name;
+  const displayUsername = serverProfile.loaded ? serverProfile.username : '';
+
   return `
     <h3 class="settings-panel-title">Profil Bilgileri</h3>
     <p class="settings-panel-sub">Hesap profil bilgilerinizi güncel tutun.</p>
@@ -64,20 +76,20 @@ function panelProfile() {
         <div class="settings-avatar-img" id="settingsAvatarPreview">
           ${picture ? `<img src="${escapeAttr(picture)}" alt="">` : escapeHtml((name || email || 'JG').charAt(0).toUpperCase())}
         </div>
-        <button type="button" class="settings-avatar-camera-btn" id="settingsAvatarBtn" title="Fotoğraf değiştir">${ICONS.camera}</button>
-        <input type="file" id="settingsAvatarInput" accept="image/*" style="display:none">
+        <button type="button" class="settings-avatar-camera-btn" id="settingsAvatarBtn" disabled title="Yakında aktif olacak">${ICONS.camera}</button>
+        <input type="file" id="settingsAvatarInput" accept="image/*" style="display:none" disabled>
       </div>
-      <p class="settings-avatar-hint">Profil fotoğrafınızı JPG, PNG formatında maks. 5MB olacak şekilde yükleyebilirsiniz.</p>
+      <p class="settings-avatar-hint">Profil fotoğrafı değiştirme özelliği yakında eklenecek.</p>
     </div>
 
     <div class="settings-field-row">
       <div class="settings-field-group">
         <label class="settings-field-label">Ad Soyad</label>
-        <input type="text" class="settings-input" id="settingsNameInput" value="${escapeAttr(name)}" maxlength="60">
+        <input type="text" class="settings-input" id="settingsNameInput" value="${escapeAttr(displayName)}" maxlength="50">
       </div>
       <div class="settings-field-group">
         <label class="settings-field-label">Kullanıcı Adı</label>
-        <input type="text" class="settings-input" id="settingsUsernameInput" placeholder="@kullaniciadi" maxlength="30">
+        <input type="text" class="settings-input" id="settingsUsernameInput" value="${escapeAttr(displayUsername)}" placeholder="kullaniciadi" maxlength="20" ${serverProfile.loaded ? '' : 'disabled'}>
       </div>
     </div>
 
@@ -88,12 +100,17 @@ function panelProfile() {
 
     <div class="settings-field-group">
       <label class="settings-field-label">Bio</label>
-      <textarea class="settings-textarea" id="settingsBioInput" maxlength="200" placeholder="Kendinden kısaca bahset..."></textarea>
+      <textarea class="settings-textarea" id="settingsBioInput" maxlength="200" placeholder="Kendinden kısaca bahset..." disabled title="Yakında aktif olacak"></textarea>
     </div>
 
     <div class="settings-save-row">
       <button type="button" class="settings-btn" data-settings-close>İptal</button>
-      <button type="button" class="settings-btn settings-btn-primary" disabled title="Yakında aktif olacak">Değişiklikleri Kaydet</button>
+      <button type="button" class="settings-btn settings-btn-primary" id="settingsSaveBtn" ${serverProfile.loaded ? '' : 'disabled'}>
+        ${profileSave.loading ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+      </button>
+    </div>
+    <div id="settingsSaveStatus" class="settings-save-status" style="${profileSave.error ? '' : 'display:none;'} color:#e0554a; font-size:13px; margin-top:8px; text-align:right;">
+      ${escapeHtml(profileSave.error || '')}
     </div>
   `;
 }
@@ -149,6 +166,19 @@ function panelPlaceholder(title, desc) {
 }
 
 function panelAppearance() {
+  const currentTheme = getStoredTheme();
+  const currentDensity = getStoredDensity();
+  const themeOptions = [
+    { id: 'dark', label: 'Koyu' },
+    { id: 'system', label: 'Sistem' },
+    { id: 'light', label: 'Açık' }
+  ];
+  const densityOptions = [
+    { id: 'compact', label: 'Kompakt' },
+    { id: 'standard', label: 'Standart' },
+    { id: 'comfortable', label: 'Rahat' }
+  ];
+
   return `
     <h3 class="settings-panel-title">Görünüm</h3>
     <p class="settings-panel-sub">Tema ve görünüm tercihlerini özelleştir.</p>
@@ -156,15 +186,11 @@ function panelAppearance() {
     <div class="settings-appearance-block">
       <div class="settings-security-label">Tema</div>
       <div class="settings-radio-group">
-        <button type="button" class="settings-radio-option active" disabled title="Yakında aktif olacak">
-          <span class="settings-radio-dot"></span> Koyu
-        </button>
-        <button type="button" class="settings-radio-option" disabled title="Yakında aktif olacak">
-          <span class="settings-radio-dot"></span> Sistem
-        </button>
-        <button type="button" class="settings-radio-option" disabled title="Yakında aktif olacak">
-          <span class="settings-radio-dot"></span> Açık
-        </button>
+        ${themeOptions.map((opt) => `
+          <button type="button" class="settings-radio-option ${opt.id === currentTheme ? 'active' : ''}" data-theme-option="${opt.id}">
+            <span class="settings-radio-dot"></span> ${escapeHtml(opt.label)}
+          </button>
+        `).join('')}
       </div>
     </div>
 
@@ -173,26 +199,11 @@ function panelAppearance() {
     <div class="settings-appearance-block">
       <div class="settings-security-label">Arayüz Yoğunluğu</div>
       <div class="settings-radio-group">
-        <button type="button" class="settings-radio-option" disabled title="Yakında aktif olacak">
-          <span class="settings-radio-dot"></span> Kompakt
-        </button>
-        <button type="button" class="settings-radio-option active" disabled title="Yakında aktif olacak">
-          <span class="settings-radio-dot"></span> Standart
-        </button>
-        <button type="button" class="settings-radio-option" disabled title="Yakında aktif olacak">
-          <span class="settings-radio-dot"></span> Rahat
-        </button>
-      </div>
-    </div>
-
-    <div class="settings-divider"></div>
-
-    <div class="settings-appearance-block">
-      <div class="settings-security-row">
-        <div class="settings-security-label" style="margin-bottom:0;">Animasyonlar</div>
-        <button type="button" class="settings-toggle settings-toggle-on" disabled title="Yakında aktif olacak">
-          <span class="settings-toggle-knob"></span>
-        </button>
+        ${densityOptions.map((opt) => `
+          <button type="button" class="settings-radio-option ${opt.id === currentDensity ? 'active' : ''}" data-density-option="${opt.id}">
+            <span class="settings-radio-dot"></span> ${escapeHtml(opt.label)}
+          </button>
+        `).join('')}
       </div>
     </div>
   `;
@@ -243,6 +254,100 @@ function renderPanel() {
 
   body.innerHTML = (renderers[activeTab] || panelProfile)();
   wirePanelEvents();
+
+  if (activeTab === 'profile' && !serverProfile.loaded) {
+    loadProfileFromServer();
+  }
+}
+
+async function loadProfileFromServer() {
+  if (!GET_PROFILE_URL || GET_PROFILE_URL.includes('YOUR-N8N-URL')) return;
+  try {
+    const res = await fetch(GET_PROFILE_URL, {
+      method: 'GET',
+      headers: authHeaders()
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+
+    if (!res.ok || !data.success) {
+      // Profil cekilemedi (401/404/vb). Formu bos/disabled birakmak, yanlis veriyle
+      // doldurup kullaniciyi yaniltmaktan daha guvenli.
+      profileSave.error = 'Profil bilgileri yüklenemedi, lütfen modalı kapatıp tekrar aç.';
+      if (activeTab === 'profile') renderPanel();
+      return;
+    }
+
+    serverProfile = {
+      loaded: true,
+      name: data.name || '',
+      username: data.username || '',
+      picture: data.picture || ''
+    };
+    if (activeTab === 'profile') renderPanel();
+  } catch (err) {
+    profileSave.error = 'Profil bilgileri yüklenemedi, lütfen modalı kapatıp tekrar aç.';
+    if (activeTab === 'profile') renderPanel();
+    console.warn('get-profile hatası:', err.message);
+  }
+}
+
+const SAVE_ERROR_MESSAGES = {
+  invalid_username: 'Kullanıcı adı 3-20 karakter olmalı ve sadece harf, rakam, alt çizgi içerebilir.',
+  username_taken: 'Bu kullanıcı adı zaten alınmış.',
+  invalid_name: 'Ad Soyad boş bırakılamaz ve 50 karakteri geçemez.',
+  unknown_error: 'Bir hata oluştu, lütfen tekrar dene.'
+};
+
+async function handleSaveProfile() {
+  if (profileSave.loading) return;
+
+  const nameInput = document.getElementById('settingsNameInput');
+  const usernameInput = document.getElementById('settingsUsernameInput');
+  const name = (nameInput?.value || '').trim();
+  const username = (usernameInput?.value || '').trim();
+
+  profileSave.loading = true;
+  profileSave.error = '';
+  renderPanel();
+
+  try {
+    const res = await fetch(SAVE_PROFILE_URL, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ name, username })
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+
+    if (!res.ok || !data.success) {
+      profileSave.loading = false;
+      profileSave.error = SAVE_ERROR_MESSAGES[data.error] || SAVE_ERROR_MESSAGES.unknown_error;
+      renderPanel();
+      return;
+    }
+
+    // Basarili: localStorage'daki gosterim adini VE kullanici adini guncelle ki
+    // profil sayfasi (profile.js) ve ust bardaki avatar/dropdown, yeniden giris
+    // yapmadan yenilensin.
+    // DÜZELTME: önceden sadece userName yazılıyordu, userUsername hiç yazılmıyordu —
+    // bu yüzden profil sayfasındaki "@handle" değeri hiç güncellenmiyordu.
+    try {
+      localStorage.setItem('userName', data.name || name);
+      localStorage.setItem('userUsername', data.username || username);
+    } catch (e) {}
+
+    serverProfile = { loaded: true, name: data.name || name, username: data.username || username, picture: serverProfile.picture };
+    profileSave.loading = false;
+    profileSave.error = '';
+    renderPanel();
+    renderAuthArea();
+  } catch (err) {
+    profileSave.loading = false;
+    profileSave.error = SAVE_ERROR_MESSAGES.unknown_error;
+    renderPanel();
+    console.warn('save-profile hatası:', err.message);
+  }
 }
 
 function wirePanelEvents() {
@@ -250,21 +355,9 @@ function wirePanelEvents() {
     btn.addEventListener('click', closeSettingsModal);
   });
 
-  const avatarBtn = document.getElementById('settingsAvatarBtn');
-  const avatarInput = document.getElementById('settingsAvatarInput');
-  if (avatarBtn && avatarInput) {
-    avatarBtn.addEventListener('click', () => avatarInput.click());
-    avatarInput.addEventListener('change', () => {
-      const file = avatarInput.files && avatarInput.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        pendingAvatarDataUrl = reader.result;
-        const preview = document.getElementById('settingsAvatarPreview');
-        if (preview) preview.innerHTML = `<img src="${pendingAvatarDataUrl}" alt="">`;
-      };
-      reader.readAsDataURL(file);
-    });
+  const saveBtn = document.getElementById('settingsSaveBtn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', handleSaveProfile);
   }
 
   const billingBtn = document.getElementById('settingsBillingBtn');
@@ -275,11 +368,31 @@ function wirePanelEvents() {
       if (trigger) trigger.click();
     });
   }
+
+  document.querySelectorAll('[data-theme-option]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const theme = btn.dataset.themeOption;
+      setStoredTheme(theme);
+      applyTheme(theme);
+      renderPanel();
+    });
+  });
+
+  document.querySelectorAll('[data-density-option]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const density = btn.dataset.densityOption;
+      setStoredDensity(density);
+      applyDensity(density);
+      renderPanel();
+    });
+  });
 }
 
 export function openSettingsModal(tab = 'profile') {
   activeTab = TABS.some((t) => t.id === tab) ? tab : 'profile';
   pendingAvatarDataUrl = null;
+  serverProfile = { loaded: false, name: '', username: '', picture: '' };
+  profileSave = { loading: false, error: '' };
   renderNav();
   renderPanel();
   const backdrop = document.getElementById('settingsModalBackdrop');

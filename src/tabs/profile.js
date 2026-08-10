@@ -23,22 +23,28 @@ function getRecentActivity() {
 }
 
 function getUserInfo() {
-  let name = '', email = '', picture = '';
+  let name = '', email = '', picture = '', username = '';
   try {
     name = localStorage.getItem('userName') || '';
     email = localStorage.getItem('userEmail') || '';
     picture = localStorage.getItem('userPicture') || '';
+    // DÜZELTME: settingsModal.js artık kaydedilen username'i localStorage'a
+    // 'userUsername' anahtarıyla yazıyor. Öncesinde bu alan hiç okunmuyordu,
+    // bu yüzden alttaki handle hep email'in @ öncesinden türetiliyordu.
+    username = localStorage.getItem('userUsername') || '';
   } catch (e) {}
-  return { name, email, picture };
+  return { name, email, picture, username };
 }
 
 function renderSidebar() {
   const el = document.getElementById('profileSidebar');
   if (!el) return;
 
-  const { name, email, picture } = getUserInfo();
+  const { name, email, picture, username } = getUserInfo();
   const displayName = name || 'Kullanıcı';
-  const handle = email ? '@' + email.split('@')[0] : '@kullanici';
+  // DÜZELTME: önce gerçek kaydedilmiş username'e bak; o yoksa (henüz hiç
+  // ayarlardan kaydedilmemişse) email'in @ öncesine düş, eskisi gibi.
+  const handle = username ? '@' + username : (email ? '@' + email.split('@')[0] : '@kullanici');
 
   el.innerHTML = `
     <div class="profile-card">

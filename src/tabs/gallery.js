@@ -3,6 +3,8 @@ import { escapeAttr, escapeHtml, unwrap, getViewCount, getLikeCount, formatCount
 import { isLoggedIn, setLocalCreditBalance, getLocalCreditBalance, refreshCreditBalanceFromServer, authHeaders, onBalanceChange } from '../auth.js';
 import { openCreditModal } from '../credits.js';
 import { MAX_TOP_TAGS, PUBLIC_LIST_URL, PREMIUM_LIST_URL, UNLOCK_PREMIUM_URL, TOGGLE_INTERACTION_URL, USER_INTERACTIONS_URL } from '../config.js';
+import { getStoredDensity, setStoredDensity, applyDensity } from '../state.js';
+
 
 let allRows = [];
 let visibleRows = [];
@@ -528,6 +530,7 @@ export function getUserInteractionSets() {
 
 // ---- Init: tüm statik event binding + delegation burada ----
 export function initGallery() {
+  applyDensity(getStoredDensity());
   $('searchInput').addEventListener('input', (e) => {
     searchTerm = e.target.value.trim().toLowerCase();
     applyFiltersAndRender();
@@ -536,9 +539,11 @@ export function initGallery() {
   $('sidebarToggleBtn').addEventListener('click', () => $('sidebar').classList.toggle('open'));
 
   $('densityToggleBtn').addEventListener('click', () => {
-    const grid = $('grid');
-    const nowWide = grid.classList.toggle('wide');
-    $('densityToggleBtn').classList.toggle('active', nowWide);
+    const order = ['compact', 'standard', 'comfortable'];
+    const current = getStoredDensity();
+    const next = order[(order.indexOf(current) + 1) % order.length];
+    setStoredDensity(next);
+    applyDensity(next);
   });
 
   $('refreshBtn')?.addEventListener('click', loadData);

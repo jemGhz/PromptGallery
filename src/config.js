@@ -39,6 +39,12 @@ export const MARK_NOTIFICATION_READ_URL = 'https://jg-n8n-server.tail1c97b1.ts.n
 export const PURCHASE_HISTORY_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/purchase-history';
 export const DELETE_NOTIFICATION_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/delete-notification';
 export const SUPPORT_FORM_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/support-form';
+
+// TODO: bu path'leri (get-profile, save-profile) n8n'deki gerçek Webhook node'undan teyit et.
+export const GET_PROFILE_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/get-profile';
+export const SAVE_PROFILE_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/save-profile';
+
+
 export const CREDIT_PACKAGES = [
   { id: 'pkg_10', credits: 10, price: '99 TL' },
   { id: 'pkg_25', credits: 25, price: '199 TL' },

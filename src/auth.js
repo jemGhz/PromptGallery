@@ -81,6 +81,12 @@ export async function refreshCreditBalanceFromServer() {
 }
 
 async function handleGoogleCredential(response) {
+  // DÜZELTME: `data` artık try bloğunun DIŞINDA tanımlı. Önceki halde `const data`
+  // try içinde tanımlıydı ve try/catch bloğunun dışına çıkınca (ör. maybeShowOnboarding
+  // çağrısında) "ReferenceError: data is not defined" fırlatıyordu — bu yüzden başarılı
+  // her girişte onboarding modalı hiç tetiklenmiyordu.
+  let data = null;
+
   try {
     const res = await fetch(GOOGLE_LOGIN_VERIFY_URL, {
       method: 'POST',
@@ -88,7 +94,7 @@ async function handleGoogleCredential(response) {
       body: JSON.stringify({ credential: response.credential })
     });
     const raw = await res.json();
-    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+    data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
 
     if (!data.verified || !data.token) {
       console.warn('Giriş doğrulanamadı:', data.message);
@@ -103,6 +109,7 @@ async function handleGoogleCredential(response) {
     console.warn('Giriş doğrulama hatası:', err.message);
     return;
   }
+
   renderAuthArea();
   refreshCreditBalanceFromServer();
   refreshNotifications();
@@ -125,6 +132,12 @@ export function logout() {
   switchTab('gallery');
 }
 
+// DÜZELTME: google.accounts.id.initialize() önceden renderGoogleButton() her
+// çağrıldığında (yani her renderAuthArea() render'ında, kullanıcı giriş yapmamışken)
+// yeniden çalışıyordu. Google GSI console'da "initialize() is called multiple times"
+// uyarısı bu yüzden çıkıyordu. Artık yalnızca bir kez çalışıyor.
+let gsiInitialized = false;
+
 export function renderGoogleButton(containerId, options = {}) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -132,10 +145,13 @@ export function renderGoogleButton(containerId, options = {}) {
     setTimeout(() => renderGoogleButton(containerId, options), 200);
     return;
   }
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: handleGoogleCredential
-  });
+  if (!gsiInitialized) {
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleGoogleCredential
+    });
+    gsiInitialized = true;
+  }
   google.accounts.id.renderButton(container, {
     type: 'standard',
     theme: 'outline',
@@ -198,7 +214,10 @@ export function renderAuthArea() {
     area.querySelector('[data-action="profile"]').addEventListener('click', () => switchTab('profile'));
     area.querySelector('[data-action="settings"]').addEventListener('click', () => openSettingsModal('profile'));
     document.getElementById('avatarLogoutBtn').addEventListener('click', logout);
-  } 
+    // NOT: avatarSupportBtn'e hâlâ bir click listener bağlı değil — bu ayrı, bilinçli
+    // bırakılmış bir konu (bkz. sohbetteki not). Nereye yönlendirmesi gerektiğine
+    // (destek formu mu, SUPPORT_FORM_URL'e post mu) karar verince ekleyelim.
+  }
   else {
     area.innerHTML = '<div id="googleSignInBtn"></div>';
   renderGoogleButton('googleSignInBtn', { type: 'icon', shape: 'circle', size: 'medium' });

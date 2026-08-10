@@ -252,8 +252,9 @@
   color: var(--ink-dim);
   font-family: 'Inter', sans-serif;
   font-size: 13px;
-  cursor: not-allowed;
+  cursor: pointer;
 }
+
 .settings-radio-option.active {
   border-color: var(--gold);
   color: var(--gold);

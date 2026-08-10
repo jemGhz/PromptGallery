@@ -161,6 +161,10 @@
 @media (max-width:1000px){ .masonry{columns:3 200px;} .masonry.wide{columns:2 280px;} }
 @media (max-width:640px){ .masonry{columns:2 160px; gap:10px;} }
 
+.masonry.compact{columns:7 180px;}
+@media (max-width:1000px){ .masonry.compact{columns:5 150px;} }
+@media (max-width:640px){ .masonry.compact{columns:3 120px;} }
+
 .tile{
   break-inside:avoid;
   margin-bottom:14px;
@@ -276,8 +280,8 @@
   top:10px; right:10px;
   width:26px; height:26px;
   border-radius:50%;
-  background:rgba(10,10,9,0.75);
-  border:1px solid rgba(199,161,94,0.4);
+  background:rgba(46, 38, 34, 0.92);
+  border:1px solid rgba(18, 18, 18, 0.732);
   display:flex; align-items:center; justify-content:center;
   color:var(--gold);
   z-index:2;
@@ -294,12 +298,12 @@
   display:flex;
   align-items:center;
   gap:4px;
-  background:rgba(10,10,9,0.65);
-  backdrop-filter:blur(2px);
+  background:rgba(247,245,241,0.88);
+  backdrop-filter:blur(3px);
   border-radius:20px;
   padding:4px 9px;
   font-size:10.5px;
-  color:var(--ink);
+  color:#2A261E;
   line-height:1;
   width:fit-content;
 }
@@ -315,7 +319,7 @@
 .icon-btn{
   width:28px; height:28px;
   border-radius:50%;
-  background:rgba(10,10,9,0.65);
+  background:rgba(247,245,241,0.85);
   backdrop-filter:blur(2px);
   border:none;
   display:flex;
@@ -326,7 +330,7 @@
   transition:transform 0.15s ease;
 }
 .icon-btn:hover{transform:scale(1.08);}
-.icon-btn svg{width:14px; height:14px; stroke:var(--ink); fill:none; stroke-width:2;}
+.icon-btn svg{width:14px; height:14px; stroke:#2A261E; fill:none; stroke-width:2;}
 .icon-btn.like-btn.active svg{fill:#E0475C; stroke:#E0475C;}
 .icon-btn.save-btn.active svg{fill:var(--gold); stroke:var(--gold);}
 .tile.locked .tile-hint{background:linear-gradient(to top, rgba(10,10,9,0.85) 0%, rgba(10,10,9,0.15) 65%, transparent 100%);}
