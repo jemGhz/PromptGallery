@@ -19,13 +19,10 @@ const USE_REASON_OPTIONS = [
 
 const HEARD_FROM_OPTIONS = ['Instagram', 'TikTok', 'Arkadaş tavsiyesi', 'Google araması', 'Diğer'];
 
-// Adım başına: soldaki fotoğraf, üst yazı ve ilerleme etiketi.
-// Fotoğrafları /public/onboarding/step-1.jpg .. step-4.jpg altına koyman yeterli;
-// farklı bir yol/isim kullanırsan aşağıdaki "img" alanlarını güncelle.
 const STEP_META = [
   {
     progressLabel: 'Seni Tanıyalım',
-    img: 'public\step-2.webp',
+    img: 'public\step-1.webp',
     eyebrow: '👋 Hoş geldin',
     title: 'Seni <strong>tanıyalım</strong>',
     desc: 'Deneyimini sana göre şekillendirelim.'
