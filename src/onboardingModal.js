@@ -25,28 +25,28 @@ const HEARD_FROM_OPTIONS = ['Instagram', 'TikTok', 'Arkadaş tavsiyesi', 'Google
 const STEP_META = [
   {
     progressLabel: 'Seni Tanıyalım',
-    img: '/onboarding/step-1.png',
+    img: 'public\step-2.webp',
     eyebrow: '👋 Hoş geldin',
     title: 'Seni <strong>tanıyalım</strong>',
     desc: 'Deneyimini sana göre şekillendirelim.'
   },
   {
     progressLabel: 'Kaynak',
-    img: '/step-2.png',
+    img: '/step-2.webp',
     eyebrow: '🔍 Neredeyse bitti',
     title: 'Bizi <strong>nereden</strong> duydun?',
     desc: 'Bu bilgi bize çok yardımcı oluyor.'
   },
   {
     progressLabel: 'Notlar',
-    img: '/step-3.png',
+    img: '/step-3.webp',
     eyebrow: '✍️ İsteğe bağlı',
     title: 'Eklemek istediğin <strong>bir şey</strong> var mı?',
     desc: 'Bu adımı boş bırakıp devam edebilirsin.'
   },
   {
     progressLabel: 'Tamamlandı',
-    img: '/step-4.png',
+    img: '/step-4.webp',
     eyebrow: '🎉 Son adım',
     title: 'Neredeyse <strong>hazırsın</strong>!',
     desc: 'Seçimlerini gözden geçir ve başla.'
