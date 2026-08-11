@@ -32,21 +32,21 @@ const STEP_META = [
   },
   {
     progressLabel: 'Kaynak',
-    img: '/onboarding/step-2.png',
+    img: '/step-2.png',
     eyebrow: '🔍 Neredeyse bitti',
     title: 'Bizi <strong>nereden</strong> duydun?',
     desc: 'Bu bilgi bize çok yardımcı oluyor.'
   },
   {
     progressLabel: 'Notlar',
-    img: '/onboarding/step-3.png',
+    img: '/step-3.png',
     eyebrow: '✍️ İsteğe bağlı',
     title: 'Eklemek istediğin <strong>bir şey</strong> var mı?',
     desc: 'Bu adımı boş bırakıp devam edebilirsin.'
   },
   {
     progressLabel: 'Tamamlandı',
-    img: '/onboarding/step-4.png',
+    img: '/step-4.png',
     eyebrow: '🎉 Son adım',
     title: 'Neredeyse <strong>hazırsın</strong>!',
     desc: 'Seçimlerini gözden geçir ve başla.'
