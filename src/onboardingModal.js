@@ -22,7 +22,7 @@ const HEARD_FROM_OPTIONS = ['Instagram', 'TikTok', 'Arkadaş tavsiyesi', 'Google
 const STEP_META = [
   {
     progressLabel: 'Seni Tanıyalım',
-    img: 'public\step-1.webp',
+    img: 'step-1.webp',
     eyebrow: '👋 Hoş geldin',
     title: 'Seni <strong>tanıyalım</strong>',
     desc: 'Deneyimini sana göre şekillendirelim.'
