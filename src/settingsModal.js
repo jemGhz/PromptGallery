@@ -3,11 +3,13 @@
 // JG Plus & Ödemeler, Bağlı Hesaplar, Kullanım, Hesabı Sil sekmeleri.
 // Profil Bilgileri artık get-profile/save-profile'a bağlı (name + username).
 // Bio ve avatar backend'de henüz desteklenmiyor, bilinçli olarak disabled bırakıldı.
+// Satın Alma Geçmişi artık profile.js'ten buraya taşındı (JG Plus & Ödemeler sekmesi).
 import './styles/settings.css';
 import { escapeAttr, escapeHtml, unwrap } from './utils.js';
 import { authHeaders, renderAuthArea } from './auth.js';
-import { GET_PROFILE_URL, SAVE_PROFILE_URL } from './config.js';
+import { GET_PROFILE_URL, SAVE_PROFILE_URL, PURCHASE_HISTORY_URL } from './config.js';
 import { getStoredTheme, setStoredTheme, applyTheme, getStoredDensity, setStoredDensity, applyDensity } from './state.js';
+import { switchTab } from './tabState.js';
 
 const ICONS = {
   profile: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>',
@@ -39,6 +41,9 @@ let pendingAvatarDataUrl = null;
 let serverProfile = { loaded: false, name: '', username: '', picture: '' };
 let profileSave = { loading: false, error: '' };
 
+// Satın Alma Geçmişi state'i — profile.js'ten taşındı.
+let purchaseHistory = { loaded: false, loading: false, error: '', kodGecmisi: [], subTab: 'codes' };
+
 function getUser() {
   let name = '', email = '', picture = '';
   try {
@@ -62,8 +67,6 @@ function renderNav() {
 
 function panelProfile() {
   const { name, email, picture } = getUser();
-  // Sunucudan taze veri geldiyse onu kullan; gelmediyse (henuz fetch bitmedi) localStorage'daki
-  // bayat degeri gecici gosterge olarak kullan.
   const displayName = serverProfile.loaded ? serverProfile.name : name;
   const displayUsername = serverProfile.loaded ? serverProfile.username : '';
 
@@ -209,6 +212,94 @@ function panelAppearance() {
   `;
 }
 
+// ---- Satın Alma Geçmişi (profile.js'ten taşındı) ----
+
+function formatPurchaseDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('tr-TR', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+async function fetchPurchaseHistoryData() {
+  if (!PURCHASE_HISTORY_URL || PURCHASE_HISTORY_URL.includes('YOUR-N8N-URL')) {
+    return { error: 'Servis henüz bağlanmadı.' };
+  }
+  try {
+    const res = await fetch(PURCHASE_HISTORY_URL, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({})
+    });
+    if (res.status === 401) return { error: 'Oturum süresi dolmuş, lütfen tekrar giriş yap.' };
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+    return {
+      kodGecmisi: Array.isArray(data.kodGecmisi) ? data.kodGecmisi : [],
+      unlockGecmisi: Array.isArray(data.unlockGecmisi) ? data.unlockGecmisi : [],
+      gorselGecmisi: Array.isArray(data.gorselGecmisi) ? data.gorselGecmisi : []
+    };
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+async function loadPurchaseHistoryIfNeeded() {
+  if (purchaseHistory.loaded || purchaseHistory.loading) return;
+  purchaseHistory.loading = true;
+
+  const data = await fetchPurchaseHistoryData();
+  purchaseHistory.loading = false;
+
+  if (data.error) {
+    purchaseHistory.error = data.error;
+  } else {
+    purchaseHistory.loaded = true;
+    purchaseHistory.error = '';
+    purchaseHistory.kodGecmisi = data.kodGecmisi;
+  }
+
+  if (activeTab === 'billing') renderPanel();
+}
+
+function purchaseHistoryBodyHtml() {
+  if (purchaseHistory.subTab === 'codes') {
+    return purchaseHistory.kodGecmisi.length
+      ? `<table class="settings-history-table">
+          <thead><tr><th>Kod</th><th>Kredi</th><th>Kullanım Tarihi</th></tr></thead>
+          <tbody>${purchaseHistory.kodGecmisi.map((r) => `
+            <tr><td>${escapeHtml(r.kod || '')}</td><td>${escapeHtml(String(r.puan ?? ''))}</td><td>${formatPurchaseDate(r.used_at)}</td></tr>
+          `).join('')}</tbody>
+        </table>`
+      : `<div class="settings-placeholder">Henüz IBAN/kod ile satın alma yok.</div>`;
+  }
+  return `
+    <div class="settings-placeholder" style="text-align:left;">
+      Satın alınan promptları <a href="#" id="settingsGoToPurchasedPrompts">Satın Alınan Promptlar</a> bölümünden görebilirsin.<br><br>
+      Oluşturulan görseller, karakter sheet'leri ve sosyal medya içerikleri için kredi harcama geçmişi yakında burada listelenecek.
+    </div>`;
+}
+
+function purchaseHistorySectionHtml() {
+  if (purchaseHistory.loading || (!purchaseHistory.loaded && !purchaseHistory.error)) {
+    return `<div class="settings-placeholder">Yükleniyor...</div>`;
+  }
+  if (purchaseHistory.error) {
+    return `<div class="settings-placeholder">Yüklenemedi: ${escapeHtml(purchaseHistory.error)}</div>`;
+  }
+  return `
+    <div class="settings-subtabs">
+      <button class="settings-subtab ${purchaseHistory.subTab === 'codes' ? 'active' : ''}" data-history-subtab="codes">IBAN / Kredi Kartı (Stripe)</button>
+      <button class="settings-subtab ${purchaseHistory.subTab === 'spending' ? 'active' : ''}" data-history-subtab="spending">Site İçi Harcama</button>
+    </div>
+    ${purchaseHistoryBodyHtml()}
+  `;
+}
+
 function panelBilling() {
   let balance = 0;
   try { balance = parseInt(localStorage.getItem('jg_credit_balance') || '0', 10) || 0; } catch (e) {}
@@ -222,7 +313,11 @@ function panelBilling() {
       </div>
       <button type="button" class="settings-btn settings-btn-primary" id="settingsBillingBtn">Kredi Satın Al</button>
     </div>
-    <div class="settings-placeholder">Fatura geçmişi yakında burada listelenecek.</div>
+
+    <div class="settings-divider"></div>
+
+    <div class="settings-security-label" style="margin-bottom:10px;">Satın Alma Geçmişi</div>
+    <div id="settingsPurchaseHistory">${purchaseHistorySectionHtml()}</div>
   `;
 }
 
@@ -258,6 +353,9 @@ function renderPanel() {
   if (activeTab === 'profile' && !serverProfile.loaded) {
     loadProfileFromServer();
   }
+  if (activeTab === 'billing') {
+    loadPurchaseHistoryIfNeeded();
+  }
 }
 
 async function loadProfileFromServer() {
@@ -271,8 +369,6 @@ async function loadProfileFromServer() {
     const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
 
     if (!res.ok || !data.success) {
-      // Profil cekilemedi (401/404/vb). Formu bos/disabled birakmak, yanlis veriyle
-      // doldurup kullaniciyi yaniltmaktan daha guvenli.
       profileSave.error = 'Profil bilgileri yüklenemedi, lütfen modalı kapatıp tekrar aç.';
       if (activeTab === 'profile') renderPanel();
       return;
@@ -327,11 +423,6 @@ async function handleSaveProfile() {
       return;
     }
 
-    // Basarili: localStorage'daki gosterim adini VE kullanici adini guncelle ki
-    // profil sayfasi (profile.js) ve ust bardaki avatar/dropdown, yeniden giris
-    // yapmadan yenilensin.
-    // DÜZELTME: önceden sadece userName yazılıyordu, userUsername hiç yazılmıyordu —
-    // bu yüzden profil sayfasındaki "@handle" değeri hiç güncellenmiyordu.
     try {
       localStorage.setItem('userName', data.name || name);
       localStorage.setItem('userUsername', data.username || username);
@@ -385,6 +476,19 @@ function wirePanelEvents() {
       applyDensity(density);
       renderPanel();
     });
+  });
+
+  document.querySelectorAll('[data-history-subtab]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      purchaseHistory.subTab = btn.dataset.historySubtab;
+      renderPanel();
+    });
+  });
+
+  document.getElementById('settingsGoToPurchasedPrompts')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeSettingsModal();
+    switchTab('profile');
   });
 }
 

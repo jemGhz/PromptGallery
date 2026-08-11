@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!--
-  NOT: CSS burada değil; src/style.css (ve styles/base|gallery|generator|avatar|credits|profile.css)
+  NOT: CSS burada değil; src/style.css (ve styles/base|gallery|generator|avatar|credits|profile|onboarding.css)
   içinde. main.js zaten `import './style.css'` yapıyor, o yüzden burada <style>/<link> gerekmiyor.
 -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -60,7 +60,7 @@
         <div class="notif-list" id="notifList"></div>
       </div>
     </div>
-    
+
     <div id="authArea"></div>
   </div>
 </header>
@@ -913,35 +913,32 @@
 </div>
 <!-- ↑ welcomeModalBackdrop burada TAM olarak kapanıyor -->
 
-<!-- ---- Onboarding anket modalı (giriş sonrası, sunucu "completed:false" derse açılır — bkz. onboardingModal.js) ---- -->
+<!-- ---- Onboarding anket modalı (4 adımlı sihirbaz — bkz. onboardingModal.js + styles/onboarding.css) ---- -->
 <div class="modal-backdrop" id="onboardingModalBackdrop">
-  <div class="onboarding-card">
-    <h2>Aramıza hoş geldin! 👋</h2>
-    <p class="onboarding-sub">Sana daha iyi bir deneyim sunabilmemiz için birkaç kısa soru:</p>
+  <div class="onboarding-wizard">
 
-    <div class="onboarding-section">
-      <label class="onboarding-label">Bizi ne için kullanmayı düşünüyorsun? (birden fazla seçebilirsin)</label>
-      <div id="onboardingReasons" class="onboarding-checklist"></div>
+    <div class="onboarding-wizard-img-wrap">
+      <img id="onboardingStepImg" src="/onboarding/step-1.png" alt="">
+      <div class="onboarding-wizard-img-caption">
+        <div class="onboarding-wizard-caption-eyebrow" id="onboardingCaptionEyebrow"></div>
+        <div class="onboarding-wizard-caption-title" id="onboardingCaptionTitle"></div>
+        <div class="onboarding-wizard-caption-desc" id="onboardingCaptionDesc"></div>
+      </div>
     </div>
 
-    <div class="onboarding-section">
-      <label class="onboarding-label" for="onboardingHeardFrom">Bizi nereden duydun?</label>
-      <select id="onboardingHeardFrom" class="onboarding-select"></select>
+    <div class="onboarding-wizard-content">
+      <div class="onboarding-progress" id="onboardingProgress"></div>
+
+      <div class="onboarding-step-body" id="onboardingStepBody"></div>
+
+      <p class="onboarding-error" id="onboardingErrorMsg"></p>
+
+      <div class="onboarding-wizard-actions" id="onboardingActions"></div>
     </div>
 
-    <div class="onboarding-section">
-      <label class="onboarding-label" for="onboardingCustomReason">Eklemek istediğin bir şey var mı? (opsiyonel)</label>
-      <textarea id="onboardingCustomReason" class="onboarding-textarea" rows="2"></textarea>
-    </div>
-
-    <p class="onboarding-error" id="onboardingErrorMsg"></p>
-
-    <div class="onboarding-actions">
-      <button type="button" class="btn" id="onboardingSkipBtn">Şimdi değil</button>
-      <button type="button" class="btn primary" id="onboardingSubmitBtn">Devam et</button>
-    </div>
   </div>
 </div>
+<!-- ↑ onboardingModalBackdrop burada kapanıyor -->
 
 <script type="module" src="/src/main.js"></script>
 </body>

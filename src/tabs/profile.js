@@ -4,13 +4,12 @@ import { onTabChange } from '../state.js';
 import { isLoggedIn, logout, onBalanceChange, getInitial, authHeaders } from '../auth.js';
 import { switchTab } from '../tabState.js';
 import { getGalleryRows, getUserInteractionSets, openModalForRow } from './gallery.js';
-import { GENERATED_PROMPTS_URL, PURCHASE_HISTORY_URL } from '../config.js';
+import { GENERATED_PROMPTS_URL } from '../config.js';
 import { onProfileSectionRequest } from '../tabState.js';
+import { openSettingsModal } from '../settingsModal.js';
 
-let activeSection = 'overview'; // 'overview' | 'liked' | 'saved' | 'purchased' | 'generated-prompts' | 'purchase-history'
+let activeSection = 'overview'; // 'overview' | 'liked' | 'saved' | 'purchased' | 'generated-prompts'
 let generatedPromptsLoading = false;
-let purchaseHistoryLoading = false;
-let purchaseHistorySubTab = 'codes'; // 'codes' | 'spending'
 
 function getStorageUsage() {
   return { usedGB: 0, totalGB: 20, percent: 0 };
@@ -61,7 +60,6 @@ function renderSidebar() {
     <nav class="profile-nav">
       <button class="profile-nav-item ${activeSection === 'overview' ? 'active' : ''}" data-section="overview">🏠 Overview</button>
       <button class="profile-nav-item ${activeSection === 'purchased' ? 'active' : ''}" data-section="purchased">💳 Satın Alınan Promptlar</button>
-      <button class="profile-nav-item ${activeSection === 'purchase-history' ? 'active' : ''}" data-section="purchase-history">💳 Satın Alma Geçmişi</button>
       <button class="profile-nav-item ${activeSection === 'saved' ? 'active' : ''}" data-section="saved">🔖 Kaydedilen Promptlar</button>
       <button class="profile-nav-item ${activeSection === 'liked' ? 'active' : ''}" data-section="liked">❤️ Beğenilen Promptlar</button>
       <button class="profile-nav-item" disabled title="Yakında aktif olacak">📤 Yüklenen Görseller</button>
@@ -232,7 +230,7 @@ function renderMain() {
   renderOverviewCollection();
 }
 
-// ---- Beğenilen / Kaydedilen / Satın Alınan / Satın Alma Geçmişi paneli (ayrı sekmeler) ----
+// ---- Beğenilen / Kaydedilen / Satın Alınan paneli (ayrı sekmeler) ----
 
 function ensureCollectionPanel() {
   let panel = document.getElementById('profileCollectionPanel');
@@ -370,114 +368,6 @@ async function renderGeneratedPromptsPanel() {
   });
 }
 
-// ---- Satın Alma Geçmişi paneli ----
-
-function formatDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('tr-TR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
-
-async function fetchPurchaseHistory() {
-  if (!PURCHASE_HISTORY_URL || PURCHASE_HISTORY_URL.includes('YOUR-N8N-URL')) {
-    return { error: 'Servis henüz bağlanmadı.' };
-  }
-  try {
-    const res = await fetch(PURCHASE_HISTORY_URL, {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify({})
-    });
-    if (res.status === 401) return { error: 'Oturum süresi dolmuş, lütfen tekrar giriş yap.' };
-    const raw = await res.json();
-    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
-    return {
-      kodGecmisi: Array.isArray(data.kodGecmisi) ? data.kodGecmisi : [],
-      unlockGecmisi: Array.isArray(data.unlockGecmisi) ? data.unlockGecmisi : [],
-      gorselGecmisi: Array.isArray(data.gorselGecmisi) ? data.gorselGecmisi : []
-    };
-  } catch (err) {
-    return { error: err.message };
-  }
-}
-
-function renderPurchaseHistoryBody(data) {
-  const body = document.getElementById('purchaseHistoryBody');
-  if (!body) return;
-
-  if (purchaseHistorySubTab === 'codes') {
-    body.innerHTML = data.kodGecmisi.length
-      ? `<table class="profile-history-table">
-          <thead><tr><th>Kod</th><th>Kredi</th><th>Kullanım Tarihi</th></tr></thead>
-          <tbody>${data.kodGecmisi.map((r) => `
-            <tr><td>${escapeHtml(r.kod || '')}</td><td>${escapeHtml(String(r.puan ?? ''))}</td><td>${formatDate(r.used_at)}</td></tr>
-          `).join('')}</tbody>
-        </table>`
-      : `<div class="profile-empty-note">Henüz IBAN/kod ile satın alma yok.</div>`;
-  } else {
-    // Sekme 2.1: unlocked promptlar zaten "Satın Alınan Promptlar" bölümünde var,
-    // burada sadece diğer harcama tipleri (2.2-2.4) listelenir.
-    body.innerHTML = `
-      <div class="profile-empty-note">
-        Satın alınan promptları <a href="#" id="goToPurchasedPrompts">Satın Alınan Promptlar</a> bölümünden görebilirsin.<br><br>
-        Oluşturulan görseller, karakter sheet'leri ve sosyal medya içerikleri için kredi harcama geçmişi yakında burada listelenecek.
-      </div>`;
-    document.getElementById('goToPurchasedPrompts')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      activeSection = 'purchased';
-      renderProfilePage();
-    });
-  }
-}
-
-async function renderPurchaseHistoryPanel() {
-  const panel = ensureCollectionPanel();
-  if (!panel) return;
-  if (purchaseHistoryLoading) return;
-  purchaseHistoryLoading = true;
-
-  panel.innerHTML = `
-    <div class="profile-collection-header"><h2>Satın Alma Geçmişi</h2></div>
-    <div class="profile-empty-note">Yükleniyor...</div>
-  `;
-
-  const data = await fetchPurchaseHistory();
-  purchaseHistoryLoading = false;
-  if (activeSection !== 'purchase-history') return;
-
-  if (data.error) {
-    panel.innerHTML = `
-      <div class="profile-collection-header"><h2>Satın Alma Geçmişi</h2></div>
-      <div class="profile-empty-note">Yüklenemedi: ${escapeHtml(data.error)}</div>
-    `;
-    return;
-  }
-
-  panel.innerHTML = `
-    <div class="profile-collection-header"><h2>Satın Alma Geçmişi</h2></div>
-    <div class="profile-subtabs">
-      <button class="profile-subtab ${purchaseHistorySubTab === 'codes' ? 'active' : ''}" data-subtab="codes">IBAN / Kredi Kartı (Stripe)</button>
-      <button class="profile-subtab ${purchaseHistorySubTab === 'spending' ? 'active' : ''}" data-subtab="spending">Site İçi Harcama</button>
-    </div>
-    <div id="purchaseHistoryBody"></div>
-  `;
-
-  panel.querySelectorAll('[data-subtab]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      purchaseHistorySubTab = btn.dataset.subtab;
-      panel.querySelectorAll('[data-subtab]').forEach((b) => b.classList.toggle('active', b.dataset.subtab === purchaseHistorySubTab));
-      renderPurchaseHistoryBody(data);
-    });
-  });
-
-  renderPurchaseHistoryBody(data);
-}
-
 // ---- Sayfa görünürlük / yönlendirme ----
 
 function setMainVisibility(showOverview) {
@@ -503,9 +393,6 @@ function renderProfilePage() {
   } else if (activeSection === 'generated-prompts') {
     setMainVisibility(false);
     renderGeneratedPromptsPanel();
-  } else if (activeSection === 'purchase-history') {
-    setMainVisibility(false);
-    renderPurchaseHistoryPanel();
   } else {
     setMainVisibility(false);
     renderCollectionPanel(activeSection);
@@ -518,11 +405,11 @@ function bindQuickActions() {
   });
 }
 
-
-
+// Satın Alma Geçmişi artık Ayarlar > JG Plus & Ödemeler altında yaşıyor.
+// Bu fonksiyonu çağıran eski yerler (örn. bildirimlerden bir link) kırılmasın diye
+// silmek yerine yeni konuma yönlendiriyoruz.
 export function openPurchaseHistorySection() {
-  activeSection = 'purchase-history';
-  renderProfilePage();
+  openSettingsModal('billing');
 }
 
 export function initProfile() {

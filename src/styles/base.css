@@ -369,7 +369,7 @@ body{
   width: 320px;
   max-height: 400px;
   overflow-y: auto;
-  background: #0d0d0b;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 10px;
   z-index: 50;
