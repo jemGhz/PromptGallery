@@ -338,7 +338,7 @@ function renderGrid() {
       </div>`;
       return `
       <div class="tile ${r.isPremium ? 'locked' : ''}" data-open-idx="${i}">
-        <img src="${imgSrc}" alt="referans görsel" loading="lazy" data-onerror-hide="1">
+        <img src="${escapeAttr(imgSrc)}" alt="referans görsel" loading="lazy" data-onerror-hide="1">
         ${lockBadge}
         ${statBadges}
         ${cardActions}

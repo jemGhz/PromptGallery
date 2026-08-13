@@ -195,7 +195,7 @@ function renderCharacterSheet(sheet, inputPayload) {
       .map(
         (v) => `
     <div class="sheet-view-item">
-      <img src="${v.url || ''}" alt="${escapeAttr(v.label || '')}">
+      <img src="${escapeAttr(v.url || '')}" alt="${escapeAttr(v.label || '')}">
       <span>${escapeHtml(v.label || '')}</span>
     </div>`
       )
@@ -207,7 +207,7 @@ function renderCharacterSheet(sheet, inputPayload) {
       .map(
         (f) => `
     <div class="sheet-strip-item">
-      <img src="${f.url || ''}" alt="${escapeAttr(f.label || '')}">
+      <img src="${escapeAttr(f.url || '')}" alt="${escapeAttr(f.label || '')}">
       <span>${escapeHtml(f.label || '')}</span>
     </div>`
       )
@@ -219,7 +219,7 @@ function renderCharacterSheet(sheet, inputPayload) {
       .map(
         (h) => `
     <div class="sheet-strip-item">
-      <img src="${h.url || ''}" alt="${escapeAttr(h.label || '')}">
+      <img src="${escapeAttr(h.url || '')}" alt="${escapeAttr(h.label || '')}">
       <span>${escapeHtml(h.label || '')}</span>
     </div>`
       )

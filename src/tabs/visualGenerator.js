@@ -219,7 +219,7 @@ function renderGenResults(images) {
     .map(
       (url, i) => `
     <div class="gen-tile">
-      <img src="${url}" alt="oluşturulan görsel ${i + 1}" loading="lazy">
+      <img src="${escapeAttr(url)}" alt="oluşturulan görsel ${i + 1}" loading="lazy">
       <div class="gen-tile-actions">
         <button class="icon-btn" data-download-url="${escapeAttr(url)}" data-download-idx="${i}" title="İndir">⬇</button>
       </div>
