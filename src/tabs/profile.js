@@ -4,12 +4,13 @@ import { onTabChange } from '../state.js';
 import { isLoggedIn, logout, onBalanceChange, getInitial, authHeaders } from '../auth.js';
 import { switchTab } from '../tabState.js';
 import { getGalleryRows, getUserInteractionSets, openModalForRow } from './gallery.js';
-import { GENERATED_PROMPTS_URL } from '../config.js';
+import { GENERATED_PROMPTS_URL, GENERATED_VISUALS_URL } from '../config.js';
 import { onProfileSectionRequest } from '../tabState.js';
 import { openSettingsModal } from '../settingsModal.js';
 
-let activeSection = 'overview'; // 'overview' | 'liked' | 'saved' | 'purchased' | 'generated-prompts'
+let activeSection = 'overview'; // 'overview' | 'liked' | 'saved' | 'purchased' | 'generated-prompts' | 'generated-visuals'
 let generatedPromptsLoading = false;
+let generatedVisualsLoading = false;
 
 function getStorageUsage() {
   return { usedGB: 0, totalGB: 20, percent: 0 };
@@ -64,7 +65,7 @@ function renderSidebar() {
       <button class="profile-nav-item ${activeSection === 'liked' ? 'active' : ''}" data-section="liked">❤️ Beğenilen Promptlar</button>
       <button class="profile-nav-item" disabled title="Yakında aktif olacak">📤 Yüklenen Görseller</button>
       <button class="profile-nav-item ${activeSection === 'generated-prompts' ? 'active' : ''}" data-section="generated-prompts">📝 Oluşturulan Promptlar</button>
-      <button class="profile-nav-item" disabled title="Yakında aktif olacak">🖼️ Oluşturulan Görseller</button>
+      <button class="profile-nav-item ${activeSection === 'generated-visuals' ? 'active' : ''}" data-section="generated-visuals">🖼️ Oluşturulan Görseller</button>
       <button class="profile-nav-item" disabled title="Yakında aktif olacak">🧬 Karakter Sheet'leri</button>
       <button class="profile-nav-item" disabled title="Yakında aktif olacak">📱 Sosyal Medya İçerikleri</button>
     </nav>
@@ -250,7 +251,8 @@ function ensureCollectionPanel() {
 const sectionTitle = {
   liked: 'Beğenilen Promptlar',
   saved: 'Kaydedilen Promptlar',
-  purchased: 'Satın Alınan Promptlar'
+  purchased: 'Satın Alınan Promptlar',
+  'generated-visuals': 'Oluşturulan Görseller'
 };
 
 function renderCollectionPanel(section) {
@@ -368,6 +370,86 @@ async function renderGeneratedPromptsPanel() {
   });
 }
 
+// ---- Oluşturulan Görseller paneli ----
+
+async function fetchGeneratedVisuals() {
+  if (!GENERATED_VISUALS_URL || GENERATED_VISUALS_URL.includes('YOUR-N8N-URL')) {
+    return { error: 'Servis henüz bağlanmadı.' };
+  }
+  try {
+    const res = await fetch(GENERATED_VISUALS_URL, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({})
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+    return { rows: Array.isArray(data.rows) ? data.rows : [] };
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+function tileHintForVisualRow(row) {
+  return row.provider || row.aspect_ratio || 'Görsel';
+}
+
+async function renderGeneratedVisualsPanel() {
+  const panel = ensureCollectionPanel();
+  if (!panel) return;
+
+  if (generatedVisualsLoading) return;
+  generatedVisualsLoading = true;
+
+  panel.innerHTML = `
+    <div class="profile-collection-header">
+      <h2>Oluşturulan Görseller</h2>
+      <span class="profile-collection-count">…</span>
+    </div>
+    <div class="profile-empty-note">Yükleniyor...</div>
+  `;
+
+  const { rows, error } = await fetchGeneratedVisuals();
+  generatedVisualsLoading = false;
+
+  if (activeSection !== 'generated-visuals') return;
+
+  if (error) {
+    panel.innerHTML = `
+      <div class="profile-collection-header">
+        <h2>Oluşturulan Görseller</h2>
+        <span class="profile-collection-count">0 öğe</span>
+      </div>
+      <div class="profile-empty-note">Yüklenemedi: ${escapeHtml(error)}</div>
+    `;
+    return;
+  }
+
+  const gridHtml = rows.length
+    ? `<div class="profile-collection-grid">
+        ${rows.map((r, i) => `
+          <div class="profile-collection-tile" data-row-id="${i}" data-row-source="generated-visual" title="Prompt metnini kopyalamak için tıkla">
+            <img src="${escapeAttr(r.image_url || '')}" alt="" loading="lazy">
+            <div class="profile-collection-tile-hint">${escapeHtml(tileHintForVisualRow(r))}</div>
+          </div>`).join('')}
+      </div>`
+    : `<div class="profile-empty-note">Henüz görsel üretmedin. "Görsel Oluşturucu" sekmesinden başlayabilirsin.</div>`;
+
+  panel.innerHTML = `
+    <div class="profile-collection-header">
+      <h2>Oluşturulan Görseller</h2>
+      <span class="profile-collection-count">${rows.length} öğe</span>
+    </div>
+    ${gridHtml}
+  `;
+
+  panel.querySelectorAll('[data-row-source="generated-visual"]').forEach((tile) => {
+    const row = rows[Number(tile.dataset.rowId)];
+    if (!row) return;
+    tile.addEventListener('click', () => copyGeneratedPromptText(tile, row.prompt_text));
+  });
+}
+
 // ---- Sayfa görünürlük / yönlendirme ----
 
 function setMainVisibility(showOverview) {
@@ -393,6 +475,9 @@ function renderProfilePage() {
   } else if (activeSection === 'generated-prompts') {
     setMainVisibility(false);
     renderGeneratedPromptsPanel();
+  } else if (activeSection === 'generated-visuals') {
+    setMainVisibility(false);
+    renderGeneratedVisualsPanel();
   } else {
     setMainVisibility(false);
     renderCollectionPanel(activeSection);

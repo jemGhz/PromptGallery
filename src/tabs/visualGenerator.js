@@ -1,7 +1,7 @@
 // src/tabs/visualGenerator.js
 import { AI_MODELS, CAMERA_OPTIONS, EFFECT_OPTIONS, POSE_OPTIONS, STYLE_OPTIONS, GEN_GENERATE_URL } from '../config.js';
 import { escapeAttr, escapeHtml, unwrap, getDeviceId, resizeImageToBase64 } from '../utils.js';
-import { isLoggedIn, onBalanceChange, setLocalCreditBalance } from '../auth.js';
+import { isLoggedIn, onBalanceChange, setLocalCreditBalance, authHeaders } from '../auth.js';
 import { openCreditModal } from '../credits.js';
 import { createChipGroup, bindAccordions, updateAccCount } from '../chipGroups.js';
 import { appState } from '../state.js';
@@ -278,7 +278,7 @@ async function generateVisual() {
       prompt,
       size: genSelectedSize,
       count: genSelectedCount,
-      model: AI_MODELS[genSelectedModelIdx].name,
+      model: AI_MODELS[genSelectedModelIdx].key,
       creditCostPerImage: AI_MODELS[genSelectedModelIdx].creditCost,
       creditCost: cost,
       camera: [...cameraGroup.selected],
@@ -290,7 +290,7 @@ async function generateVisual() {
     };
     const res = await fetch(GEN_GENERATE_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify(payload)
     });
     const raw = await res.json();

@@ -34,6 +34,7 @@ export const CREDIT_VERIFY_CODE_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/w
 export const TOGGLE_INTERACTION_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/toggle-interaction';
 export const USER_INTERACTIONS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/user-interactions';
 export const GENERATED_PROMPTS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/generated-prompts-list';
+export const GENERATED_VISUALS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/generated-visuals-list';
 export const NOTIFICATIONS_URL =     'https://jg-n8n-server.tail1c97b1.ts.net/webhook/user-notifications';
 export const MARK_NOTIFICATION_READ_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/mark-notification-read';
 export const PURCHASE_HISTORY_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/purchase-history';
@@ -52,11 +53,9 @@ export const CREDIT_PACKAGES = [
 ];
 
 export const AI_MODELS = [
-  { name: 'DALL·E 3', icon: '🎨', badge: 'New', desc: 'Daha yüksek kalite ve detay için en iyi seçim.', creditCost: 3 },
-  { name: 'Midjourney v6', icon: '🌙', badge: '', desc: 'Sanatsal ve atmosferik sonuçlar için güçlü seçim.', creditCost: 3 },
-  { name: 'Stable Diffusion XL', icon: '🧬', badge: '', desc: 'Hızlı ve esnek, özelleştirmeye açık bir model.', creditCost: 1 },
-  { name: 'Flux Pro', icon: '⚡', badge: '', desc: 'Fotogerçekçi sonuçlar ve gelişmiş prompt takibi.', creditCost: 2 },
-  { name: 'Ideogram', icon: '🔤', badge: '', desc: 'Görsele metin/yazı eklemek için en iyi seçim.', creditCost: 2 }
+  { key: 'gemini_free', name: 'Gemini (Ücretsiz Katman)', icon: '✨', badge: 'Ekonomik', desc: 'Hızlı ve ekonomik üretim.', creditCost: 1 },
+  { key: 'gemini_paid', name: 'Gemini (Ücretli Katman)', icon: '✨', badge: 'Pro', desc: 'Daha yüksek limit ve öncelikli işleme.', creditCost: 2 },
+  { key: 'free_draft', name: 'Hızlı Taslak (Ücretsiz)', icon: '🎨', badge: 'Ücretsiz', desc: 'Watermark\'lı, düşük maliyetli taslak model.', creditCost: 0 }
 ];
 
 export const AVATAR_PROVIDERS = [
