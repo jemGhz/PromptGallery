@@ -211,9 +211,15 @@ function renderCharList() {
 function showGenLoadingTiles(n) {
   $('genEmptyState').style.display = 'none';
   const grid = $('genResultsGrid');
-  grid.style.display = 'grid';
+  grid.style.display = '';
+  grid.classList.toggle('single', n === 1);
   grid.innerHTML = Array.from({ length: n })
-    .map(() => `<div class="gen-tile loading">Oluşturuluyor...</div>`)
+    .map(
+      () => `<div class="gen-tile loading">
+      <div class="gen-loading-text">Oluşturuluyor...</div>
+      <div class="gen-progress-bar"><div class="gen-progress-bar-fill"></div></div>
+    </div>`
+    )
     .join('');
   $('genResultCount').textContent = n;
 }
@@ -239,6 +245,8 @@ function renderGenResults(images) {
   }
   const aspectRatio = GEN_ASPECT_RATIOS[genSelectedSize] || '1/1';
   const grid = $('genResultsGrid');
+  grid.style.display = '';
+  grid.classList.toggle('single', images.length === 1);
   grid.innerHTML = images
     .map(
       (url, i) => `
@@ -426,6 +434,8 @@ export function initVisualGenerator() {
 
   $('addCharBtn').addEventListener('click', addCharacterRow);
   $('genSubmitBtn').addEventListener('click', generateVisual);
+
+  document.getElementById('genUpgradeBtn')?.addEventListener('click', openCreditModal);
 
   onBalanceChange(updateGenQuotaNote);
   updateGenQuotaNote();
