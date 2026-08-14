@@ -91,7 +91,36 @@ export const EFFECT_OPTION_IMAGES = {
   'Yüksek kontrast': '/thumbnails/effects/yuksek-kontrast.webp'
 };
 export const POSE_OPTIONS = ['Ayakta duruş','Yürüyüş','Oturma','Aksiyon / hareket','Doğal & rahat','Editorial poz','Yakın yüz ifadesi','Sırtı dönük'];
+export const POSE_OPTION_IMAGES = {
+  'Ayakta duruş': '/thumbnails/poses/ayakta-durus.webp',
+  'Yürüyüş': '/thumbnails/poses/yuruyus.webp',
+  'Oturma': '/thumbnails/poses/oturma.webp',
+  'Aksiyon / hareket': '/thumbnails/poses/aksiyon-hareket.webp',
+  'Doğal & rahat': '/thumbnails/poses/dogal-rahat.webp',
+  'Editorial poz': '/thumbnails/poses/editorial-poz.webp',
+  'Yakın yüz ifadesi': '/thumbnails/poses/yakin-yuz-ifadesi.webp',
+  'Sırtı dönük': '/thumbnails/poses/sirti-donuk.webp'
+};
 export const STYLE_OPTIONS = ['Sinematik','Portre','Thumbnail','Eskiz (Sketch)','Piksel Sanatı','Anime','3D Render','Suluboya','Yağlıboya','Minimalist','Vintage Film','Fantastik','Ürün Fotoğrafçılığı','Moda / Editorial','Siyah-Beyaz','Gerçekçi (Realistic)','Konsept Sanat'];
+export const STYLE_OPTION_IMAGES = {
+  'Sinematik': '/thumbnails/style/sinematik.webp',
+  'Portre': '/thumbnails/style/portre.webp',
+  'Thumbnail': '/thumbnails/style/thumbnail.webp',
+  'Eskiz (Sketch)': '/thumbnails/style/eskiz-sketch.webp',
+  'Piksel Sanatı': '/thumbnails/style/piksel-sanati.webp',
+  'Anime': '/thumbnails/style/anime.webp',
+  '3D Render': '/thumbnails/style/3d-render.webp',
+  'Suluboya': '/thumbnails/style/suluboya.webp',
+  'Yağlıboya': '/thumbnails/style/yagliboya.webp',
+  'Minimalist': '/thumbnails/style/minimalist.webp',
+  'Vintage Film': '/thumbnails/style/vintage-film.webp',
+  'Fantastik': '/thumbnails/style/fantastik.webp',
+  'Ürün Fotoğrafçılığı': '/thumbnails/style/urun-fotografciligi.webp',
+  'Moda / Editorial': '/thumbnails/style/moda-editorial.webp',
+  'Siyah-Beyaz': '/thumbnails/style/siyah-beyaz.webp',
+  'Gerçekçi (Realistic)': '/thumbnails/style/gercekci-realistic.webp',
+  'Konsept Sanat': '/thumbnails/style/konsept-sanat.webp'
+};
 
 export const FACE_DETAIL_OPTIONS = ['Belirgin çene hattı','Yüksek elmacık kemikleri','Dolgun dudaklar','İnce burun','Yoğun kaşlar','Simetrik yüz','Çil','Gamze','Küçük burun','Badem gözler'];
 export const AVATAR_STYLE_OPTIONS = ['Minimal / Modern','Sokak Stili','Klasik / Şık','Spor','Vintage','Lüks','Bohem','İş / Ofis','Gotik','Casual'];

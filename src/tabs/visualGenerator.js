@@ -1,5 +1,5 @@
 // src/tabs/visualGenerator.js
-import { AI_MODELS, CAMERA_OPTIONS, CAMERA_OPTION_IMAGES, EFFECT_OPTIONS, EFFECT_OPTION_IMAGES, POSE_OPTIONS, STYLE_OPTIONS, GEN_GENERATE_URL } from '../config.js';
+import { AI_MODELS, CAMERA_OPTIONS, CAMERA_OPTION_IMAGES, EFFECT_OPTIONS, EFFECT_OPTION_IMAGES, POSE_OPTIONS, POSE_OPTION_IMAGES, STYLE_OPTIONS, STYLE_OPTION_IMAGES, GEN_GENERATE_URL } from '../config.js';
 import { escapeAttr, escapeHtml, unwrap, getDeviceId, resizeImageToBase64 } from '../utils.js';
 import { isLoggedIn, onBalanceChange, setLocalCreditBalance, authHeaders } from '../auth.js';
 import { openCreditModal } from '../credits.js';
@@ -390,8 +390,8 @@ async function generateVisual() {
 export function initVisualGenerator() {
   cameraGroup = createChipGroup($('cameraChips'), CAMERA_OPTIONS, (s) => updateAccCount($('cameraAccCount'), s.size), CAMERA_OPTION_IMAGES);
   effectsGroup = createChipGroup($('effectsChips'), EFFECT_OPTIONS, (s) => updateAccCount($('effectsAccCount'), s.size), EFFECT_OPTION_IMAGES);
-  posesGroup = createChipGroup($('posesChips'), POSE_OPTIONS, (s) => updateAccCount($('posesAccCount'), s.size));
-  styleGroup = createChipGroup($('styleChips'), STYLE_OPTIONS, (s) => updateAccCount($('styleAccCount'), s.size));
+  posesGroup = createChipGroup($('posesChips'), POSE_OPTIONS, (s) => updateAccCount($('posesAccCount'), s.size), POSE_OPTION_IMAGES);
+  styleGroup = createChipGroup($('styleChips'), STYLE_OPTIONS, (s) => updateAccCount($('styleAccCount'), s.size), STYLE_OPTION_IMAGES);
   bindAccordions(document.getElementById('visualView'));
 
   renderModelMenu();
