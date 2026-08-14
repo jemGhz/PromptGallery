@@ -1,5 +1,5 @@
 // src/tabs/visualGenerator.js
-import { AI_MODELS, CAMERA_OPTIONS, EFFECT_OPTIONS, POSE_OPTIONS, STYLE_OPTIONS, GEN_GENERATE_URL } from '../config.js';
+import { AI_MODELS, CAMERA_OPTIONS, CAMERA_OPTION_IMAGES, EFFECT_OPTIONS, EFFECT_OPTION_IMAGES, POSE_OPTIONS, STYLE_OPTIONS, GEN_GENERATE_URL } from '../config.js';
 import { escapeAttr, escapeHtml, unwrap, getDeviceId, resizeImageToBase64 } from '../utils.js';
 import { isLoggedIn, onBalanceChange, setLocalCreditBalance, authHeaders } from '../auth.js';
 import { openCreditModal } from '../credits.js';
@@ -59,6 +59,20 @@ function renderModelMenu() {
   });
   selectModel(genSelectedModelIdx, true);
 }
+function applyGenCountRestriction(isFreeDraft) {
+  const counts = [1, 2, 4, 8];
+  const buttons = document.querySelectorAll('#genCountRow .count-btn');
+  buttons.forEach((btn, idx) => {
+    const locked = isFreeDraft && counts[idx] !== 1;
+    btn.disabled = locked;
+    btn.style.opacity = locked ? '.4' : '';
+    btn.style.pointerEvents = locked ? 'none' : '';
+  });
+  if (isFreeDraft && genSelectedCount !== 1) {
+    setGenCount(1, buttons[0]);
+  }
+}
+
 function selectModel(i, silent) {
   genSelectedModelIdx = i;
   const m = AI_MODELS[i];
@@ -68,6 +82,7 @@ function selectModel(i, silent) {
   const badgeEl = $('genModelBadge');
   badgeEl.style.display = m.badge ? 'inline-block' : 'none';
   if (!silent) $('genModelMenu').classList.remove('open');
+  applyGenCountRestriction(m.key === 'free_draft');
   updateGenQuotaNote();
 }
 
@@ -209,23 +224,38 @@ function showGenEmptyState() {
   grid.innerHTML = '';
   $('genResultCount').textContent = '0';
 }
+const GEN_ASPECT_RATIOS = {
+  '1:1': '1/1',
+  '3:4': '3/4',
+  '4:3': '4/3',
+  '9:16': '9/16',
+  '16:9': '16/9'
+};
+
 function renderGenResults(images) {
   if (!images || !images.length) {
     showGenEmptyState();
     return;
   }
+  const aspectRatio = GEN_ASPECT_RATIOS[genSelectedSize] || '1/1';
   const grid = $('genResultsGrid');
   grid.innerHTML = images
     .map(
       (url, i) => `
-    <div class="gen-tile">
+    <div class="gen-tile" style="aspect-ratio:${aspectRatio}" data-lightbox-url="${escapeAttr(url)}">
       <img src="${escapeAttr(url)}" alt="oluşturulan görsel ${i + 1}" loading="lazy">
+      <div class="gen-tile-hover-overlay">
+        <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4M15 3h4a2 2 0 0 1 2 2v4M9 21H5a2 2 0 0 1-2-2v-4M15 21h4a2 2 0 0 0 2-2v-4"/></svg>
+      </div>
       <div class="gen-tile-actions">
         <button class="icon-btn" data-download-url="${escapeAttr(url)}" data-download-idx="${i}" title="İndir">⬇</button>
       </div>
     </div>`
     )
     .join('');
+  grid.querySelectorAll('[data-lightbox-url]').forEach((tile) => {
+    tile.addEventListener('click', () => openLightbox(tile.dataset.lightboxUrl));
+  });
   grid.querySelectorAll('[data-download-url]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -233,6 +263,48 @@ function renderGenResults(images) {
     });
   });
   $('genResultCount').textContent = images.length;
+}
+
+let lightboxReady = false;
+function ensureLightbox() {
+  if (lightboxReady) return;
+  lightboxReady = true;
+
+  const backdrop = document.createElement('div');
+  backdrop.id = 'genLightboxBackdrop';
+  backdrop.className = 'gen-lightbox-backdrop';
+
+  const img = document.createElement('img');
+  img.id = 'genLightboxImg';
+  img.className = 'gen-lightbox-img';
+  img.alt = 'oluşturulan görsel';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'gen-lightbox-close';
+  closeBtn.title = 'Kapat';
+  closeBtn.textContent = '✕';
+  closeBtn.addEventListener('click', closeLightbox);
+
+  backdrop.appendChild(img);
+  backdrop.appendChild(closeBtn);
+  document.body.appendChild(backdrop);
+
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) closeLightbox();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLightbox();
+  });
+}
+function openLightbox(url) {
+  ensureLightbox();
+  $('genLightboxImg').src = url;
+  $('genLightboxBackdrop').classList.add('open');
+}
+function closeLightbox() {
+  const backdrop = $('genLightboxBackdrop');
+  if (backdrop) backdrop.classList.remove('open');
 }
 function downloadGenImage(url, idx) {
   const a = document.createElement('a');
@@ -300,7 +372,7 @@ async function generateVisual() {
       $('genQuotaNote').textContent = data.message || 'Kredi bakiyeniz bu işlem için yetersiz.';
       showGenEmptyState();
       if (typeof data.newBalance === 'number') setLocalCreditBalance(data.newBalance);
-      openCreditModal();
+      if (data.reason === 'insufficient_credit') openCreditModal();
       return;
     }
 
@@ -316,8 +388,8 @@ async function generateVisual() {
 }
 
 export function initVisualGenerator() {
-  cameraGroup = createChipGroup($('cameraChips'), CAMERA_OPTIONS, (s) => updateAccCount($('cameraAccCount'), s.size));
-  effectsGroup = createChipGroup($('effectsChips'), EFFECT_OPTIONS, (s) => updateAccCount($('effectsAccCount'), s.size));
+  cameraGroup = createChipGroup($('cameraChips'), CAMERA_OPTIONS, (s) => updateAccCount($('cameraAccCount'), s.size), CAMERA_OPTION_IMAGES);
+  effectsGroup = createChipGroup($('effectsChips'), EFFECT_OPTIONS, (s) => updateAccCount($('effectsAccCount'), s.size), EFFECT_OPTION_IMAGES);
   posesGroup = createChipGroup($('posesChips'), POSE_OPTIONS, (s) => updateAccCount($('posesAccCount'), s.size));
   styleGroup = createChipGroup($('styleChips'), STYLE_OPTIONS, (s) => updateAccCount($('styleAccCount'), s.size));
   bindAccordions(document.getElementById('visualView'));
@@ -325,6 +397,7 @@ export function initVisualGenerator() {
   renderModelMenu();
   renderCharList();
   updateGenSubmitState();
+  ensureLightbox();
 
   $('genPromptInput').addEventListener('input', onGenPromptInput);
   document.querySelector('#visualView .chip-btn-row').children[0].addEventListener('click', suggestGenPrompt);

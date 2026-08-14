@@ -16,15 +16,23 @@ import { escapeAttr, escapeHtml } from './utils.js';
  * @param {HTMLElement} container - chip'lerin render edileceği element
  * @param {string[]} options - seçenek listesi
  * @param {(selected: Set<string>) => void} [onChange] - her değişiklikte çağrılır
+ * @param {Record<string,string>} [images] - verilirse chip'ler görsel önizlemeli olarak render edilir
  */
-export function createChipGroup(container, options, onChange) {
+export function createChipGroup(container, options, onChange, images) {
   const selected = new Set();
+
+  if (images) container.classList.add('chip-img-grid');
 
   function render() {
     container.innerHTML = options
-      .map(
-        (opt) =>
-          `<button type="button" class="chip ${selected.has(opt) ? 'active' : ''}" data-opt="${escapeAttr(opt)}">${escapeHtml(opt)}</button>`
+      .map((opt) =>
+        images
+          ? `<button type="button" class="chip-img ${selected.has(opt) ? 'active' : ''}" data-opt="${escapeAttr(opt)}">
+              <img src="${escapeAttr(images[opt] || '')}" alt="">
+              <span class="chip-img-check">✓</span>
+              <span class="chip-img-label">${escapeHtml(opt)}</span>
+            </button>`
+          : `<button type="button" class="chip ${selected.has(opt) ? 'active' : ''}" data-opt="${escapeAttr(opt)}">${escapeHtml(opt)}</button>`
       )
       .join('');
   }

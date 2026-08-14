@@ -67,7 +67,29 @@ export const AVATAR_PROVIDERS = [
 ];
 
 export const CAMERA_OPTIONS = ['Ön çekim','Yakın plan','Kuş bakışı','Alçak açı','Yandan (profil)','Geniş açı','Makro','Drone çekimi'];
+export const CAMERA_OPTION_IMAGES = {
+  'Ön çekim': '/thumbnails/camera/on-cekim.webp',
+  'Yakın plan': '/thumbnails/camera/yakin-plan.webp',
+  'Kuş bakışı': '/thumbnails/camera/kus-bakisi.webp',
+  'Alçak açı': '/thumbnails/camera/alcak-aci.webp',
+  'Yandan (profil)': '/thumbnails/camera/yandan-profil.webp',
+  'Geniş açı': '/thumbnails/camera/genis-aci.webp',
+  'Makro': '/thumbnails/camera/makro.webp',
+  'Drone çekimi': '/thumbnails/camera/drone-cekimi.webp'
+};
 export const EFFECT_OPTIONS = ['Sinematik ışık','Bokeh','Duman / Sis','Neon parıltı','Film grain','Lens flare','Çift pozlama','Uzun pozlama','Yumuşak gölgeler','Yüksek kontrast'];
+export const EFFECT_OPTION_IMAGES = {
+  'Sinematik ışık': '/thumbnails/effects/sinematik-isik.webp',
+  'Bokeh': '/thumbnails/effects/bokeh.webp',
+  'Duman / Sis': '/thumbnails/effects/duman-sis.webp',
+  'Neon parıltı': '/thumbnails/effects/neon-parilti.webp',
+  'Film grain': '/thumbnails/effects/film-grain.webp',
+  'Lens flare': '/thumbnails/effects/lens-flare.webp',
+  'Çift pozlama': '/thumbnails/effects/cift-pozlama.webp',
+  'Uzun pozlama': '/thumbnails/effects/uzun-pozlama.webp',
+  'Yumuşak gölgeler': '/thumbnails/effects/yumusak-golgeler.webp',
+  'Yüksek kontrast': '/thumbnails/effects/yuksek-kontrast.webp'
+};
 export const POSE_OPTIONS = ['Ayakta duruş','Yürüyüş','Oturma','Aksiyon / hareket','Doğal & rahat','Editorial poz','Yakın yüz ifadesi','Sırtı dönük'];
 export const STYLE_OPTIONS = ['Sinematik','Portre','Thumbnail','Eskiz (Sketch)','Piksel Sanatı','Anime','3D Render','Suluboya','Yağlıboya','Minimalist','Vintage Film','Fantastik','Ürün Fotoğrafçılığı','Moda / Editorial','Siyah-Beyaz','Gerçekçi (Realistic)','Konsept Sanat'];
 
