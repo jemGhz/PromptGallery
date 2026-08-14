@@ -123,9 +123,57 @@ export const STYLE_OPTION_IMAGES = {
 };
 
 export const FACE_DETAIL_OPTIONS = ['Belirgin çene hattı','Yüksek elmacık kemikleri','Dolgun dudaklar','İnce burun','Yoğun kaşlar','Simetrik yüz','Çil','Gamze','Küçük burun','Badem gözler'];
+export const FACE_DETAIL_OPTION_IMAGES = {
+  'Belirgin çene hattı': '/thumbnails/face/belirgin-cene-hatti.webp',
+  'Yüksek elmacık kemikleri': '/thumbnails/face/yuksek-elmacik-kemikleri.webp',
+  'Dolgun dudaklar': '/thumbnails/face/dolgun-dudaklar.webp',
+  'İnce burun': '/thumbnails/face/ince-burun.webp',
+  'Yoğun kaşlar': '/thumbnails/face/yogun-kaslar.webp',
+  'Simetrik yüz': '/thumbnails/face/simetrik-yuz.webp',
+  'Çil': '/thumbnails/face/cil.webp',
+  'Gamze': '/thumbnails/face/gamze.webp',
+  'Küçük burun': '/thumbnails/face/kucuk-burun.webp',
+  'Badem gözler': '/thumbnails/face/badem-gozler.webp'
+};
 export const AVATAR_STYLE_OPTIONS = ['Minimal / Modern','Sokak Stili','Klasik / Şık','Spor','Vintage','Lüks','Bohem','İş / Ofis','Gotik','Casual'];
+export const AVATAR_STYLE_OPTION_IMAGES = {
+  'Minimal / Modern': '/thumbnails/avatar-style/minimal-modern.webp',
+  'Sokak Stili': '/thumbnails/avatar-style/sokak-stili.webp',
+  'Klasik / Şık': '/thumbnails/avatar-style/klasik-sik.webp',
+  'Spor': '/thumbnails/avatar-style/spor.webp',
+  'Vintage': '/thumbnails/avatar-style/vintage.webp',
+  'Lüks': '/thumbnails/avatar-style/luks.webp',
+  'Bohem': '/thumbnails/avatar-style/bohem.webp',
+  'İş / Ofis': '/thumbnails/avatar-style/is-ofis.webp',
+  'Gotik': '/thumbnails/avatar-style/gotik.webp',
+  'Casual': '/thumbnails/avatar-style/casual.webp'
+};
 export const PERSONALITY_OPTIONS = ['Özgüvenli','Zeki','Bağımsız','Sıcakkanlı','Gizemli','Enerjik','Sakin','Maceraperest','Alaycı','Duygusal'];
+export const PERSONALITY_OPTION_IMAGES = {
+  'Özgüvenli': '/thumbnails/personality/ozguvenli.webp',
+  'Zeki': '/thumbnails/personality/zeki.webp',
+  'Bağımsız': '/thumbnails/personality/bagimsiz.webp',
+  'Sıcakkanlı': '/thumbnails/personality/sicakkanli.webp',
+  'Gizemli': '/thumbnails/personality/gizemli.webp',
+  'Enerjik': '/thumbnails/personality/enerjik.webp',
+  'Sakin': '/thumbnails/personality/sakin.webp',
+  'Maceraperest': '/thumbnails/personality/maceraperest.webp',
+  'Alaycı': '/thumbnails/personality/alayci.webp',
+  'Duygusal': '/thumbnails/personality/duygusal.webp'
+};
 export const OTHER_DETAIL_OPTIONS = ['Fotoğrafçı','Model','Sanatçı','Girişimci','Sporcu','Öğrenci','Yazar','Mühendis','Müzisyen','Aktör/Aktris'];
+export const OTHER_DETAIL_OPTION_IMAGES = {
+  'Fotoğrafçı': '/thumbnails/other-detail/fotografci.webp',
+  'Model': '/thumbnails/other-detail/model.webp',
+  'Sanatçı': '/thumbnails/other-detail/sanatci.webp',
+  'Girişimci': '/thumbnails/other-detail/girisimci.webp',
+  'Sporcu': '/thumbnails/other-detail/sporcu.webp',
+  'Öğrenci': '/thumbnails/other-detail/ogrenci.webp',
+  'Yazar': '/thumbnails/other-detail/yazar.webp',
+  'Mühendis': '/thumbnails/other-detail/muhendis.webp',
+  'Müzisyen': '/thumbnails/other-detail/muzisyen.webp',
+  'Aktör/Aktris': '/thumbnails/other-detail/aktor-aktris.webp'
+};
 export const SKIN_TONES = ['#F5D5B8','#E8B88C','#D39C6E','#B57A4A','#8B5A2B','#5C3A1E'];
 
 // Sheet 13 panelden oluşuyor: 1 portre + 5 görünüm + 4 yüz detayı + 3 saç detayı.

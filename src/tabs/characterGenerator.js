@@ -1,9 +1,13 @@
 // src/tabs/characterGenerator.js
 import {
   FACE_DETAIL_OPTIONS,
+  FACE_DETAIL_OPTION_IMAGES,
   AVATAR_STYLE_OPTIONS,
+  AVATAR_STYLE_OPTION_IMAGES,
   PERSONALITY_OPTIONS,
+  PERSONALITY_OPTION_IMAGES,
   OTHER_DETAIL_OPTIONS,
+  OTHER_DETAIL_OPTION_IMAGES,
   SKIN_TONES,
   AVATAR_PROVIDERS,
   CHARACTER_SHEET_PANEL_COUNT,
@@ -301,10 +305,10 @@ export function initCharacterGenerator() {
     btn.addEventListener('click', () => setAvatarGender(btn.dataset.gender, btn));
   });
 
-  faceGroup = createChipGroup($('faceChips'), FACE_DETAIL_OPTIONS, (s) => updateAccCount($('faceAccCount'), s.size));
-  avstyleGroup = createChipGroup($('avstyleChips'), AVATAR_STYLE_OPTIONS, (s) => updateAccCount($('avstyleAccCount'), s.size));
-  personalityGroup = createChipGroup($('personalityChips'), PERSONALITY_OPTIONS, (s) => updateAccCount($('personalityAccCount'), s.size));
-  otherdetailGroup = createChipGroup($('otherdetailChips'), OTHER_DETAIL_OPTIONS, () => {});
+  faceGroup = createChipGroup($('faceChips'), FACE_DETAIL_OPTIONS, (s) => updateAccCount($('faceAccCount'), s.size), FACE_DETAIL_OPTION_IMAGES);
+  avstyleGroup = createChipGroup($('avstyleChips'), AVATAR_STYLE_OPTIONS, (s) => updateAccCount($('avstyleAccCount'), s.size), AVATAR_STYLE_OPTION_IMAGES);
+  personalityGroup = createChipGroup($('personalityChips'), PERSONALITY_OPTIONS, (s) => updateAccCount($('personalityAccCount'), s.size), PERSONALITY_OPTION_IMAGES);
+  otherdetailGroup = createChipGroup($('otherdetailChips'), OTHER_DETAIL_OPTIONS, () => {}, OTHER_DETAIL_OPTION_IMAGES);
   bindAccordions(document.getElementById('avatarView'));
 
   renderAvatarProviderMenu();
