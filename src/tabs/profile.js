@@ -5,17 +5,27 @@ import { isLoggedIn, logout, onBalanceChange, getInitial, authHeaders } from '..
 import { switchTab } from '../tabState.js';
 import { getGalleryRows, getUserInteractionSets, openModalForRow } from './gallery.js';
 import { openLightbox } from '../visualDetail.js';
-import { GENERATED_PROMPTS_URL, GENERATED_VISUALS_URL } from '../config.js';
+import { GENERATED_PROMPTS_URL, GENERATED_VISUALS_URL, CHARACTERS_LIST_URL } from '../config.js';
 import { onProfileSectionRequest } from '../tabState.js';
 import { openSettingsModal } from '../settingsModal.js';
 
-let activeSection = 'overview'; // 'overview' | 'liked' | 'saved' | 'purchased' | 'generated-prompts' | 'generated-visuals'
+let activeSection = 'overview'; // 'overview' | 'liked' | 'saved' | 'purchased' | 'generated-prompts' | 'generated-visuals' | 'characters'
 let generatedPromptsLoading = false;
 let generatedVisualsLoading = false;
+let charactersLoading = false;
 
-function getStorageUsage() {
-  return { usedGB: 0, totalGB: 20, percent: 0 };
-}
+const NAV_ICONS = {
+  home: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+  shoppingBag: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+  bookmark: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
+  heart: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+  upload: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+  fileText: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>',
+  images: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/></svg>',
+  users: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  share: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>'
+};
+
 function getMostUsedTools() {
   return [];
 }
@@ -60,27 +70,17 @@ function renderSidebar() {
     </div>
 
     <nav class="profile-nav">
-      <button class="profile-nav-item ${activeSection === 'overview' ? 'active' : ''}" data-section="overview">🏠 Overview</button>
-      <button class="profile-nav-item ${activeSection === 'purchased' ? 'active' : ''}" data-section="purchased">💳 Satın Alınan Promptlar</button>
-      <button class="profile-nav-item ${activeSection === 'saved' ? 'active' : ''}" data-section="saved">🔖 Kaydedilen Promptlar</button>
-      <button class="profile-nav-item ${activeSection === 'liked' ? 'active' : ''}" data-section="liked">❤️ Beğenilen Promptlar</button>
-      <button class="profile-nav-item" disabled title="Yakında aktif olacak">📤 Yüklenen Görseller</button>
-      <button class="profile-nav-item ${activeSection === 'generated-prompts' ? 'active' : ''}" data-section="generated-prompts">📝 Oluşturulan Promptlar</button>
-      <button class="profile-nav-item ${activeSection === 'generated-visuals' ? 'active' : ''}" data-section="generated-visuals">🖼️ Oluşturulan Görseller</button>
-      <button class="profile-nav-item" disabled title="Yakında aktif olacak">🧬 Karakter Sheet'leri</button>
-      <button class="profile-nav-item" disabled title="Yakında aktif olacak">📱 Sosyal Medya İçerikleri</button>
+      <button class="profile-nav-item ${activeSection === 'overview' ? 'active' : ''}" data-section="overview">${NAV_ICONS.home}<span>Overview</span></button>
+      <button class="profile-nav-item ${activeSection === 'purchased' ? 'active' : ''}" data-section="purchased">${NAV_ICONS.shoppingBag}<span>Satın Alınan Promptlar</span></button>
+      <button class="profile-nav-item ${activeSection === 'saved' ? 'active' : ''}" data-section="saved">${NAV_ICONS.bookmark}<span>Kaydedilen Promptlar</span></button>
+      <button class="profile-nav-item ${activeSection === 'liked' ? 'active' : ''}" data-section="liked">${NAV_ICONS.heart}<span>Beğenilen Promptlar</span></button>
+      <button class="profile-nav-item" disabled title="Yakında aktif olacak">${NAV_ICONS.upload}<span>Yüklenen Görseller</span></button>
+      <button class="profile-nav-item ${activeSection === 'generated-prompts' ? 'active' : ''}" data-section="generated-prompts">${NAV_ICONS.fileText}<span>Oluşturulan Promptlar</span></button>
+      <button class="profile-nav-item ${activeSection === 'generated-visuals' ? 'active' : ''}" data-section="generated-visuals">${NAV_ICONS.images}<span>Oluşturulan Görseller</span></button>
+      <button class="profile-nav-item ${activeSection === 'characters' ? 'active' : ''}" data-section="characters">${NAV_ICONS.users}<span>Karakter Sheet'leri</span></button>
+      <button class="profile-nav-item" disabled title="Yakında aktif olacak">${NAV_ICONS.share}<span>Sosyal Medya İçerikleri</span></button>
     </nav>
-
-
-    <div class="profile-storage">
-      <div class="profile-storage-row">
-        <span>Depolama Kullanımı</span>
-        <span id="profileStorageLabel"></span>
-      </div>
-      <div class="profile-storage-bar"><div class="profile-storage-fill" id="profileStorageFill"></div></div>
-    </div>
   `;
-
 
   el.querySelectorAll('[data-section]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -88,10 +88,6 @@ function renderSidebar() {
       renderProfilePage();
     });
   });
-
-  const storage = getStorageUsage();
-  document.getElementById('profileStorageLabel').textContent = `${storage.usedGB} / ${storage.totalGB} GB`;
-  document.getElementById('profileStorageFill').style.width = `${storage.percent}%`;
 }
 
 // ---- Ortak: satır + tip listesi üretme ----
@@ -459,6 +455,118 @@ async function renderGeneratedVisualsPanel() {
   });
 }
 
+// ---- Karakter Sheet'leri paneli ----
+
+async function fetchCharacters() {
+  if (!CHARACTERS_LIST_URL || CHARACTERS_LIST_URL.includes('YOUR-N8N-URL')) {
+    return { error: 'Servis henüz bağlanmadı.' };
+  }
+  try {
+    const res = await fetch(CHARACTERS_LIST_URL, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({})
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+    return { rows: Array.isArray(data.rows) ? data.rows : [] };
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+let characterModalReady = false;
+function ensureCharacterModal() {
+  if (characterModalReady) return;
+  characterModalReady = true;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'characterDetailBackdrop';
+  overlay.className = 'character-detail-backdrop';
+  overlay.innerHTML = `
+    <div class="character-detail-content">
+      <button type="button" class="character-detail-close" id="characterDetailClose" title="Kapat">✕</button>
+      <img id="characterDetailImg" class="character-detail-img" alt="karakter">
+      <div class="character-detail-name" id="characterDetailName"></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  overlay.querySelector('#characterDetailClose').addEventListener('click', closeCharacterModal);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeCharacterModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) closeCharacterModal();
+  });
+}
+function openCharacterModal(row) {
+  ensureCharacterModal();
+  document.getElementById('characterDetailImg').src = row.image_url || '';
+  document.getElementById('characterDetailName').textContent = row.name || 'Karakter';
+  document.getElementById('characterDetailBackdrop').classList.add('open');
+}
+function closeCharacterModal() {
+  const overlay = document.getElementById('characterDetailBackdrop');
+  if (overlay) overlay.classList.remove('open');
+}
+
+async function renderCharactersPanel() {
+  const panel = ensureCollectionPanel();
+  if (!panel) return;
+
+  if (charactersLoading) return;
+  charactersLoading = true;
+
+  panel.innerHTML = `
+    <div class="profile-collection-header">
+      <h2>Karakter Sheet'leri</h2>
+      <span class="profile-collection-count">…</span>
+    </div>
+    <div class="profile-empty-note">Yükleniyor...</div>
+  `;
+
+  const { rows, error } = await fetchCharacters();
+  charactersLoading = false;
+
+  if (activeSection !== 'characters') return;
+
+  if (error) {
+    panel.innerHTML = `
+      <div class="profile-collection-header">
+        <h2>Karakter Sheet'leri</h2>
+        <span class="profile-collection-count">0 öğe</span>
+      </div>
+      <div class="profile-empty-note">Yüklenemedi: ${escapeHtml(error)}</div>
+    `;
+    return;
+  }
+
+  const gridHtml = rows.length
+    ? `<div class="profile-collection-grid">
+        ${rows.map((r, i) => `
+          <div class="profile-collection-tile" data-row-id="${i}" data-row-source="character" title="Karakter detayı için tıkla">
+            <img src="${escapeAttr(r.image_url || '')}" alt="" loading="lazy">
+            <div class="profile-collection-tile-hint">${escapeHtml(r.name || 'Karakter')}</div>
+          </div>`).join('')}
+      </div>`
+    : `<div class="profile-empty-note">Henüz karakter oluşturmadın. "Karakter Oluşturucu" sekmesinden başlayabilirsin.</div>`;
+
+  panel.innerHTML = `
+    <div class="profile-collection-header">
+      <h2>Karakter Sheet'leri</h2>
+      <span class="profile-collection-count">${rows.length} öğe</span>
+    </div>
+    ${gridHtml}
+  `;
+
+  panel.querySelectorAll('[data-row-source="character"]').forEach((tile) => {
+    const row = rows[Number(tile.dataset.rowId)];
+    if (!row) return;
+    tile.addEventListener('click', () => openCharacterModal(row));
+  });
+}
+
 // ---- Sayfa görünürlük / yönlendirme ----
 
 function setMainVisibility(showOverview) {
@@ -487,6 +595,9 @@ function renderProfilePage() {
   } else if (activeSection === 'generated-visuals') {
     setMainVisibility(false);
     renderGeneratedVisualsPanel();
+  } else if (activeSection === 'characters') {
+    setMainVisibility(false);
+    renderCharactersPanel();
   } else {
     setMainVisibility(false);
     renderCollectionPanel(activeSection);

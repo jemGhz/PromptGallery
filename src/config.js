@@ -35,6 +35,7 @@ export const TOGGLE_INTERACTION_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/w
 export const USER_INTERACTIONS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/user-interactions';
 export const GENERATED_PROMPTS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/generated-prompts-list';
 export const GENERATED_VISUALS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/generated-visuals-list';
+export const CHARACTERS_LIST_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/characters-list';
 export const GENERATED_VISUAL_DELETE_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/generated-visual-delete';
 export const NOTIFICATIONS_URL =     'https://jg-n8n-server.tail1c97b1.ts.net/webhook/user-notifications';
 export const MARK_NOTIFICATION_READ_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/mark-notification-read';
@@ -55,18 +56,15 @@ export const CREDIT_PACKAGES = [
 
 export const AI_MODELS = [
   { key: 'gemini_paid', name: 'Gemini (Nano Banana)', icon: '✨', badge: 'Pro', desc: 'Daha yüksek limit ve öncelikli işleme.', creditCost: 2 },
-  { key: 'openai', name: 'OpenAI DALL·E 3 (Yakında)', icon: '🤖', badge: '', desc: 'OpenAI görsel üretim modeli; yüksek detay ve prompt takibi.', creditCost: 3, comingSoon: true },
+  { key: 'openai', name: 'OpenAI (GPT Image)', icon: '🤖', badge: '', desc: 'OpenAI görsel üretim modeli; yüksek detay ve prompt takibi.', creditCost: 3, comingSoon: false },
   { key: 'stability', name: 'Stability AI SDXL (Yakında)', icon: '🧬', badge: '', desc: 'Stable Diffusion tabanlı, esnek ve özelleştirmeye açık model.', creditCost: 2, comingSoon: true },
   { key: 'flux', name: 'Flux Pro (Yakında)', icon: '⚡', badge: '', desc: 'Fotogerçekçi sonuçlar ve gelişmiş prompt takibi.', creditCost: 4, comingSoon: true },
   { key: 'free_draft', name: 'Hızlı Taslak (Ücretsiz)', icon: '🎨', badge: 'Ücretsiz', desc: 'Watermark\'lı, düşük maliyetli taslak model.', creditCost: 0 }
 ];
 
 export const AVATAR_PROVIDERS = [
-  { key: 'gemini_free', name: 'Gemini (Ücretsiz Katman)', icon: '✨', badge: 'Ekonomik', desc: 'Google Gemini ücretsiz/düşük maliyetli katman; daha yavaş kuyruk olabilir.', creditCostPerImage: 1 },
   { key: 'gemini_paid', name: 'Gemini (Ücretli Katman)', icon: '✨', badge: 'Pro', desc: 'Google Gemini ücretli/Pro katman; daha yüksek limit ve öncelikli işleme.', creditCostPerImage: 2 },
-  { key: 'openai', name: 'OpenAI (GPT Image)', icon: '🤖', badge: '', desc: 'OpenAI görsel üretim modeli; yüksek detay ve prompt takibi.', creditCostPerImage: 3 },
-  { key: 'stability', name: 'Stability AI (SDXL)', icon: '🧬', badge: '', desc: 'Stable Diffusion tabanlı, esnek ve özelleştirmeye açık model.', creditCostPerImage: 1 },
-  { key: 'flux', name: 'Flux Pro', icon: '⚡', badge: '', desc: 'Fotogerçekçi sonuçlar ve gelişmiş prompt takibi.', creditCostPerImage: 2 }
+  { key: 'openai', name: 'OpenAI (GPT Image)', icon: '🤖', badge: '', desc: 'OpenAI görsel üretim modeli; yüksek detay ve prompt takibi.', creditCostPerImage: 3 }
 ];
 
 export const CAMERA_OPTIONS = ['Ön çekim','Yakın plan','Kuş bakışı','Alçak açı','Yandan (profil)','Geniş açı','Makro','Drone çekimi'];
@@ -179,9 +177,9 @@ export const OTHER_DETAIL_OPTION_IMAGES = {
 };
 export const SKIN_TONES = ['#F5D5B8','#E8B88C','#D39C6E','#B57A4A','#8B5A2B','#5C3A1E'];
 
-// Sheet 13 panelden oluşuyor: 1 portre + 5 görünüm + 4 yüz detayı + 3 saç detayı.
-// n8n workflow'undaki panel bölme mantığıyla birebir eşleşmeli.
-export const CHARACTER_SHEET_PANEL_COUNT = 13;
+// Artık tek API çağrısıyla 5 panelli tek bir karakter sheet görseli üretiliyor
+// (eskiden 13 ayrı çağrıydı). Bu değer artık sadece kredi maliyeti çarpanı.
+export const CHARACTER_SHEET_PANEL_COUNT = 1;
 export const PROMPT_MAKER_CREDIT_COST = 1;
 
 export const GOOGLE_CLIENT_ID = '1036033399902-89l44rn5e77mvg7h71ttb06v3ufgdthq.apps.googleusercontent.com';

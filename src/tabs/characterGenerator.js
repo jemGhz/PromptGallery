@@ -13,8 +13,8 @@ import {
   CHARACTER_SHEET_PANEL_COUNT,
   CHARACTER_GENERATE_URL
 } from '../config.js';
-import { escapeAttr, escapeHtml, unwrap, getDeviceId, resizeImageToBase64 } from '../utils.js';
-import { isLoggedIn, onBalanceChange, setLocalCreditBalance } from '../auth.js';
+import { escapeHtml, unwrap, getDeviceId, resizeImageToBase64 } from '../utils.js';
+import { isLoggedIn, onBalanceChange, setLocalCreditBalance, authHeaders } from '../auth.js';
 import { openCreditModal } from '../credits.js';
 import { createChipGroup, bindAccordions, updateAccCount } from '../chipGroups.js';
 import { appState } from '../state.js';
@@ -161,7 +161,7 @@ async function generateCharacter() {
   try {
     const res = await fetch(CHARACTER_GENERATE_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify(payload)
     });
     const raw = await res.json();
@@ -191,51 +191,14 @@ function renderCharacterSheet(sheet, inputPayload) {
   const result = $('avatarSheetResult');
   result.style.display = 'block';
 
-  $('sheetPortraitImg').src = sheet.portraitUrl || '';
-
-  const views = sheet.views || [];
-  $('sheetViewsGrid').innerHTML =
-    views
-      .map(
-        (v) => `
-    <div class="sheet-view-item">
-      <img src="${escapeAttr(v.url || '')}" alt="${escapeAttr(v.label || '')}">
-      <span>${escapeHtml(v.label || '')}</span>
-    </div>`
-      )
-      .join('') || '<div class="gen-block-hint">Görünümler henüz oluşturulmadı.</div>';
-
-  const faceDetails = sheet.faceDetails || [];
-  $('sheetFaceStrip').innerHTML =
-    faceDetails
-      .map(
-        (f) => `
-    <div class="sheet-strip-item">
-      <img src="${escapeAttr(f.url || '')}" alt="${escapeAttr(f.label || '')}">
-      <span>${escapeHtml(f.label || '')}</span>
-    </div>`
-      )
-      .join('') || '<div class="gen-block-hint">Yüz detayı yok.</div>';
-
-  const hairDetails = sheet.hairDetails || [];
-  $('sheetHairStrip').innerHTML =
-    hairDetails
-      .map(
-        (h) => `
-    <div class="sheet-strip-item">
-      <img src="${escapeAttr(h.url || '')}" alt="${escapeAttr(h.label || '')}">
-      <span>${escapeHtml(h.label || '')}</span>
-    </div>`
-      )
-      .join('') || '<div class="gen-block-hint">Saç detayı yok.</div>';
-
-  const palette = sheet.palette || [];
-  $('sheetPalette').innerHTML =
-    palette.map((hex) => `<span class="swatch-dot" style="background:${escapeAttr(hex)}" title="${escapeAttr(hex)}"></span>`).join('') ||
-    '<div class="gen-block-hint">Renk paleti yok.</div>';
+  $('sheetPortraitImg').src = sheet.image || '';
+  const sheetTitleEl = $('sheetTitle');
+  if (sheetTitleEl) {
+    sheetTitleEl.innerHTML = `${escapeHtml(sheet.name || inputPayload.name || 'Oluşturulan Karakter Sheet')} <span class="new-badge">Yeni</span>`;
+  }
 
   const info = {
-    Ad: inputPayload.name || '—',
+    Ad: sheet.name || inputPayload.name || '—',
     Yaş: inputPayload.age || '—',
     Boy: inputPayload.height ? inputPayload.height + ' cm' : '—',
     'Irk / Köken': inputPayload.ethnicity || '—',
@@ -255,33 +218,18 @@ function renderCharacterSheet(sheet, inputPayload) {
 function downloadCharacterSheet() {
   if (!lastCharacterSheet) return;
   const sheet = lastCharacterSheet.sheet;
-  const files = [];
-  if (sheet.portraitUrl) files.push({ url: sheet.portraitUrl, name: 'portre' });
-  (sheet.views || []).forEach((v, i) => {
-    if (v.url) files.push({ url: v.url, name: 'gorunum-' + (i + 1) + '-' + (v.label || '') });
-  });
-  (sheet.faceDetails || []).forEach((f, i) => {
-    if (f.url) files.push({ url: f.url, name: 'yuz-detay-' + (i + 1) + '-' + (f.label || '') });
-  });
-  (sheet.hairDetails || []).forEach((h, i) => {
-    if (h.url) files.push({ url: h.url, name: 'sac-detay-' + (i + 1) + '-' + (h.label || '') });
-  });
-
-  files.forEach((f, i) => {
-    setTimeout(() => {
-      const a = document.createElement('a');
-      a.href = f.url;
-      a.download = 'karakter-' + f.name.replace(/[^a-z0-9-]+/gi, '_') + '.png';
-      a.target = '_blank';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }, i * 250);
-  });
+  if (!sheet.image) return;
+  const a = document.createElement('a');
+  a.href = sheet.image;
+  a.download = 'karakter-' + (sheet.name || 'sheet').replace(/[^a-z0-9-]+/gi, '_') + '.png';
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 function shareCharacterSheet() {
   if (!lastCharacterSheet) return;
-  const url = lastCharacterSheet.sheet.portraitUrl || '';
+  const url = lastCharacterSheet.sheet.image || '';
   if (navigator.share) {
     navigator.share({ title: 'JG Studio Karakter Sheet', url }).catch(() => {});
   } else if (url) {
