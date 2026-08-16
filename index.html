@@ -295,6 +295,17 @@
               <button type="button" class="ref-remove-btn" id="refRemoveBtn">✕</button>
               <span id="refPlaceholder">Görsel yüklemek için tıklayın</span>
             </div>
+            <div id="refModeSection" style="display:none; margin-top:12px;">
+              <div class="gen-block-hint" style="margin-bottom:6px;">Bu görsel nasıl kullanılsın?</div>
+              <label class="ref-mode-option">
+                <input type="radio" name="refMode" value="product" checked>
+                <span><strong>Ürün olarak</strong> — sahnedeki karakter bu ürünü kullansın (birebir aynı)</span>
+              </label>
+              <label class="ref-mode-option">
+                <input type="radio" name="refMode" value="style">
+                <span><strong>Stil olarak</strong> — sadece atmosfer/renk/ışık örneği, içeriği kopyalama</span>
+              </label>
+            </div>
             <input type="file" id="refFileInput" accept="image/*" style="display:none">
           </div>
         </div>

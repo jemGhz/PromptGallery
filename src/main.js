@@ -10,9 +10,10 @@ import { initVisualGenerator } from './tabs/visualGenerator.js';
 import { initCharacterGenerator } from './tabs/characterGenerator.js';
 import { initProfile } from './tabs/profile.js';
 import { initSupportModal } from './support.js';
-import { initNotifications } from './notifications.js';  
+import { initNotifications } from './notifications.js';
 import { initSettingsModal } from './settingsModal.js';
 import { initTheme } from './state.js';
+import { initVisualDetailFromUrl } from './visualDetail.js';
 
 initTheme();
 
@@ -51,4 +52,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initWelcomeModal();
 
   loadData();
+  initVisualDetailFromUrl();
 });

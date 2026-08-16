@@ -2,6 +2,7 @@
 @import './styles/base.css';
 @import './styles/gallery.css';
 @import './styles/generator.css';
+@import './styles/visualDetail.css';
 @import './styles/avatar.css';
 @import './styles/credits.css';
 @import './styles/profile.css';

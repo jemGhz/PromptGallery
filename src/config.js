@@ -35,6 +35,7 @@ export const TOGGLE_INTERACTION_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/w
 export const USER_INTERACTIONS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/user-interactions';
 export const GENERATED_PROMPTS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/generated-prompts-list';
 export const GENERATED_VISUALS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/generated-visuals-list';
+export const GENERATED_VISUAL_DELETE_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/generated-visual-delete';
 export const NOTIFICATIONS_URL =     'https://jg-n8n-server.tail1c97b1.ts.net/webhook/user-notifications';
 export const MARK_NOTIFICATION_READ_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/mark-notification-read';
 export const PURCHASE_HISTORY_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/purchase-history';
@@ -53,8 +54,10 @@ export const CREDIT_PACKAGES = [
 ];
 
 export const AI_MODELS = [
-  { key: 'gemini_free', name: 'Gemini (Ücretsiz Katman)', icon: '✨', badge: 'Ekonomik', desc: 'Hızlı ve ekonomik üretim.', creditCost: 1 },
-  { key: 'gemini_paid', name: 'Gemini (Ücretli Katman)', icon: '✨', badge: 'Pro', desc: 'Daha yüksek limit ve öncelikli işleme.', creditCost: 2 },
+  { key: 'gemini_paid', name: 'Gemini (Nano Banana)', icon: '✨', badge: 'Pro', desc: 'Daha yüksek limit ve öncelikli işleme.', creditCost: 2 },
+  { key: 'openai', name: 'OpenAI DALL·E 3 (Yakında)', icon: '🤖', badge: '', desc: 'OpenAI görsel üretim modeli; yüksek detay ve prompt takibi.', creditCost: 3, comingSoon: true },
+  { key: 'stability', name: 'Stability AI SDXL (Yakında)', icon: '🧬', badge: '', desc: 'Stable Diffusion tabanlı, esnek ve özelleştirmeye açık model.', creditCost: 2, comingSoon: true },
+  { key: 'flux', name: 'Flux Pro (Yakında)', icon: '⚡', badge: '', desc: 'Fotogerçekçi sonuçlar ve gelişmiş prompt takibi.', creditCost: 4, comingSoon: true },
   { key: 'free_draft', name: 'Hızlı Taslak (Ücretsiz)', icon: '🎨', badge: 'Ücretsiz', desc: 'Watermark\'lı, düşük maliyetli taslak model.', creditCost: 0 }
 ];
 

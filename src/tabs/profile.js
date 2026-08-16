@@ -4,6 +4,7 @@ import { onTabChange } from '../state.js';
 import { isLoggedIn, logout, onBalanceChange, getInitial, authHeaders } from '../auth.js';
 import { switchTab } from '../tabState.js';
 import { getGalleryRows, getUserInteractionSets, openModalForRow } from './gallery.js';
+import { openLightbox } from '../visualDetail.js';
 import { GENERATED_PROMPTS_URL, GENERATED_VISUALS_URL } from '../config.js';
 import { onProfileSectionRequest } from '../tabState.js';
 import { openSettingsModal } from '../settingsModal.js';
@@ -428,7 +429,7 @@ async function renderGeneratedVisualsPanel() {
   const gridHtml = rows.length
     ? `<div class="profile-collection-grid">
         ${rows.map((r, i) => `
-          <div class="profile-collection-tile" data-row-id="${i}" data-row-source="generated-visual" title="Prompt metnini kopyalamak için tıkla">
+          <div class="profile-collection-tile" data-row-id="${i}" data-image-id="${escapeAttr(r.id ?? '')}" data-row-source="generated-visual" title="Görsel detayı için tıkla">
             <img src="${escapeAttr(r.image_url || '')}" alt="" loading="lazy">
             <div class="profile-collection-tile-hint">${escapeHtml(tileHintForVisualRow(r))}</div>
           </div>`).join('')}
@@ -443,10 +444,18 @@ async function renderGeneratedVisualsPanel() {
     ${gridHtml}
   `;
 
+  const imageList = rows.map((r) => ({
+    url: r.image_url,
+    id: r.id,
+    prompt_text: r.prompt_text,
+    provider: r.provider,
+    aspect_ratio: r.aspect_ratio,
+    created_at: r.created_at
+  }));
   panel.querySelectorAll('[data-row-source="generated-visual"]').forEach((tile) => {
     const row = rows[Number(tile.dataset.rowId)];
     if (!row) return;
-    tile.addEventListener('click', () => copyGeneratedPromptText(tile, row.prompt_text));
+    tile.addEventListener('click', () => openLightbox(imageList, Number(tile.dataset.rowId)));
   });
 }
 

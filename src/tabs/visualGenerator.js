@@ -6,6 +6,7 @@ import { openCreditModal } from '../credits.js';
 import { createChipGroup, bindAccordions, updateAccCount } from '../chipGroups.js';
 import { appState } from '../state.js';
 import { switchTab } from '../tabState.js';
+import { openLightbox } from '../visualDetail.js';
 
 function $(id) {
   return document.getElementById(id);
@@ -49,12 +50,13 @@ function renderModelMenu() {
   const menu = $('genModelMenu');
   menu.innerHTML = AI_MODELS.map(
     (m, i) => `
-    <button type="button" class="model-option" data-model-idx="${i}">
+    <button type="button" class="model-option" data-model-idx="${i}" ${m.comingSoon ? 'disabled style="opacity:.4;pointer-events:none;"' : ''}>
       <span class="m-name">${m.icon} ${escapeHtml(m.name)} ${m.badge ? `<span class="model-badge-new">${escapeHtml(m.badge)}</span>` : ''}</span>
       <span class="m-desc">${escapeHtml(m.desc)} · ${m.creditCost} kredi / görsel</span>
     </button>`
   ).join('');
   menu.querySelectorAll('[data-model-idx]').forEach((btn) => {
+    if (btn.disabled) return;
     btn.addEventListener('click', () => selectModel(Number(btn.dataset.modelIdx)));
   });
   selectModel(genSelectedModelIdx, true);
@@ -127,6 +129,7 @@ function handleRefFile(file) {
       $('refPlaceholder').style.display = 'none';
       $('refUploadBox').classList.add('has-img');
       $('refRemoveBtn').style.display = 'flex';
+      $('refModeSection').style.display = 'block';
     })
     .catch((err) => {
       $('genQuotaNote').textContent = 'Referans görsel okunamadı: ' + err.message;
@@ -142,6 +145,7 @@ function removeRefImage() {
   $('refUploadBox').classList.remove('has-img');
   $('refRemoveBtn').style.display = 'none';
   $('refFileInput').value = '';
+  $('refModeSection').style.display = 'none';
 }
 
 function addCharacterRow() {
@@ -238,7 +242,7 @@ const GEN_ASPECT_RATIOS = {
   '16:9': '16/9'
 };
 
-function renderGenResults(images) {
+function renderGenResults(images, prompt) {
   if (!images || !images.length) {
     showGenEmptyState();
     return;
@@ -261,8 +265,16 @@ function renderGenResults(images) {
     </div>`
     )
     .join('');
-  grid.querySelectorAll('[data-lightbox-url]').forEach((tile) => {
-    tile.addEventListener('click', () => openLightbox(tile.dataset.lightboxUrl));
+  const imageList = images.map((url) => ({
+    url,
+    id: null,
+    prompt_text: prompt,
+    provider: AI_MODELS[genSelectedModelIdx].key,
+    aspect_ratio: genSelectedSize,
+    created_at: new Date().toISOString()
+  }));
+  grid.querySelectorAll('[data-lightbox-url]').forEach((tile, i) => {
+    tile.addEventListener('click', () => openLightbox(imageList, i));
   });
   grid.querySelectorAll('[data-download-url]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
@@ -273,47 +285,6 @@ function renderGenResults(images) {
   $('genResultCount').textContent = images.length;
 }
 
-let lightboxReady = false;
-function ensureLightbox() {
-  if (lightboxReady) return;
-  lightboxReady = true;
-
-  const backdrop = document.createElement('div');
-  backdrop.id = 'genLightboxBackdrop';
-  backdrop.className = 'gen-lightbox-backdrop';
-
-  const img = document.createElement('img');
-  img.id = 'genLightboxImg';
-  img.className = 'gen-lightbox-img';
-  img.alt = 'oluşturulan görsel';
-
-  const closeBtn = document.createElement('button');
-  closeBtn.type = 'button';
-  closeBtn.className = 'gen-lightbox-close';
-  closeBtn.title = 'Kapat';
-  closeBtn.textContent = '✕';
-  closeBtn.addEventListener('click', closeLightbox);
-
-  backdrop.appendChild(img);
-  backdrop.appendChild(closeBtn);
-  document.body.appendChild(backdrop);
-
-  backdrop.addEventListener('click', (e) => {
-    if (e.target === backdrop) closeLightbox();
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeLightbox();
-  });
-}
-function openLightbox(url) {
-  ensureLightbox();
-  $('genLightboxImg').src = url;
-  $('genLightboxBackdrop').classList.add('open');
-}
-function closeLightbox() {
-  const backdrop = $('genLightboxBackdrop');
-  if (backdrop) backdrop.classList.remove('open');
-}
 function downloadGenImage(url, idx) {
   const a = document.createElement('a');
   a.href = url;
@@ -366,6 +337,7 @@ async function generateVisual() {
       poses: [...posesGroup.selected],
       styles: [...styleGroup.selected],
       referenceImage: refImageBase64 ? { base64: refImageBase64, mimeType: refImageMime } : null,
+      referenceMode: document.querySelector('input[name="refMode"]:checked')?.value || 'product',
       characters: characters.map((c) => ({ name: c.name, base64: c.base64, mimeType: c.mime }))
     };
     const res = await fetch(GEN_GENERATE_URL, {
@@ -385,7 +357,7 @@ async function generateVisual() {
     }
 
     if (typeof data.newBalance === 'number') setLocalCreditBalance(data.newBalance);
-    renderGenResults(data.images || []);
+    renderGenResults(data.images || [], prompt);
     updateGenQuotaNote();
   } catch (err) {
     $('genQuotaNote').textContent = 'Hata: ' + err.message;
@@ -405,7 +377,6 @@ export function initVisualGenerator() {
   renderModelMenu();
   renderCharList();
   updateGenSubmitState();
-  ensureLightbox();
 
   $('genPromptInput').addEventListener('input', onGenPromptInput);
   document.querySelector('#visualView .chip-btn-row').children[0].addEventListener('click', suggestGenPrompt);
