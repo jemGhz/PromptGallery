@@ -8,7 +8,7 @@
 .field-label{font-size:12.5px; font-weight:600; color:var(--ink);}
 .field-input, .select-input{
   width:100%;
-  background:#0d0d0b;
+  background:var(--input-bg);
   border:1px solid var(--line);
   border-radius:8px;
   padding:11px 12px;
@@ -27,7 +27,7 @@
   padding:12px;
   border-radius:9px;
   border:1px solid var(--line);
-  background:#0d0d0b;
+  background:var(--input-bg);
   color:var(--ink-dim);
   cursor:pointer;
   font-size:13px;
@@ -101,7 +101,7 @@
 .sheet-portrait{
   border-radius:10px;
   overflow:hidden;
-  background:#0d0d0b;
+  background:var(--input-bg);
   border:1px solid var(--line);
 }
 .sheet-portrait img{width:100%; height:auto; max-height:70vh; object-fit:contain; display:block;}

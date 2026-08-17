@@ -23,36 +23,25 @@
       <input type="text" id="searchInput" placeholder="Arama yapın (ör. minimalist çanta, street style...)">
     </div>
 
-    <button class="icon-square-btn" id="sidebarToggleBtn" title="Filtreler">
-      <svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-    </button>
-
-    <button class="icon-square-btn" id="densityToggleBtn" title="Görünümü değiştir">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    </button>
-
-    <button class="icon-square-btn" id="refreshBtn" title="Yenile">
-      <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-    </button>
-
-    <div class="sort-wrap">
-      <button class="sort-btn" id="sortBtn"><span id="sortLabel">En yeni</span> ⌄</button>
-      <div class="sort-menu" id="sortMenu">
-        <button id="sortNewestBtn" class="active">En yeni</button>
-        <button id="sortOldestBtn">En eski</button>
-      </div>
-    </div>
-
     <div class="credit-pill" id="creditPill">
-      <span>💎 <span class="credit-amount" id="creditAmountText">0</span> JG Puanı</span>
+      <span class="credit-pill-inner">
+        <svg class="credit-pill-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="6 3 18 3 22 9 12 22 2 9"/>
+          <line x1="11" y1="3" x2="8" y2="9"/>
+          <line x1="13" y1="3" x2="16" y2="9"/>
+          <line x1="2" y1="9" x2="22" y2="9"/>
+        </svg>
+        <span class="credit-amount" id="creditAmountText">0</span> JG Puanı
+      </span>
       <button class="credit-add-btn" id="creditAddBtn" title="Kredi satın al">+</button>
     </div>
 
-    <button class="upload-cta" id="uploadCtaBtn">+ Yükle</button>
-
-<div class="notif-wrap" id="notifWrap">
-      <button class="bell-btn" id="notifBellBtn" title="Bildirimler">
-        🔔
+    <div class="notif-wrap" id="notifWrap">
+      <button class="bell-btn" id="notifBellBtn" title="Bildirimler" aria-label="Bildirimler">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+        </svg>
         <span class="notif-badge" id="notifBadge" style="display:none">0</span>
       </button>
       <div class="notif-menu" id="notifMenu">
@@ -65,11 +54,39 @@
   </div>
 </header>
 
-<div class="tabbar">
-  <button class="tab-btn active" data-tab="gallery">Galeri</button>
-  <button class="tab-btn" data-tab="maker">Prompt Üretici</button>
-  <button class="tab-btn" data-tab="visual">Görsel Oluşturucu</button>
-  <button class="tab-btn" data-tab="avatar">AI Avatar / Karakter Oluşturucu</button>
+<div class="tabbar" id="tabbar" data-active-tab="gallery">
+  <div class="tabbar-tabs">
+    <button class="tab-btn active" data-tab="gallery">Galeri</button>
+    <button class="tab-btn" data-tab="maker">Prompt Üretici</button>
+    <button class="tab-btn" data-tab="visual">Görsel Oluşturucu</button>
+    <button class="tab-btn" data-tab="avatar">AI Avatar / Karakter Oluşturucu</button>
+  </div>
+  <div class="tabbar-actions" id="galleryActions">
+    <button class="icon-square-btn" id="sidebarToggleBtn" title="Filtreler" aria-label="Filtreler">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/>
+      </svg>
+    </button>
+    <button class="icon-square-btn" id="densityToggleBtn" title="Görünümü değiştir" aria-label="Görünümü değiştir">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+    </button>
+    <button class="icon-square-btn" id="refreshBtn" title="Yenile" aria-label="Yenile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/>
+      </svg>
+    </button>
+    <div class="sort-wrap">
+      <button class="sort-btn" id="sortBtn"><span id="sortLabel">En yeni</span> <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <div class="sort-menu" id="sortMenu">
+        <button id="sortNewestBtn" class="active">En yeni</button>
+        <button id="sortOldestBtn">En eski</button>
+        <button id="sortMostViewedBtn">En çok görüntülenen</button>
+        <button id="sortMostLikedBtn">En çok beğenilen</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="galleryView" class="gallery-layout">

@@ -20,6 +20,8 @@ const VIEWS = {
 
 export function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+  const tabbar = document.getElementById('tabbar');
+  if (tabbar) tabbar.dataset.activeTab = tab;
   document.getElementById(VIEWS.gallery).style.display = tab === 'gallery' ? 'flex' : 'none';
   document.getElementById(VIEWS.maker).style.display = tab === 'maker' ? 'block' : 'none';
   document.getElementById(VIEWS.visual).style.display = tab === 'visual' ? 'block' : 'none';

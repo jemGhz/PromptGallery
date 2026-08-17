@@ -5,7 +5,7 @@ import { authHeaders, initAuth } from './auth.js';import { switchTab } from './t
 import { initCreditModal } from './credits.js';
 import { initWelcomeModal } from './welcomeModal.js';
 import { loadData, initGallery } from './tabs/gallery.js';
-import { initPromptGenerator, triggerMakerUpload } from './tabs/promptGenerator.js';
+import { initPromptGenerator } from './tabs/promptGenerator.js';
 import { initVisualGenerator } from './tabs/visualGenerator.js';
 import { initCharacterGenerator } from './tabs/characterGenerator.js';
 import { initProfile } from './tabs/profile.js';
@@ -24,11 +24,6 @@ function $(id) {
 function initTabs() {
   document.querySelectorAll('.tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-  });
-
-  $('uploadCtaBtn').addEventListener('click', () => {
-    switchTab('maker');
-    triggerMakerUpload();
   });
 }
 

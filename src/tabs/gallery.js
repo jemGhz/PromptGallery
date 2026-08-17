@@ -152,6 +152,12 @@ export async function loadData() {
 
 function applySortOrder() {
   allRows.sort((a, b) => {
+    if (sortOrder === 'most-viewed') {
+      return getViewCount(b.id) - getViewCount(a.id);
+    }
+    if (sortOrder === 'most-liked') {
+      return getLikeCount(b.id) - getLikeCount(a.id);
+    }
     const da = new Date(a.tarih).getTime() || 0;
     const db = new Date(b.tarih).getTime() || 0;
     return sortOrder === 'newest' ? db - da : da - db;
@@ -673,6 +679,8 @@ export function initGallery() {
   $('sortBtn').addEventListener('click', () => $('sortMenu').classList.toggle('open'));
   $('sortNewestBtn').addEventListener('click', () => setSort('newest'));
   $('sortOldestBtn').addEventListener('click', () => setSort('oldest'));
+  $('sortMostViewedBtn').addEventListener('click', () => setSort('most-viewed'));
+  $('sortMostLikedBtn').addEventListener('click', () => setSort('most-liked'));
   document.addEventListener('click', (e) => {
     const wrap = document.querySelector('.sort-wrap');
     if (wrap && !wrap.contains(e.target)) $('sortMenu').classList.remove('open');
@@ -742,11 +750,20 @@ function toggleSection(key) {
   chev.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
 }
 
+const SORT_LABELS = {
+  'newest': 'En yeni',
+  'oldest': 'En eski',
+  'most-viewed': 'En çok görüntülenen',
+  'most-liked': 'En çok beğenilen'
+};
+
 function setSort(order) {
   sortOrder = order;
-  $('sortLabel').textContent = order === 'newest' ? 'En yeni' : 'En eski';
+  $('sortLabel').textContent = SORT_LABELS[order] || 'En yeni';
   $('sortNewestBtn').classList.toggle('active', order === 'newest');
   $('sortOldestBtn').classList.toggle('active', order === 'oldest');
+  $('sortMostViewedBtn').classList.toggle('active', order === 'most-viewed');
+  $('sortMostLikedBtn').classList.toggle('active', order === 'most-liked');
   $('sortMenu').classList.remove('open');
   applySortOrder();
   applyFiltersAndRender();

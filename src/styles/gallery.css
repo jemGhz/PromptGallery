@@ -470,7 +470,7 @@
 .sidebar-select{
   width:100%;
   padding:10px 12px;
-  background:var(--bg);
+  background:var(--input-bg);
   color:var(--ink);
   border:1px solid var(--line);
   border-radius:8px;
