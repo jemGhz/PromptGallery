@@ -28,7 +28,7 @@ const TABS = [
   { id: 'security', label: 'Güvenlik' },
   { id: 'notifications', label: 'Bildirim Tercihleri' },
   { id: 'appearance', label: 'Görünüm' },
-  { id: 'billing', label: 'JG Plus & Ödemeler' },
+  { id: 'billing', label: 'Vero Plus & Ödemeler' },
   { id: 'connections', label: 'Bağlı Hesaplar' },
   { id: 'usage', label: 'Kullanım' },
   { id: 'delete', label: 'Hesabı Sil', danger: true }
@@ -77,7 +77,7 @@ function panelProfile() {
     <div class="settings-avatar-row">
       <div class="settings-avatar-wrap">
         <div class="settings-avatar-img" id="settingsAvatarPreview">
-          ${picture ? `<img src="${escapeAttr(picture)}" alt="">` : escapeHtml((name || email || 'JG').charAt(0).toUpperCase())}
+          ${picture ? `<img src="${escapeAttr(picture)}" alt="">` : escapeHtml((name || email || 'Vero').charAt(0).toUpperCase())}
         </div>
         <button type="button" class="settings-avatar-camera-btn" id="settingsAvatarBtn" disabled title="Yakında aktif olacak">${ICONS.camera}</button>
         <input type="file" id="settingsAvatarInput" accept="image/*" style="display:none" disabled>
@@ -304,12 +304,12 @@ function panelBilling() {
   let balance = 0;
   try { balance = parseInt(localStorage.getItem('jg_credit_balance') || '0', 10) || 0; } catch (e) {}
   return `
-    <h3 class="settings-panel-title">JG Plus & Ödemeler</h3>
-    <p class="settings-panel-sub">JG Puanı bakiyeni yönet ve ödeme geçmişine göz at.</p>
+    <h3 class="settings-panel-title">Vero Plus & Ödemeler</h3>
+    <p class="settings-panel-sub">VSP bakiyeni yönet ve ödeme geçmişine göz at.</p>
     <div class="settings-billing-box">
       <div>
         <div class="settings-security-label">Mevcut Bakiye</div>
-        <div class="settings-billing-amount">💎 ${balance} JG Puanı</div>
+        <div class="settings-billing-amount">💎 ${balance} VSP</div>
       </div>
       <button type="button" class="settings-btn settings-btn-primary" id="settingsBillingBtn">Kredi Satın Al</button>
     </div>
@@ -326,7 +326,7 @@ function panelDelete() {
     <h3 class="settings-panel-title settings-panel-title-danger">Hesabı Sil</h3>
     <p class="settings-panel-sub">Bu işlem geri alınamaz; tüm verileriniz kalıcı olarak silinir.</p>
     <div class="settings-danger-box">
-      Hesabını silmeden önce bilmen gerekenler: tüm promptların, görsellerin ve JG Puanı bakiyen silinecek. Bu özellik şu an aktif değil.
+      Hesabını silmeden önce bilmen gerekenler: tüm promptların, görsellerin ve VSP bakiyen silinecek. Bu özellik şu an aktif değil.
     </div>
     <button type="button" class="settings-btn settings-btn-danger" disabled title="Yakında aktif olacak">Hesabımı Kalıcı Olarak Sil</button>
   `;
@@ -343,7 +343,7 @@ function renderPanel() {
     appearance: panelAppearance,
     billing: panelBilling,
     connections: () => panelPlaceholder('Bağlı Hesaplar', 'Hesabına bağlı diğer servisleri yönet.'),
-    usage: () => panelPlaceholder('Kullanım', 'JG Puanı ve araç kullanım istatistiklerini gör.'),
+    usage: () => panelPlaceholder('Kullanım', 'VSP ve araç kullanım istatistiklerini gör.'),
     delete: panelDelete
   };
 

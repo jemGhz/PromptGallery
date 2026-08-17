@@ -225,14 +225,14 @@ function ensureDetailScreen() {
 async function shareImage(url) {
   if (navigator.share) {
     try {
-      await navigator.share({ title: 'JG Studio', text: 'JG Studio ile oluşturdum', url });
+      await navigator.share({ title: 'Vero Scena', text: 'Vero Scena ile oluşturdum', url });
     } catch (err) {
       // Kullanıcı iptal etti (AbortError) ya da başka bir sebeple paylaşım
       // başarısız oldu — sessiz geç, UX'i bozma.
     }
     return;
   }
-  window.open(`https://wa.me/?text=${encodeURIComponent('JG Studio ile oluşturdum: ' + url)}`, '_blank');
+  window.open(`https://wa.me/?text=${encodeURIComponent('Vero Scena ile oluşturdum: ' + url)}`, '_blank');
 }
 
 async function deleteImage(id) {

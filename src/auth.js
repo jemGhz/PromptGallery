@@ -163,7 +163,7 @@ export function renderGoogleButton(containerId, options = {}) {
 }
 
 export function getInitial(name, email) {
-  const src = (name || email || 'JG').trim();
+  const src = (name || email || 'Vero').trim();
   return src.charAt(0).toUpperCase();
 }
 

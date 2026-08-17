@@ -253,7 +253,7 @@ function shareCharacterSheet() {
   if (!lastCharacterSheet) return;
   const url = lastCharacterSheet.sheet.image || '';
   if (navigator.share) {
-    navigator.share({ title: 'JG Studio Karakter Sheet', url }).catch(() => {});
+    navigator.share({ title: 'Vero Scena Karakter Sheet', url }).catch(() => {});
   } else if (url) {
     navigator.clipboard.writeText(url);
   }

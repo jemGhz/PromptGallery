@@ -186,9 +186,9 @@ export const GOOGLE_CLIENT_ID = '1036033399902-89l44rn5e77mvg7h71ttb06v3ufgdthq.
 
 
 export const FAQ_ITEMS = [
-  { q: 'JG Puanı nedir, nasıl kazanırım?', a: 'JG Puanı, platform içindeki prompt üretimi, görsel oluşturma, karakter sheet\'i ve premium içerik kilidi açma gibi işlemlerde kullanılan sanal kredidir. Sağ üstteki "+" butonundan paket satın alarak bakiyene ekleyebilirsin.' },
+  { q: 'VSP nedir, nasıl kazanırım?', a: 'VSP, platform içindeki prompt üretimi, görsel oluşturma, karakter sheet\'i ve premium içerik kilidi açma gibi işlemlerde kullanılan sanal kredidir. Sağ üstteki "+" butonundan paket satın alarak bakiyene ekleyebilirsin.' },
   { q: 'IBAN ile ödeme yaptım, kredilerim ne zaman yüklenir?', a: 'IBAN ile ödemede dekontu belirtilen WhatsApp hattına iletmen gerekir; sana gönderilen aktivasyon kodunu ödeme adımındaki kutuya girdiğinde krediler anında bakiyene eklenir.' },
-  { q: 'Premium bir prompt\'un kilidini nasıl açarım?', a: 'Galeride premium etiketli bir prompt\'a tıkladığında açılan pencerede "JG Puanı ile Aç" butonunu kullanarak, gösterilen JG Puanı karşılığında o prompt\'u kalıcı olarak açabilirsin.' },
+  { q: 'Premium bir prompt\'un kilidini nasıl açarım?', a: 'Galeride premium etiketli bir prompt\'a tıkladığında açılan pencerede "VSP ile Aç" butonunu kullanarak, gösterilen VSP karşılığında o prompt\'u kalıcı olarak açabilirsin.' },
   { q: 'Prompt/görsel/karakter üretimi ne kadar krediye mal olur?', a: 'Maliyet seçtiğin araca ve modele göre değişir; ilgili ekranda ("Prompt Üretici", "Görsel Oluşturucu", "Karakter Oluşturucu") işlem öncesi tam maliyet sana gösterilir.' },
   { q: 'Hesabımdan nasıl çıkış yaparım?', a: 'Sağ üstteki profil fotoğrafının üzerine gelip açılan menüden "Çıkış Yap" seçeneğine tıklayabilirsin.' },
   { q: 'Beğendiğim/kaydettiğim promptları nereden görebilirim?', a: 'Profil sayfandaki soldaki menüden "Beğenilen Promptlar", "Kaydedilen Promptlar" ve "Satın Alınan Promptlar" bölümlerinden erişebilirsin.' },

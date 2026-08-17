@@ -505,7 +505,7 @@ function showPaywallSection() {
   const r = currentModalRow;
   const cost = r?.cost || 50;
   $('unlockCostNum').textContent = cost;
-  $('paywallBalanceNote').textContent = `${getLocalCreditBalance()} JG Puanına sahipsin.`;
+  $('paywallBalanceNote').textContent = `${getLocalCreditBalance()} VSP'ye sahipsin.`;
 
   const msgEl = $('unlockMsg');
   msgEl.textContent = '';
@@ -513,7 +513,7 @@ function showPaywallSection() {
 
   const btn = $('unlockBtn');
   btn.disabled = false;
-  $('unlockBtnLabel').textContent = 'JG Puanı ile Aç';
+  $('unlockBtnLabel').textContent = 'VSP ile Aç';
 }
 
 // ---- Kredi ile prompt açma ----
@@ -566,18 +566,18 @@ async function unlockWithCredits() {
       msgEl.textContent = 'Oturum süresi dolmuş, lütfen tekrar giriş yap.';
       msgEl.className = 'code-msg error';
       btn.disabled = false;
-      label.textContent = 'JG Puanı ile Aç';
+      label.textContent = 'VSP ile Aç';
     } else {
       msgEl.textContent = data.message || 'Bakiye yetersiz veya bir hata oluştu.';
       msgEl.className = 'code-msg error';
       btn.disabled = false;
-      label.textContent = 'JG Puanı ile Aç';
+      label.textContent = 'VSP ile Aç';
     }
   } catch (err) {
     msgEl.textContent = 'Bağlantı hatası: ' + err.message;
     msgEl.className = 'code-msg error';
     btn.disabled = false;
-    label.textContent = 'JG Puanı ile Aç';
+    label.textContent = 'VSP ile Aç';
   }
 }
 
