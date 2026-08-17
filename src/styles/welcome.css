@@ -164,6 +164,16 @@
 }
 .welcome-modal-footnote strong{color:var(--gold); font-weight:600;}
 
+.welcome-modal-privacy-note{
+  margin-top:10px;
+  text-align:center;
+  font-size:11px;
+  color:var(--ink-dim);
+  line-height:1.5;
+}
+.welcome-modal-privacy-note a{color:var(--ink-dim); text-decoration:underline;}
+.welcome-modal-privacy-note a:hover{color:var(--gold);}
+
 @media (max-width:520px){
   .welcome-modal-content{padding:28px 22px 22px;}
   .welcome-modal-title{font-size:20px;}

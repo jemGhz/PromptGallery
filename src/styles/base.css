@@ -503,3 +503,17 @@ body{
   color: #e5484d;
   background: rgba(229, 72, 77, 0.1);
 }
+
+/* ---- Site footer ---- */
+.site-footer{
+  max-width:1400px;
+  margin:0 auto;
+  padding:24px 32px 40px;
+  text-align:center;
+}
+.site-footer a{
+  font-size:12px;
+  color:var(--ink-dim);
+  text-decoration:none;
+}
+.site-footer a:hover{color:var(--gold); text-decoration:underline;}
