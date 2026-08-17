@@ -750,3 +750,20 @@
   font-size:11px; font-weight:700; display:none;
 }
 .chip-img.active .chip-img-check{display:flex;}
+
+/* Character generator loading state */
+.avatar-loading-state{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:60px 20px; margin:auto; text-align:center; gap:8px;
+}
+.gen-loading-icon{
+  font-size:48px; margin-bottom:8px;
+  animation: gen-loading-pulse 2s ease-in-out infinite;
+}
+.gen-loading-subtext{
+  color:var(--ink-dim); font-size:13px;
+}
+@keyframes gen-loading-pulse{
+  0%,100%{ opacity:1; transform:scale(1); }
+  50%{ opacity:0.5; transform:scale(1.1); }
+}

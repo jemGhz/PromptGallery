@@ -3,7 +3,8 @@ import { escapeAttr, escapeHtml, unwrap, getViewCount, getLikeCount, formatCount
 import { isLoggedIn, setLocalCreditBalance, getLocalCreditBalance, refreshCreditBalanceFromServer, authHeaders, onBalanceChange } from '../auth.js';
 import { openCreditModal } from '../credits.js';
 import { MAX_TOP_TAGS, PUBLIC_LIST_URL, PREMIUM_LIST_URL, UNLOCK_PREMIUM_URL, TOGGLE_INTERACTION_URL, USER_INTERACTIONS_URL } from '../config.js';
-import { getStoredDensity, setStoredDensity, applyDensity } from '../state.js';
+import { getStoredDensity, setStoredDensity, applyDensity, appState } from '../state.js';
+import { switchTab } from '../tabState.js';
 
 
 let allRows = [];
@@ -14,6 +15,8 @@ let currentModalRow = null;
 let searchTerm = '';
 let sortOrder = 'newest';
 let showAllTags = false;
+let activeProductType = null;
+let activeAudienceGender = null;
 
 // Sunucudan gelen etkileşim durumu: "public:123" / "premium:45" formatında anahtarlar
 let serverLikes = new Set();
@@ -50,6 +53,8 @@ async function fetchPublicRows() {
         gorselLink: r.gorselLink || '',
         chatId: r.chatId || '',
         kategori: (r.kategori || '').trim(),
+        productType: (r.productType || '').trim(),
+        audienceGender: (r.audienceGender || '').trim(),
         isPremium: false
       };
     }).filter((r) => r.promptText);
@@ -78,6 +83,8 @@ async function fetchPremiumList() {
         gorselLink: p.gorselLink || '',
         chatId: '',
         kategori: (p.kategori || '').trim(),
+        productType: (p.productType || '').trim(),
+        audienceGender: (p.audienceGender || '').trim(),
         isPremium: true,
         cost: Number(p.maliyet) || 50
       };
@@ -195,6 +202,61 @@ function renderFilters() {
     .join('');
 
   $('seeAllTagsBtn').textContent = showAllTags ? 'Daha az göster' : 'Tüm etiketleri gör';
+
+  renderProductTypeSelect();
+  renderGenderSelect();
+}
+
+// Türkçe label mapping — kullanıcıya gösterirken
+const PRODUCT_TYPE_LABELS = {
+  'bag': 'Çanta', 'backpack': 'Sırt Çantası', 'clutch': 'El Çantası',
+  'wallet': 'Cüzdan', 'card-holder': 'Kart Cüzdanı', 'luggage': 'Bavul',
+  'travel-bag': 'Seyahat Çantası', 'makeup-bag': 'Makyaj Çantası',
+  'shoes': 'Ayakkabı', 'sneakers': 'Spor Ayakkabı', 'boots': 'Bot',
+  'ankle-boots': 'Bilek Bot', 'heels': 'Topuklu', 'loafers': 'Loafer',
+  'sandals': 'Sandalet', 'flats': 'Babet', 'slippers': 'Terlik',
+  'jacket': 'Ceket', 'coat': 'Palto', 'trench-coat': 'Trençkot',
+  'blazer': 'Blazer', 'suit': 'Takım Elbise', 'vest': 'Yelek',
+  't-shirt': 'Tişört', 'polo-shirt': 'Polo Tişört', 'shirt': 'Gömlek',
+  'blouse': 'Bluz', 'sweater': 'Kazak', 'hoodie': 'Kapüşonlu',
+  'cardigan': 'Hırka', 'pants': 'Pantolon', 'jeans': 'Kot',
+  'trousers': 'Kumaş Pantolon', 'shorts': 'Şort', 'skirt': 'Etek',
+  'dress': 'Elbise', 'jumpsuit': 'Tulum',
+  'sunglasses': 'Güneş Gözlüğü', 'eyeglasses': 'Gözlük',
+  'watch': 'Saat', 'smartwatch': 'Akıllı Saat',
+  'belt': 'Kemer', 'hat': 'Şapka', 'cap': 'Kep', 'scarf': 'Şal / Atkı',
+  'tie': 'Kravat', 'bow-tie': 'Papyon', 'gloves': 'Eldiven',
+  'hair-accessories': 'Saç Aksesuarı', 'hair-clips': 'Saç Tokası',
+  'umbrella': 'Şemsiye', 'keychain': 'Anahtarlık',
+  'jewelry': 'Takı', 'necklace': 'Kolye', 'bracelet': 'Bilezik',
+  'ring': 'Yüzük', 'earrings': 'Küpe',
+  'phone-case': 'Telefon Kılıfı', 'perfume': 'Parfüm', 'other': 'Diğer'
+};
+
+function renderProductTypeSelect() {
+  const sel = document.getElementById('productTypeSelect');
+  if (!sel) return;
+  // Mevcut ürün türlerini (o an DB'de olan) topla
+  const counts = {};
+  allRows.forEach((r) => {
+    if (r.productType) counts[r.productType] = (counts[r.productType] || 0) + 1;
+  });
+  const items = Object.keys(counts).sort((a, b) => {
+    const la = PRODUCT_TYPE_LABELS[a] || a;
+    const lb = PRODUCT_TYPE_LABELS[b] || b;
+    return la.localeCompare(lb, 'tr');
+  });
+  sel.innerHTML =
+    `<option value="">Tümü (${allRows.filter((r) => r.productType).length})</option>` +
+    items.map((k) => {
+      const label = PRODUCT_TYPE_LABELS[k] || k;
+      return `<option value="${escapeAttr(k)}" ${activeProductType === k ? 'selected' : ''}>${escapeHtml(label)} (${counts[k]})</option>`;
+    }).join('');
+}
+function renderGenderSelect() {
+  const sel = document.getElementById('audienceGenderSelect');
+  if (!sel) return;
+  if (activeAudienceGender !== null) sel.value = activeAudienceGender;
 }
 
 function setCategory(c) {
@@ -217,9 +279,11 @@ function applyFiltersAndRender() {
     const matchesCategory = !activeCategory || r.kategori === activeCategory;
     const tags = r.etiketler.split(',').map((t) => t.trim());
     const matchesTag = !activeTag || tags.includes(activeTag);
-    const haystack = (r.promptText + ' ' + r.etiketler + ' ' + r.kategori).toLowerCase();
+    const matchesProduct = !activeProductType || r.productType === activeProductType;
+    const matchesGender = !activeAudienceGender || r.audienceGender === activeAudienceGender;
+    const haystack = (r.promptText + ' ' + r.etiketler + ' ' + r.kategori + ' ' + r.productType + ' ' + r.audienceGender).toLowerCase();
     const matchesSearch = !searchTerm || haystack.includes(searchTerm);
-    return matchesCategory && matchesTag && matchesSearch;
+    return matchesCategory && matchesTag && matchesProduct && matchesGender && matchesSearch;
   });
   renderGrid();
 }
@@ -418,10 +482,13 @@ function showPromptSection(promptText) {
   $('paywallSection').style.display = 'none';
   $('modalPremiumBadge').style.display = 'none';
   $('modalPrompt').textContent = promptText || '';
-  const copyBtn = $('copyBtn');
-  copyBtn.textContent = 'Kopyala';
-  copyBtn.classList.remove('copied');
-  copyBtn.dataset.prompt = promptText || '';
+  const copyIconBtn = $('copyIconBtn');
+  if (copyIconBtn) {
+    copyIconBtn.classList.remove('copied');
+    copyIconBtn.dataset.prompt = promptText || '';
+  }
+  const useBtn = $('useInVisualBtn');
+  if (useBtn) useBtn.dataset.prompt = promptText || '';
 }
 
 function showPaywallSection() {
@@ -508,16 +575,41 @@ async function unlockWithCredits() {
   }
 }
 
-function copyPrompt() {
-  const btn = $('copyBtn');
+function copyPromptFromIcon() {
+  const btn = $('copyIconBtn');
+  if (!btn || !btn.dataset.prompt) return;
   navigator.clipboard.writeText(btn.dataset.prompt).then(() => {
-    btn.textContent = 'Kopyalandı ✓';
     btn.classList.add('copied');
-    setTimeout(() => {
-      btn.textContent = 'Kopyala';
-      btn.classList.remove('copied');
-    }, 1600);
+    setTimeout(() => btn.classList.remove('copied'), 1400);
   });
+}
+
+function useInVisualGenerator() {
+  const btn = $('useInVisualBtn');
+  if (!btn || !btn.dataset.prompt) return;
+  const promptText = btn.dataset.prompt;
+
+  // Prompt'u appState'e koy — visualGenerator switchTab öncesi de sonrası da okuyabilsin
+  appState.makerGeneratedPrompt = promptText;
+
+  // Modal'ı kapat
+  closeModal();
+
+  // Görsel Oluşturucu sekmesine geç
+  switchTab('visual');
+
+  // Textbox'a bas + char count / submit state güncelle
+  // (visual tab yeni açılıyorsa DOM hazır olması için 1 tick bekle)
+  setTimeout(() => {
+    const input = document.getElementById('genPromptInput');
+    if (input) {
+      input.value = promptText;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.focus();
+      // Cursor'u sona koy
+      input.setSelectionRange(input.value.length, input.value.length);
+    }
+  }, 50);
 }
 
 // ---- Profile.js için dışa açılan erişimciler ----
@@ -535,6 +627,36 @@ export function initGallery() {
     searchTerm = e.target.value.trim().toLowerCase();
     applyFiltersAndRender();
   });
+
+  const prodSel = document.getElementById('productTypeSelect');
+  if (prodSel) {
+    prodSel.addEventListener('change', (e) => {
+      activeProductType = e.target.value || null;
+      applyFiltersAndRender();
+    });
+  }
+  const genderSel = document.getElementById('audienceGenderSelect');
+  if (genderSel) {
+    genderSel.addEventListener('change', (e) => {
+      activeAudienceGender = e.target.value || null;
+      applyFiltersAndRender();
+    });
+  }
+  // Toggle davranışı — Kategoriler/Etiketler dropdownlarıyla aynı
+  const prodToggle = document.getElementById('prodToggleBtn');
+  if (prodToggle) {
+    prodToggle.addEventListener('click', () => {
+      document.getElementById('prodBody').classList.toggle('collapsed');
+      document.getElementById('prodChev').classList.toggle('rotated');
+    });
+  }
+  const genderToggle = document.getElementById('genderToggleBtn');
+  if (genderToggle) {
+    genderToggle.addEventListener('click', () => {
+      document.getElementById('genderBody').classList.toggle('collapsed');
+      document.getElementById('genderChev').classList.toggle('rotated');
+    });
+  }
 
   $('sidebarToggleBtn').addEventListener('click', () => $('sidebar').classList.toggle('open'));
 
@@ -590,9 +712,11 @@ export function initGallery() {
     if (e.target === $('modalBackdrop')) closeModal();
   });
   document.querySelectorAll('#promptSection .btn').forEach((btn) => {
-    if (btn.id === 'copyBtn') btn.addEventListener('click', copyPrompt);
+    if (btn.id === 'useInVisualBtn') btn.addEventListener('click', useInVisualGenerator);
     else btn.addEventListener('click', closeModal);
   });
+  const copyIconBtn = $('copyIconBtn');
+  if (copyIconBtn) copyIconBtn.addEventListener('click', copyPromptFromIcon);
 
   $('unlockBtn').addEventListener('click', unlockWithCredits);
   document.querySelectorAll('#paywallSection .btn').forEach((btn) => {

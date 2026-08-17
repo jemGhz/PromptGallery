@@ -87,6 +87,32 @@
     </div>
 
     <div class="sidebar-section">
+      <button class="sidebar-header" id="prodToggleBtn">
+        <span>Ürün Türü</span><span class="chev" id="prodChev">⌄</span>
+      </button>
+      <div id="prodBody">
+        <select class="sidebar-select" id="productTypeSelect">
+          <option value="">Tümü</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <button class="sidebar-header" id="genderToggleBtn">
+        <span>Cinsiyet</span><span class="chev" id="genderChev">⌄</span>
+      </button>
+      <div id="genderBody">
+        <select class="sidebar-select" id="audienceGenderSelect">
+          <option value="">Tümü</option>
+          <option value="women">Kadın</option>
+          <option value="men">Erkek</option>
+          <option value="unisex">Unisex</option>
+          <option value="kids">Çocuk</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
       <button class="sidebar-header" id="tagToggleBtn">
         <span>Popüler Etiketler</span><span class="chev" id="tagChev">⌄</span>
       </button>
@@ -619,19 +645,23 @@
       <div class="feature">
         <span class="feature-icon">🛡️</span>
         <div>
-          <strong>Detaylı & Tutarlı</strong>
-          <p>Karakterin yüz, saç ve vücut detayları tüm görünümlerde tutarlı kalacak şekilde üretilir.</p>
+          <strong>Fotorealistik & Tutarlı</strong>
+          <p>Gerçek fotoğraf kalitesinde üretilir. Yüz, saç ve kıyafet detayları tüm panellerde tutarlı kalır.</p>
         </div>
       </div>
       <div class="feature">
         <span class="feature-icon">💎</span>
         <div>
-          <strong>13 Panelin Tamamı Kredi Bakiyenizden Düşülür</strong>
-          <p>Sheet başına toplam maliyet, seçtiğiniz servise göre değişir (aşağıda gösterilir).</p>
+          <strong>Tek Görselde 5 Farklı Açı</strong>
+          <p>Ön, arka, yüz detayı — tek bir karakter sheet'inde tüm açılar. Gemini: 2 kredi, OpenAI: 3 kredi.</p>
         </div>
       </div>
-      <div class="feature" style="align-items:center;">
-        <button class="upgrade-btn" style="width:auto; padding:12px 22px; white-space:nowrap;" title="Yakında aktif olacak" disabled>👑 JG Plus'a yükselt</button>
+      <div class="feature">
+        <span class="feature-icon">🎯</span>
+        <div>
+          <strong>Marka Yüzü Olarak Kullan</strong>
+          <p>Oluşturduğunuz karakteri görsel üretimlerinde referans olarak kullanabilirsiniz.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -692,6 +722,12 @@
   <div class="modal">
     <div class="modal-img-wrap">
       <img id="modalImg" src="" alt="referans görsel">
+      <button class="modal-copy-icon-btn" id="copyIconBtn" title="Prompt'u kopyala" aria-label="Prompt'u kopyala">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+      </button>
     </div>
     <div class="modal-body">
       <div class="premium-eyebrow-badge" id="modalPremiumBadge" style="display:none">
@@ -704,7 +740,14 @@
         <div class="modal-prompt" id="modalPrompt"></div>
         <div class="modal-actions">
           <button class="btn">← Geri</button>
-          <button class="btn primary" id="copyBtn">Kopyala</button>
+          <button class="btn primary" id="useInVisualBtn">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px; vertical-align:-2px;">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="9" cy="9" r="2"/>
+              <path d="M21 15l-5-5L5 21"/>
+            </svg>
+            Görsel Oluştur
+          </button>
         </div>
       </div>
 

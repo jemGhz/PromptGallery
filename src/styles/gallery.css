@@ -444,3 +444,51 @@
   transition:all 0.15s ease;
 }
 .paywall-back-btn:hover{background:var(--surface);}
+
+/* Modal image üzerinde kopyala icon butonu */
+.modal-img-wrap{ position:relative; }
+.modal-copy-icon-btn{
+  position:absolute; top:12px; right:12px;
+  width:36px; height:36px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(10,10,9,0.65);
+  -webkit-backdrop-filter:blur(8px);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:10px;
+  color:#fff;
+  cursor:pointer;
+  transition:background 0.15s, transform 0.1s;
+  z-index:5;
+}
+.modal-copy-icon-btn:hover{ background:rgba(10,10,9,0.85); border-color:rgba(255,255,255,0.3); }
+.modal-copy-icon-btn:active{ transform:scale(0.94); }
+.modal-copy-icon-btn.copied{
+  background:var(--gold); border-color:var(--gold); color:#0A0A09;
+}
+
+.sidebar-select{
+  width:100%;
+  padding:10px 12px;
+  background:var(--bg);
+  color:var(--ink);
+  border:1px solid var(--line);
+  border-radius:8px;
+  font-family:'Inter', sans-serif;
+  font-size:13px;
+  cursor:pointer;
+  appearance:none;
+  -webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  padding-right:36px;
+}
+.sidebar-select:focus{
+  outline:none;
+  border-color:var(--gold);
+}
+.sidebar-select:hover{
+  border-color:rgba(255,255,255,0.25);
+}
+#prodBody, #genderBody{ padding:4px 0 8px; }

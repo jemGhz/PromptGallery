@@ -132,6 +132,23 @@ async function generateCharacter() {
   btn.disabled = true;
   $('avatarQuotaNote').textContent = `Karakter sheet oluşturuluyor (${cost} kredi), bu biraz sürebilir...`;
 
+  $('avatarEmptyState').style.display = 'none';
+  $('avatarSheetResult').style.display = 'none';
+  let loadingEl = $('avatarLoadingState');
+  if (!loadingEl) {
+    loadingEl = document.createElement('div');
+    loadingEl.id = 'avatarLoadingState';
+    loadingEl.className = 'avatar-loading-state';
+    loadingEl.innerHTML = `
+      <div class="gen-loading-icon">🧬</div>
+      <div class="gen-loading-text">Karakter sheet oluşturuluyor...</div>
+      <div class="gen-loading-subtext">Bu işlem 30-60 saniye sürebilir</div>
+      <div class="gen-progress-bar" style="width:220px; margin-top:16px;"><div class="gen-progress-bar-fill"></div></div>
+    `;
+    $('avatarCanvas').appendChild(loadingEl);
+  }
+  loadingEl.style.display = 'flex';
+
   const provider = AVATAR_PROVIDERS[avatarSelectedProviderIdx];
   const payload = {
     email: localStorage.getItem('userEmail') || '',
@@ -175,9 +192,14 @@ async function generateCharacter() {
     }
 
     if (typeof data.newBalance === 'number') setLocalCreditBalance(data.newBalance);
+    const loadEl = $('avatarLoadingState');
+    if (loadEl) loadEl.style.display = 'none';
     renderCharacterSheet(data.sheet || {}, payload);
     updateAvatarQuotaNote();
   } catch (err) {
+    const loadEl = $('avatarLoadingState');
+    if (loadEl) loadEl.style.display = 'none';
+    $('avatarEmptyState').style.display = 'block';
     $('avatarQuotaNote').textContent = 'Hata: ' + err.message;
   } finally {
     btn.disabled = false;

@@ -4,34 +4,45 @@ import { onTabChange } from '../state.js';
 import { isLoggedIn, logout, onBalanceChange, getInitial, authHeaders } from '../auth.js';
 import { switchTab } from '../tabState.js';
 import { getGalleryRows, getUserInteractionSets, openModalForRow } from './gallery.js';
-import { openLightbox } from '../visualDetail.js';
-import { GENERATED_PROMPTS_URL, GENERATED_VISUALS_URL, CHARACTERS_LIST_URL } from '../config.js';
+import {
+  GENERATED_PROMPTS_URL,
+  GENERATED_VISUALS_URL,
+  CHARACTERS_LIST_URL
+} from '../config.js';
 import { onProfileSectionRequest } from '../tabState.js';
 import { openSettingsModal } from '../settingsModal.js';
 
-let activeSection = 'overview'; // 'overview' | 'liked' | 'saved' | 'purchased' | 'generated-prompts' | 'generated-visuals' | 'characters'
+// ---- Modern SVG iconlar (Lucide-style, 16px stroke) ----
+const ICON = {
+  home: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2h-4a1 1 0 0 1-1-1v-6h-4v6a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2z"/></svg>',
+  prompts: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg>',
+  image: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>',
+  character: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  social: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>',
+  all: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
+  heart: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+  bookmark: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
+  card: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>',
+  sparkles: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>'
+};
+
+// activeSection: 'overview' | 'prompts' | 'generated-visuals' | 'characters'
+let activeSection = 'overview';
+
+// Overview üst chip filtresi: 'all' | 'prompts' | 'visuals' | 'characters'
+let activeOverviewFilter = 'all';
+
+// Promptlar sayfası alt chip filtresi: 'all' | 'liked' | 'saved' | 'purchased' | 'generated'
+let activePromptFilter = 'all';
+
+// Cache'ler — sekmeler arası gezinirken tekrar fetch etmeyelim
+let cachedGeneratedPrompts = null;
+let cachedGeneratedVisuals = null;
+let cachedCharacters = null;
+
 let generatedPromptsLoading = false;
 let generatedVisualsLoading = false;
 let charactersLoading = false;
-
-const NAV_ICONS = {
-  home: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
-  shoppingBag: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
-  bookmark: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
-  heart: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
-  upload: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
-  fileText: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>',
-  images: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/></svg>',
-  users: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-  share: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>'
-};
-
-function getMostUsedTools() {
-  return [];
-}
-function getRecentActivity() {
-  return [];
-}
 
 function getUserInfo() {
   let name = '', email = '', picture = '', username = '';
@@ -39,13 +50,15 @@ function getUserInfo() {
     name = localStorage.getItem('userName') || '';
     email = localStorage.getItem('userEmail') || '';
     picture = localStorage.getItem('userPicture') || '';
-    // DÜZELTME: settingsModal.js artık kaydedilen username'i localStorage'a
-    // 'userUsername' anahtarıyla yazıyor. Öncesinde bu alan hiç okunmuyordu,
-    // bu yüzden alttaki handle hep email'in @ öncesinden türetiliyordu.
     username = localStorage.getItem('userUsername') || '';
-  } catch (e) {}
+  } catch (e) { }
   return { name, email, picture, username };
 }
+
+function getMostUsedTools() { return []; }
+function getRecentActivity() { return []; }
+
+// ---- Sidebar ----
 
 function renderSidebar() {
   const el = document.getElementById('profileSidebar');
@@ -53,8 +66,6 @@ function renderSidebar() {
 
   const { name, email, picture, username } = getUserInfo();
   const displayName = name || 'Kullanıcı';
-  // DÜZELTME: önce gerçek kaydedilmiş username'e bak; o yoksa (henüz hiç
-  // ayarlardan kaydedilmemişse) email'in @ öncesine düş, eskisi gibi.
   const handle = username ? '@' + username : (email ? '@' + email.split('@')[0] : '@kullanici');
 
   el.innerHTML = `
@@ -70,29 +81,28 @@ function renderSidebar() {
     </div>
 
     <nav class="profile-nav">
-      <button class="profile-nav-item ${activeSection === 'overview' ? 'active' : ''}" data-section="overview">${NAV_ICONS.home}<span>Overview</span></button>
-      <button class="profile-nav-item ${activeSection === 'purchased' ? 'active' : ''}" data-section="purchased">${NAV_ICONS.shoppingBag}<span>Satın Alınan Promptlar</span></button>
-      <button class="profile-nav-item ${activeSection === 'saved' ? 'active' : ''}" data-section="saved">${NAV_ICONS.bookmark}<span>Kaydedilen Promptlar</span></button>
-      <button class="profile-nav-item ${activeSection === 'liked' ? 'active' : ''}" data-section="liked">${NAV_ICONS.heart}<span>Beğenilen Promptlar</span></button>
-      <button class="profile-nav-item" disabled title="Yakında aktif olacak">${NAV_ICONS.upload}<span>Yüklenen Görseller</span></button>
-      <button class="profile-nav-item ${activeSection === 'generated-prompts' ? 'active' : ''}" data-section="generated-prompts">${NAV_ICONS.fileText}<span>Oluşturulan Promptlar</span></button>
-      <button class="profile-nav-item ${activeSection === 'generated-visuals' ? 'active' : ''}" data-section="generated-visuals">${NAV_ICONS.images}<span>Oluşturulan Görseller</span></button>
-      <button class="profile-nav-item ${activeSection === 'characters' ? 'active' : ''}" data-section="characters">${NAV_ICONS.users}<span>Karakter Sheet'leri</span></button>
-      <button class="profile-nav-item" disabled title="Yakında aktif olacak">${NAV_ICONS.share}<span>Sosyal Medya İçerikleri</span></button>
+      <button class="profile-nav-item ${activeSection === 'overview' ? 'active' : ''}" data-section="overview"><span class="nav-icon">${ICON.home}</span> Overview</button>
+      <button class="profile-nav-item ${activeSection === 'prompts' ? 'active' : ''}" data-section="prompts"><span class="nav-icon">${ICON.prompts}</span> Promptlar</button>
+      <button class="profile-nav-item ${activeSection === 'generated-visuals' ? 'active' : ''}" data-section="generated-visuals"><span class="nav-icon">${ICON.image}</span> Oluşturulan Görseller</button>
+      <button class="profile-nav-item ${activeSection === 'characters' ? 'active' : ''}" data-section="characters"><span class="nav-icon">${ICON.character}</span> Karakter Sheet'leri</button>
+      <button class="profile-nav-item" disabled title="Yakında aktif olacak"><span class="nav-icon">${ICON.social}</span> Sosyal Medya İçerikleri</button>
     </nav>
   `;
 
   el.querySelectorAll('[data-section]').forEach((btn) => {
     btn.addEventListener('click', () => {
       activeSection = btn.dataset.section;
+      // sekme değişince alt filtreleri resetle
+      if (activeSection === 'overview') activeOverviewFilter = 'all';
+      if (activeSection === 'prompts') activePromptFilter = 'all';
       renderProfilePage();
     });
   });
 }
 
-// ---- Ortak: satır + tip listesi üretme ----
+// ---- Ortak yardımcılar ----
 
-function getAllCollectionRowsWithTypes() {
+function getInteractionRowsWithTypes() {
   const rows = getGalleryRows();
   const { likes, saves, purchases } = getUserInteractionSets();
   const out = [];
@@ -108,29 +118,21 @@ function getAllCollectionRowsWithTypes() {
   return out;
 }
 
-function getSectionRows(section) {
-  const rows = getGalleryRows();
-  const { likes, saves, purchases } = getUserInteractionSets();
+const typeLabel = {
+  liked: `<span class="tile-badge-icon">${ICON.heart}</span> Beğenildi`,
+  saved: `<span class="tile-badge-icon">${ICON.bookmark}</span> Kaydedildi`,
+  purchased: `<span class="tile-badge-icon">${ICON.card}</span> Satın Alındı`
+};
 
-  let keySet;
-  if (section === 'liked') keySet = likes;
-  else if (section === 'saved') keySet = saves;
-  else if (section === 'purchased') keySet = purchases;
-  else return [];
-
-  return rows.filter((r) => {
-    const source = r.isPremium ? 'premium' : 'public';
-    return keySet.has(`${source}:${r.id}`);
-  });
-}
-
-const typeLabel = { liked: '❤️ Beğenildi', saved: '🔖 Kaydedildi', purchased: '💳 Satın Alındı' };
-
-function tileHtml(row, extraLabels) {
+function galleryTileHtml(row, extraLabels) {
   const tags = row.etiketler.split(',').map((t) => t.trim()).filter(Boolean);
   const source = row.isPremium ? 'premium' : 'public';
   const labels = extraLabels && extraLabels.length ? extraLabels : [tags[0] || (row.isPremium ? 'Premium' : '')];
-  const hintHtml = labels.map((l) => `<span class="profile-tile-badge">${escapeHtml(l)}</span>`).join('');
+  // NOT: labels typeLabel'dan geliyorsa SVG içerir; tag'leri değil, plain string ise escape et.
+  const hintHtml = labels.map((l) => {
+    const isHtml = /<span|<svg/.test(l);
+    return `<span class="profile-tile-badge">${isHtml ? l : escapeHtml(l)}</span>`;
+  }).join('');
   return `
     <div class="profile-collection-tile" data-row-id="${escapeAttr(row.id)}" data-row-source="${source}">
       <img src="${escapeAttr(row.gorselLink || '')}" alt="" loading="lazy">
@@ -138,9 +140,36 @@ function tileHtml(row, extraLabels) {
     </div>`;
 }
 
-function bindRowTileClicks(container) {
+function generatedPromptTileHtml(r) {
+  const tags = (r.style_tags || '').split(',').map((t) => t.trim()).filter(Boolean);
+  const hint = r.category || tags[0] || 'Prompt';
+  return `
+    <div class="profile-collection-tile" data-generated-prompt-id="${escapeAttr(r.id)}" title="Prompt metnini kopyalamak için tıkla">
+      <img src="${escapeAttr(r.image_url || '')}" alt="" loading="lazy">
+      <div class="profile-collection-tile-hint"><span class="profile-tile-badge"><span class="tile-badge-icon">${ICON.sparkles}</span> ${escapeHtml(hint)}</span></div>
+    </div>`;
+}
+
+function generatedVisualTileHtml(r, idx) {
+  const hint = r.provider || r.aspect_ratio || 'Görsel';
+  return `
+    <div class="profile-collection-tile" data-generated-visual-idx="${idx}" title="Prompt metnini kopyalamak için tıkla">
+      <img src="${escapeAttr(r.image_url || '')}" alt="" loading="lazy">
+      <div class="profile-collection-tile-hint"><span class="profile-tile-badge"><span class="tile-badge-icon">${ICON.image}</span> ${escapeHtml(hint)}</span></div>
+    </div>`;
+}
+
+function characterTileHtml(r) {
+  const hint = r.name || 'Karakter';
+  return `
+    <div class="profile-collection-tile" data-character-id="${escapeAttr(r.id)}" title="${escapeAttr(hint)}">
+      <img src="${escapeAttr(r.image_url || '')}" alt="" loading="lazy">
+      <div class="profile-collection-tile-hint"><span class="profile-tile-badge"><span class="tile-badge-icon">${ICON.character}</span> ${escapeHtml(hint)}</span></div>
+    </div>`;
+}
+
+function bindGalleryClicks(container) {
   container.querySelectorAll('[data-row-id]').forEach((tile) => {
-    if (tile.dataset.rowSource === 'generated') return;
     tile.addEventListener('click', () => {
       const { rowId, rowSource } = tile.dataset;
       const row = getGalleryRows().find(
@@ -151,7 +180,97 @@ function bindRowTileClicks(container) {
   });
 }
 
-// ---- Overview: "Tümü" grid'i (widget kutularının ÜSTÜNE yerleşir) ----
+function bindCopyClicks(container, rowsById, promptField) {
+  container.querySelectorAll('[data-generated-prompt-id]').forEach((tile) => {
+    const id = tile.dataset.generatedPromptId;
+    const row = rowsById.get(id);
+    if (!row) return;
+    tile.addEventListener('click', () => copyText(tile, row[promptField]));
+  });
+}
+
+function bindVisualCopyClicks(container, rows) {
+  container.querySelectorAll('[data-generated-visual-idx]').forEach((tile) => {
+    const row = rows[Number(tile.dataset.generatedVisualIdx)];
+    if (!row) return;
+    tile.addEventListener('click', () => copyText(tile, row.prompt_text));
+  });
+}
+
+function copyText(tile, text) {
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const hint = tile.querySelector('.profile-tile-badge');
+    if (!hint) return;
+    const original = hint.textContent;
+    hint.textContent = 'Kopyalandı ✓';
+    setTimeout(() => { hint.textContent = original; }, 1400);
+  });
+}
+
+// ---- Fetch (cache'li) ----
+
+async function fetchGeneratedPrompts(force = false) {
+  if (cachedGeneratedPrompts && !force) return cachedGeneratedPrompts;
+  if (!GENERATED_PROMPTS_URL || GENERATED_PROMPTS_URL.includes('YOUR-N8N-URL')) {
+    return { error: 'Servis henüz bağlanmadı.', rows: [] };
+  }
+  try {
+    const res = await fetch(GENERATED_PROMPTS_URL, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({})
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+    cachedGeneratedPrompts = { rows: Array.isArray(data.rows) ? data.rows : [] };
+    return cachedGeneratedPrompts;
+  } catch (err) {
+    return { error: err.message, rows: [] };
+  }
+}
+
+async function fetchGeneratedVisuals(force = false) {
+  if (cachedGeneratedVisuals && !force) return cachedGeneratedVisuals;
+  if (!GENERATED_VISUALS_URL || GENERATED_VISUALS_URL.includes('YOUR-N8N-URL')) {
+    return { error: 'Servis henüz bağlanmadı.', rows: [] };
+  }
+  try {
+    const res = await fetch(GENERATED_VISUALS_URL, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({})
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+    cachedGeneratedVisuals = { rows: Array.isArray(data.rows) ? data.rows : [] };
+    return cachedGeneratedVisuals;
+  } catch (err) {
+    return { error: err.message, rows: [] };
+  }
+}
+
+async function fetchCharacters(force = false) {
+  if (cachedCharacters && !force) return cachedCharacters;
+  if (!CHARACTERS_LIST_URL || CHARACTERS_LIST_URL.includes('YOUR-N8N-URL')) {
+    return { error: 'Servis henüz bağlanmadı.', rows: [] };
+  }
+  try {
+    const res = await fetch(CHARACTERS_LIST_URL, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({})
+    });
+    const raw = await res.json();
+    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
+    cachedCharacters = { rows: Array.isArray(data.rows) ? data.rows : [] };
+    return cachedCharacters;
+  } catch (err) {
+    return { error: err.message, rows: [] };
+  }
+}
+
+// ---- Overview paneli (widget'ların üstünde) ----
 
 function ensureOverviewCollectionPanel() {
   let panel = document.getElementById('profileOverviewCollection');
@@ -161,7 +280,6 @@ function ensureOverviewCollectionPanel() {
   const placeholder = document.querySelector('.profile-content-placeholder');
   if (!widgetsRow || !widgetsRow.parentElement) return null;
 
-  // Artık gerçek içerik göstereceğimiz için "yakında burada görünecek" placeholder'ı gizle
   if (placeholder) placeholder.style.display = 'none';
 
   panel = document.createElement('div');
@@ -171,29 +289,131 @@ function ensureOverviewCollectionPanel() {
   return panel;
 }
 
-function renderOverviewCollection() {
+async function renderOverviewCollection() {
   const panel = ensureOverviewCollectionPanel();
   if (!panel) return;
 
-  const items = getAllCollectionRowsWithTypes();
-
-  const gridHtml = items.length
-    ? `<div class="profile-collection-grid">
-        ${items.map(({ row, types }) => tileHtml(row, types.map((t) => typeLabel[t]))).join('')}
-      </div>`
-    : `<div class="profile-empty-note">Henüz beğenilen, kaydedilen veya satın alınan bir prompt yok.</div>`;
-
+  // Loading state
   panel.innerHTML = `
     <div class="profile-collection-header">
       <h2>Tümü</h2>
-      <span class="profile-collection-count">${items.length} öğe</span>
+      <span class="profile-collection-count">…</span>
+    </div>
+    <div class="profile-empty-note">Yükleniyor...</div>
+  `;
+
+  // Filtreye göre paralel fetch
+  const wantPrompts = activeOverviewFilter === 'all' || activeOverviewFilter === 'prompts';
+  const wantVisuals = activeOverviewFilter === 'all' || activeOverviewFilter === 'visuals';
+  const wantCharacters = activeOverviewFilter === 'all' || activeOverviewFilter === 'characters';
+
+  const [gp, gv, gc] = await Promise.all([
+    wantPrompts ? fetchGeneratedPrompts() : Promise.resolve({ rows: [] }),
+    wantVisuals ? fetchGeneratedVisuals() : Promise.resolve({ rows: [] }),
+    wantCharacters ? fetchCharacters() : Promise.resolve({ rows: [] })
+  ]);
+
+  const interactions = wantPrompts ? getInteractionRowsWithTypes() : [];
+
+  // Filter değiştiyse iptal
+  if (activeSection !== 'overview') return;
+
+  const tiles = [];
+
+  if (wantPrompts) {
+    // Koleksiyon (beğenilen/kaydedilen/satın alınan)
+    interactions.forEach(({ row, types }) => {
+      tiles.push({ kind: 'gallery', html: galleryTileHtml(row, types.map((t) => typeLabel[t])) });
+    });
+    // Oluşturulan promptlar
+    (gp.rows || []).forEach((r) => {
+      tiles.push({ kind: 'gen-prompt', html: generatedPromptTileHtml(r), row: r });
+    });
+  }
+
+  if (wantVisuals) {
+    (gv.rows || []).forEach((r, i) => {
+      tiles.push({ kind: 'gen-visual', html: generatedVisualTileHtml(r, i), row: r });
+    });
+  }
+
+  if (wantCharacters) {
+    (gc.rows || []).forEach((r) => {
+      tiles.push({ kind: 'character', html: characterTileHtml(r), row: r });
+    });
+  }
+
+  const headerLabel = {
+    all: 'Tümü',
+    prompts: 'Promptlar',
+    visuals: 'Görseller',
+    characters: 'Karakterler'
+  }[activeOverviewFilter] || 'Tümü';
+
+  const gridHtml = tiles.length
+    ? `<div class="profile-collection-grid">${tiles.map((t) => t.html).join('')}</div>`
+    : `<div class="profile-empty-note">Henüz burada bir şey yok.</div>`;
+
+  panel.innerHTML = `
+    <div class="profile-collection-header">
+      <h2>${escapeHtml(headerLabel)}</h2>
+      <span class="profile-collection-count">${tiles.length} öğe</span>
     </div>
     ${gridHtml}
   `;
-  bindRowTileClicks(panel);
+
+  // Bindings
+  bindGalleryClicks(panel);
+
+  const gpMap = new Map((gp.rows || []).map((r) => [String(r.id), r]));
+  bindCopyClicks(panel, gpMap, 'prompt_text');
+  bindVisualCopyClicks(panel, gv.rows || []);
 }
 
-function renderMain() {
+// Overview üst chip'leri (Tümü/Promptlar/Görseller/Karakterler) — HTML'de var, JS ile aktif hale getir
+function bindOverviewFilterChips() {
+  const row = document.querySelector('.profile-filter-row');
+  if (!row || row.dataset.bound === '1') return;
+  row.dataset.bound = '1';
+
+  const chipMap = {
+    'Tümü': 'all',
+    'Promptlar': 'prompts',
+    'Görseller': 'visuals',
+    'Karakterler': 'characters'
+  };
+
+  row.querySelectorAll('.profile-filter-chip').forEach((chip) => {
+    const label = chip.textContent.trim();
+    const filterKey = chipMap[label];
+    if (!filterKey) return; // disabled chip
+    chip.disabled = false;
+    chip.removeAttribute('title');
+    chip.addEventListener('click', () => {
+      activeOverviewFilter = filterKey;
+      row.querySelectorAll('.profile-filter-chip').forEach((c) => c.classList.remove('active'));
+      chip.classList.add('active');
+      renderOverviewCollection();
+    });
+  });
+}
+
+function syncOverviewFilterActiveChip() {
+  const row = document.querySelector('.profile-filter-row');
+  if (!row) return;
+  const chipMap = {
+    'all': 'Tümü',
+    'prompts': 'Promptlar',
+    'visuals': 'Görseller',
+    'characters': 'Karakterler'
+  };
+  const wantLabel = chipMap[activeOverviewFilter] || 'Tümü';
+  row.querySelectorAll('.profile-filter-chip').forEach((c) => {
+    c.classList.toggle('active', c.textContent.trim() === wantLabel);
+  });
+}
+
+function renderOverview() {
   const { name } = getUserInfo();
   const headerEl = document.getElementById('profileWelcomeName');
   if (headerEl) headerEl.textContent = name ? name.split(' ')[0] : 'Kullanıcı';
@@ -225,10 +445,12 @@ function renderMain() {
       : `<div class="profile-empty-note">Henüz aktivite yok.</div>`;
   }
 
+  bindOverviewFilterChips();
+  syncOverviewFilterActiveChip();
   renderOverviewCollection();
 }
 
-// ---- Beğenilen / Kaydedilen / Satın Alınan paneli (ayrı sekmeler) ----
+// ---- Promptlar sekmesi (birleşik + alt chip filtresi) ----
 
 function ensureCollectionPanel() {
   let panel = document.getElementById('profileCollectionPanel');
@@ -245,151 +467,110 @@ function ensureCollectionPanel() {
   return panel;
 }
 
-const sectionTitle = {
-  liked: 'Beğenilen Promptlar',
-  saved: 'Kaydedilen Promptlar',
-  purchased: 'Satın Alınan Promptlar',
-  'generated-visuals': 'Oluşturulan Görseller'
-};
+const promptFilterChips = [
+  { key: 'all', label: 'Tümü', icon: ICON.all },
+  { key: 'liked', label: 'Beğenilen', icon: ICON.heart },
+  { key: 'saved', label: 'Kaydedilen', icon: ICON.bookmark },
+  { key: 'purchased', label: 'Satın Alınan', icon: ICON.card },
+  { key: 'generated', label: 'Oluşturulan', icon: ICON.sparkles }
+];
 
-function renderCollectionPanel(section) {
+function renderPromptChipsHtml() {
+  return promptFilterChips.map((c) => `
+    <button class="profile-filter-chip ${c.key === activePromptFilter ? 'active' : ''}" data-prompt-filter="${c.key}"><span class="chip-icon">${c.icon}</span> ${escapeHtml(c.label)}</button>
+  `).join('');
+}
+
+async function renderPromptsPanel() {
   const panel = ensureCollectionPanel();
   if (!panel) return;
 
-  const rows = getSectionRows(section);
-  const title = sectionTitle[section] || '';
-
-  const gridHtml = rows.length
-    ? `<div class="profile-collection-grid">${rows.map((r) => tileHtml(r)).join('')}</div>`
-    : `<div class="profile-empty-note">Henüz burada bir şey yok.</div>`;
-
+  // Loading state
   panel.innerHTML = `
     <div class="profile-collection-header">
-      <h2>${escapeHtml(title)}</h2>
-      <span class="profile-collection-count">${rows.length} öğe</span>
-    </div>
-    ${gridHtml}
-  `;
-  bindRowTileClicks(panel);
-}
-
-// ---- Oluşturulan Promptlar paneli ----
-
-async function fetchGeneratedPrompts() {
-  if (!GENERATED_PROMPTS_URL || GENERATED_PROMPTS_URL.includes('YOUR-N8N-URL')) {
-    return { error: 'Servis henüz bağlanmadı.' };
-  }
-  try {
-    const res = await fetch(GENERATED_PROMPTS_URL, {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify({})
-    });
-    const raw = await res.json();
-    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
-    return { rows: Array.isArray(data.rows) ? data.rows : [] };
-  } catch (err) {
-    return { error: err.message };
-  }
-}
-
-function tileHintForRow(row) {
-  const tags = (row.style_tags || '').split(',').map((t) => t.trim()).filter(Boolean);
-  return row.category || tags[0] || 'Prompt';
-}
-
-function copyGeneratedPromptText(tile, promptText) {
-  if (!promptText) return;
-  navigator.clipboard.writeText(promptText).then(() => {
-    const hint = tile.querySelector('.profile-collection-tile-hint');
-    if (!hint) return;
-    const original = hint.textContent;
-    hint.textContent = 'Kopyalandı ✓';
-    setTimeout(() => {
-      hint.textContent = original;
-    }, 1400);
-  });
-}
-
-async function renderGeneratedPromptsPanel() {
-  const panel = ensureCollectionPanel();
-  if (!panel) return;
-
-  if (generatedPromptsLoading) return;
-  generatedPromptsLoading = true;
-
-  panel.innerHTML = `
-    <div class="profile-collection-header">
-      <h2>Oluşturulan Promptlar</h2>
+      <h2>Promptlar</h2>
       <span class="profile-collection-count">…</span>
+    </div>
+    <div class="profile-filter-row" id="promptSubFilterRow">
+      ${renderPromptChipsHtml()}
     </div>
     <div class="profile-empty-note">Yükleniyor...</div>
   `;
 
-  const { rows, error } = await fetchGeneratedPrompts();
-  generatedPromptsLoading = false;
+  // Alt chip bindings
+  panel.querySelectorAll('[data-prompt-filter]').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      activePromptFilter = chip.dataset.promptFilter;
+      renderPromptsPanel();
+    });
+  });
 
-  if (activeSection !== 'generated-prompts') return;
+  const wantGenerated = activePromptFilter === 'all' || activePromptFilter === 'generated';
+  const wantInteractions = activePromptFilter === 'all' || ['liked', 'saved', 'purchased'].includes(activePromptFilter);
 
-  if (error) {
-    panel.innerHTML = `
-      <div class="profile-collection-header">
-        <h2>Oluşturulan Promptlar</h2>
-        <span class="profile-collection-count">0 öğe</span>
-      </div>
-      <div class="profile-empty-note">Yüklenemedi: ${escapeHtml(error)}</div>
-    `;
-    return;
+  const gp = wantGenerated ? await fetchGeneratedPrompts() : { rows: [] };
+
+  if (activeSection !== 'prompts') return;
+
+  const tiles = [];
+
+  if (wantInteractions) {
+    const { likes, saves, purchases } = getUserInteractionSets();
+    const rows = getGalleryRows();
+    rows.forEach((r) => {
+      const source = r.isPremium ? 'premium' : 'public';
+      const key = `${source}:${r.id}`;
+      const types = [];
+      if (purchases.has(key)) types.push('purchased');
+      if (saves.has(key)) types.push('saved');
+      if (likes.has(key)) types.push('liked');
+
+      if (!types.length) return;
+
+      // Alt filtre uygula
+      if (activePromptFilter === 'liked' && !types.includes('liked')) return;
+      if (activePromptFilter === 'saved' && !types.includes('saved')) return;
+      if (activePromptFilter === 'purchased' && !types.includes('purchased')) return;
+
+      tiles.push({ html: galleryTileHtml(r, types.map((t) => typeLabel[t])) });
+    });
   }
 
-  const gridHtml = rows.length
-    ? `<div class="profile-collection-grid">
-        ${rows.map((r) => `
-          <div class="profile-collection-tile" data-row-id="${escapeAttr(r.id)}" data-row-source="generated" title="Prompt metnini kopyalamak için tıkla">
-            <img src="${escapeAttr(r.image_url || '')}" alt="" loading="lazy">
-            <div class="profile-collection-tile-hint">${escapeHtml(tileHintForRow(r))}</div>
-          </div>`).join('')}
-      </div>`
-    : `<div class="profile-empty-note">Henüz prompt üretmedin. "Prompt Üretici" sekmesinden başlayabilirsin.</div>`;
+  if (wantGenerated) {
+    (gp.rows || []).forEach((r) => {
+      tiles.push({ html: generatedPromptTileHtml(r) });
+    });
+  }
+
+  const gridHtml = tiles.length
+    ? `<div class="profile-collection-grid">${tiles.map((t) => t.html).join('')}</div>`
+    : `<div class="profile-empty-note">Bu filtrede gösterilecek bir şey yok.</div>`;
 
   panel.innerHTML = `
     <div class="profile-collection-header">
-      <h2>Oluşturulan Promptlar</h2>
-      <span class="profile-collection-count">${rows.length} öğe</span>
+      <h2>Promptlar</h2>
+      <span class="profile-collection-count">${tiles.length} öğe</span>
+    </div>
+    <div class="profile-filter-row" id="promptSubFilterRow">
+      ${renderPromptChipsHtml()}
     </div>
     ${gridHtml}
   `;
 
-  panel.querySelectorAll('[data-row-source="generated"]').forEach((tile) => {
-    const row = rows.find((r) => String(r.id) === tile.dataset.rowId);
-    if (!row) return;
-    tile.addEventListener('click', () => copyGeneratedPromptText(tile, row.prompt_text));
+  // Rebind chip'ler (innerHTML overwrite ettiği için)
+  panel.querySelectorAll('[data-prompt-filter]').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      activePromptFilter = chip.dataset.promptFilter;
+      renderPromptsPanel();
+    });
   });
+
+  bindGalleryClicks(panel);
+  const gpMap = new Map((gp.rows || []).map((r) => [String(r.id), r]));
+  bindCopyClicks(panel, gpMap, 'prompt_text');
 }
 
 // ---- Oluşturulan Görseller paneli ----
-
-async function fetchGeneratedVisuals() {
-  if (!GENERATED_VISUALS_URL || GENERATED_VISUALS_URL.includes('YOUR-N8N-URL')) {
-    return { error: 'Servis henüz bağlanmadı.' };
-  }
-  try {
-    const res = await fetch(GENERATED_VISUALS_URL, {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify({})
-    });
-    const raw = await res.json();
-    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
-    return { rows: Array.isArray(data.rows) ? data.rows : [] };
-  } catch (err) {
-    return { error: err.message };
-  }
-}
-
-function tileHintForVisualRow(row) {
-  return row.provider || row.aspect_ratio || 'Görsel';
-}
 
 async function renderGeneratedVisualsPanel() {
   const panel = ensureCollectionPanel();
@@ -424,11 +605,7 @@ async function renderGeneratedVisualsPanel() {
 
   const gridHtml = rows.length
     ? `<div class="profile-collection-grid">
-        ${rows.map((r, i) => `
-          <div class="profile-collection-tile" data-row-id="${i}" data-image-id="${escapeAttr(r.id ?? '')}" data-row-source="generated-visual" title="Görsel detayı için tıkla">
-            <img src="${escapeAttr(r.image_url || '')}" alt="" loading="lazy">
-            <div class="profile-collection-tile-hint">${escapeHtml(tileHintForVisualRow(r))}</div>
-          </div>`).join('')}
+        ${rows.map((r, i) => generatedVisualTileHtml(r, i)).join('')}
       </div>`
     : `<div class="profile-empty-note">Henüz görsel üretmedin. "Görsel Oluşturucu" sekmesinden başlayabilirsin.</div>`;
 
@@ -440,76 +617,10 @@ async function renderGeneratedVisualsPanel() {
     ${gridHtml}
   `;
 
-  const imageList = rows.map((r) => ({
-    url: r.image_url,
-    id: r.id,
-    prompt_text: r.prompt_text,
-    provider: r.provider,
-    aspect_ratio: r.aspect_ratio,
-    created_at: r.created_at
-  }));
-  panel.querySelectorAll('[data-row-source="generated-visual"]').forEach((tile) => {
-    const row = rows[Number(tile.dataset.rowId)];
-    if (!row) return;
-    tile.addEventListener('click', () => openLightbox(imageList, Number(tile.dataset.rowId)));
-  });
+  bindVisualCopyClicks(panel, rows);
 }
 
 // ---- Karakter Sheet'leri paneli ----
-
-async function fetchCharacters() {
-  if (!CHARACTERS_LIST_URL || CHARACTERS_LIST_URL.includes('YOUR-N8N-URL')) {
-    return { error: 'Servis henüz bağlanmadı.' };
-  }
-  try {
-    const res = await fetch(CHARACTERS_LIST_URL, {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify({})
-    });
-    const raw = await res.json();
-    const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
-    return { rows: Array.isArray(data.rows) ? data.rows : [] };
-  } catch (err) {
-    return { error: err.message };
-  }
-}
-
-let characterModalReady = false;
-function ensureCharacterModal() {
-  if (characterModalReady) return;
-  characterModalReady = true;
-
-  const overlay = document.createElement('div');
-  overlay.id = 'characterDetailBackdrop';
-  overlay.className = 'character-detail-backdrop';
-  overlay.innerHTML = `
-    <div class="character-detail-content">
-      <button type="button" class="character-detail-close" id="characterDetailClose" title="Kapat">✕</button>
-      <img id="characterDetailImg" class="character-detail-img" alt="karakter">
-      <div class="character-detail-name" id="characterDetailName"></div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-
-  overlay.querySelector('#characterDetailClose').addEventListener('click', closeCharacterModal);
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) closeCharacterModal();
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && overlay.classList.contains('open')) closeCharacterModal();
-  });
-}
-function openCharacterModal(row) {
-  ensureCharacterModal();
-  document.getElementById('characterDetailImg').src = row.image_url || '';
-  document.getElementById('characterDetailName').textContent = row.name || 'Karakter';
-  document.getElementById('characterDetailBackdrop').classList.add('open');
-}
-function closeCharacterModal() {
-  const overlay = document.getElementById('characterDetailBackdrop');
-  if (overlay) overlay.classList.remove('open');
-}
 
 async function renderCharactersPanel() {
   const panel = ensureCollectionPanel();
@@ -544,13 +655,9 @@ async function renderCharactersPanel() {
 
   const gridHtml = rows.length
     ? `<div class="profile-collection-grid">
-        ${rows.map((r, i) => `
-          <div class="profile-collection-tile" data-row-id="${i}" data-row-source="character" title="Karakter detayı için tıkla">
-            <img src="${escapeAttr(r.image_url || '')}" alt="" loading="lazy">
-            <div class="profile-collection-tile-hint">${escapeHtml(r.name || 'Karakter')}</div>
-          </div>`).join('')}
+        ${rows.map((r) => characterTileHtml(r)).join('')}
       </div>`
-    : `<div class="profile-empty-note">Henüz karakter oluşturmadın. "Karakter Oluşturucu" sekmesinden başlayabilirsin.</div>`;
+    : `<div class="profile-empty-note">Henüz karakter oluşturmadın. "AI Avatar / Karakter Oluşturucu" sekmesinden başlayabilirsin.</div>`;
 
   panel.innerHTML = `
     <div class="profile-collection-header">
@@ -559,15 +666,9 @@ async function renderCharactersPanel() {
     </div>
     ${gridHtml}
   `;
-
-  panel.querySelectorAll('[data-row-source="character"]').forEach((tile) => {
-    const row = rows[Number(tile.dataset.rowId)];
-    if (!row) return;
-    tile.addEventListener('click', () => openCharacterModal(row));
-  });
 }
 
-// ---- Sayfa görünürlük / yönlendirme ----
+// ---- Görünürlük / router ----
 
 function setMainVisibility(showOverview) {
   const view = document.getElementById('profileView');
@@ -588,10 +689,10 @@ function renderProfilePage() {
 
   if (activeSection === 'overview') {
     setMainVisibility(true);
-    renderMain();
-  } else if (activeSection === 'generated-prompts') {
+    renderOverview();
+  } else if (activeSection === 'prompts') {
     setMainVisibility(false);
-    renderGeneratedPromptsPanel();
+    renderPromptsPanel();
   } else if (activeSection === 'generated-visuals') {
     setMainVisibility(false);
     renderGeneratedVisualsPanel();
@@ -599,8 +700,13 @@ function renderProfilePage() {
     setMainVisibility(false);
     renderCharactersPanel();
   } else {
+    // Eski section adları (liked/saved/purchased/generated-prompts) — Promptlar'a yönlendir
+    activeSection = 'prompts';
+    if (['liked', 'saved', 'purchased'].includes(activePromptFilter) === false) {
+      // eski isim gelirse map et
+    }
     setMainVisibility(false);
-    renderCollectionPanel(activeSection);
+    renderPromptsPanel();
   }
 }
 
@@ -610,17 +716,33 @@ function bindQuickActions() {
   });
 }
 
-// Satın Alma Geçmişi artık Ayarlar > JG Plus & Ödemeler altında yaşıyor.
-// Bu fonksiyonu çağıran eski yerler (örn. bildirimlerden bir link) kırılmasın diye
-// silmek yerine yeni konuma yönlendiriyoruz.
 export function openPurchaseHistorySection() {
   openSettingsModal('billing');
+}
+
+// Cache invalidation — dışarıdan çağrılabilir (yeni prompt/görsel/karakter üretilince)
+export function invalidateProfileCache(kind) {
+  if (!kind || kind === 'prompts') cachedGeneratedPrompts = null;
+  if (!kind || kind === 'visuals') cachedGeneratedVisuals = null;
+  if (!kind || kind === 'characters') cachedCharacters = null;
 }
 
 export function initProfile() {
   bindQuickActions();
   onProfileSectionRequest((section) => {
-    activeSection = section;
+    // Eski section isimlerini map et
+    const legacyMap = {
+      'liked': { section: 'prompts', filter: 'liked' },
+      'saved': { section: 'prompts', filter: 'saved' },
+      'purchased': { section: 'prompts', filter: 'purchased' },
+      'generated-prompts': { section: 'prompts', filter: 'generated' }
+    };
+    if (legacyMap[section]) {
+      activeSection = legacyMap[section].section;
+      activePromptFilter = legacyMap[section].filter;
+    } else {
+      activeSection = section;
+    }
     renderProfilePage();
   });
   onTabChange((tab) => {
