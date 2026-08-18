@@ -3,7 +3,7 @@ import { escapeHtml, escapeAttr, unwrap } from '../utils.js';
 import { onTabChange } from '../state.js';
 import { isLoggedIn, logout, onBalanceChange, getInitial, authHeaders } from '../auth.js';
 import { switchTab } from '../tabState.js';
-import { getGalleryRows, getUserInteractionSets, openModalForRow } from './gallery.js';
+import { getGalleryRows, getUserInteractionSets } from './gallery.js';
 import {
   GENERATED_PROMPTS_URL,
   GENERATED_VISUALS_URL,
@@ -11,6 +11,7 @@ import {
 } from '../config.js';
 import { onProfileSectionRequest } from '../tabState.js';
 import { openSettingsModal } from '../settingsModal.js';
+import { openDetailModal } from '../detailModal.js';
 
 // ---- Modern SVG iconlar (Lucide-style, 16px stroke) ----
 const ICON = {
@@ -169,42 +170,48 @@ function characterTileHtml(r) {
 }
 
 function bindGalleryClicks(container) {
+  const rows = getGalleryRows();
   container.querySelectorAll('[data-row-id]').forEach((tile) => {
     tile.addEventListener('click', () => {
       const { rowId, rowSource } = tile.dataset;
-      const row = getGalleryRows().find(
+      const row = rows.find(
         (r) => String(r.id) === rowId && (r.isPremium ? 'premium' : 'public') === rowSource
       );
-      if (row) openModalForRow(row);
+      if (row) {
+        // Modal'da göster (koleksiyon = gallery context)
+        openDetailModal([row], 0, { context: 'gallery' });
+      }
     });
   });
 }
 
 function bindCopyClicks(container, rowsById, promptField) {
+  const rowsArray = Array.from(rowsById.values());
   container.querySelectorAll('[data-generated-prompt-id]').forEach((tile) => {
     const id = tile.dataset.generatedPromptId;
     const row = rowsById.get(id);
     if (!row) return;
-    tile.addEventListener('click', () => copyText(tile, row[promptField]));
+    const idx = rowsArray.indexOf(row);
+    tile.addEventListener('click', () => {
+      openDetailModal(rowsArray, idx, {
+        context: 'generated-prompts',
+        onDelete: () => invalidateProfileCache('prompts')
+      });
+    });
   });
 }
 
 function bindVisualCopyClicks(container, rows) {
   container.querySelectorAll('[data-generated-visual-idx]').forEach((tile) => {
-    const row = rows[Number(tile.dataset.generatedVisualIdx)];
+    const idx = Number(tile.dataset.generatedVisualIdx);
+    const row = rows[idx];
     if (!row) return;
-    tile.addEventListener('click', () => copyText(tile, row.prompt_text));
-  });
-}
-
-function copyText(tile, text) {
-  if (!text) return;
-  navigator.clipboard.writeText(text).then(() => {
-    const hint = tile.querySelector('.profile-tile-badge');
-    if (!hint) return;
-    const original = hint.textContent;
-    hint.textContent = 'Kopyalandı ✓';
-    setTimeout(() => { hint.textContent = original; }, 1400);
+    tile.addEventListener('click', () => {
+      openDetailModal(rows, idx, {
+        context: 'generated-visuals',
+        onDelete: () => invalidateProfileCache('visuals')
+      });
+    });
   });
 }
 
@@ -666,6 +673,19 @@ async function renderCharactersPanel() {
     </div>
     ${gridHtml}
   `;
+
+  // Karakter tıklama - detail modal
+  panel.querySelectorAll('[data-character-id]').forEach((tile) => {
+    const id = tile.dataset.characterId;
+    const idx = rows.findIndex((r) => String(r.id) === id);
+    if (idx < 0) return;
+    tile.addEventListener('click', () => {
+      openDetailModal(rows, idx, {
+        context: 'characters',
+        onDelete: () => invalidateProfileCache('characters')
+      });
+    });
+  });
 }
 
 // ---- Görünürlük / router ----

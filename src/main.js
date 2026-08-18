@@ -14,6 +14,7 @@ import { initNotifications } from './notifications.js';
 import { initSettingsModal } from './settingsModal.js';
 import { initTheme } from './state.js';
 import { initVisualDetailFromUrl } from './visualDetail.js';
+import { initDetailModal } from './detailModal.js';
 
 initTheme();
 
@@ -39,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCreditModal();
   initOnboardingModal(authHeaders);
   initProfile();
+  initDetailModal();
   initSupportModal();
   initSettingsModal();
   initNotifications();

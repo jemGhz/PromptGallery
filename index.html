@@ -995,6 +995,104 @@
 </div>
 <!-- ↑ onboardingModalBackdrop burada kapanıyor -->
 
+<!-- Detay Modal -->
+<div id="detailModal" class="detail-modal">
+  <button class="detail-close-btn" id="detailCloseBtn" aria-label="Kapat">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </button>
+
+  <div class="detail-modal-content">
+    <div class="detail-image-area">
+      <button class="detail-nav-btn detail-nav-prev" id="detailPrevBtn" aria-label="Önceki">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <img id="detailImg" src="" alt="detay görsel">
+      <button class="detail-nav-btn detail-nav-next" id="detailNextBtn" aria-label="Sonraki">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+      <div class="detail-thumbs" id="detailThumbs"></div>
+    </div>
+
+    <div class="detail-info-panel">
+      <div class="detail-card detail-user-card">
+        <div class="detail-avatar" id="detailAvatar">JG</div>
+        <div>
+          <div class="detail-user-name" id="detailUserName">Kullanıcı</div>
+          <div class="detail-user-handle" id="detailUserHandle"></div>
+        </div>
+      </div>
+
+      <div class="detail-card">
+        <div class="detail-card-header">
+          <span class="detail-card-label">Prompt</span>
+          <button class="detail-mini-btn" id="detailCopyBtn">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            <span class="copy-label">Kopyala</span>
+          </button>
+        </div>
+        <div class="detail-prompt" id="detailPrompt"></div>
+      </div>
+
+      <div class="detail-card detail-meta">
+        <div class="detail-meta-row"><span>Oluşturulma Tarihi</span><span id="detailDate">—</span></div>
+        <div class="detail-meta-row"><span>Model</span><span id="detailModel">—</span></div>
+        <div class="detail-meta-row"><span>Boyut</span><span id="detailSize">—</span></div>
+        <div class="detail-meta-row"><span>Üretim ID</span><span id="detailId">—</span></div>
+      </div>
+
+      <div class="detail-primary-actions">
+        <button class="detail-action-btn" id="detailUseBtn">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>
+          </svg>
+          <span>Bu Prompt ile Oluştur</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+        <button class="detail-action-btn" disabled title="Yakında aktif olacak">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <span>Benzer Görseller Bul</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-bottom-bar">
+    <button class="detail-bottom-btn primary" id="detailDownloadBtn">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      İndir
+    </button>
+    <button class="detail-bottom-btn" id="detailShareBtn">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+      </svg>
+      Paylaş
+    </button>
+    <button class="detail-bottom-btn danger" id="detailDelBtn">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>
+      </svg>
+      Sil
+    </button>
+  </div>
+</div>
+
 <script type="module" src="/src/main.js"></script>
 </body>
 </html>
