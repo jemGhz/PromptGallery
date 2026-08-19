@@ -12,6 +12,7 @@ import {
 import { onProfileSectionRequest } from '../tabState.js';
 import { openSettingsModal } from '../settingsModal.js';
 import { openDetailModal } from '../detailModal.js';
+import { t } from '../i18n.js';
 
 // ---- Modern SVG iconlar (Lucide-style, 16px stroke) ----
 const ICON = {
@@ -41,7 +42,6 @@ let cachedGeneratedPrompts = null;
 let cachedGeneratedVisuals = null;
 let cachedCharacters = null;
 
-let generatedPromptsLoading = false;
 let generatedVisualsLoading = false;
 let charactersLoading = false;
 
@@ -66,8 +66,8 @@ function renderSidebar() {
   if (!el) return;
 
   const { name, email, picture, username } = getUserInfo();
-  const displayName = name || 'Kullanıcı';
-  const handle = username ? '@' + username : (email ? '@' + email.split('@')[0] : '@kullanici');
+  const displayName = name || t('profile.default_user');
+  const handle = username ? '@' + username : (email ? '@' + email.split('@')[0] : t('profile.handle_fallback'));
 
   el.innerHTML = `
     <div class="profile-card">
@@ -82,11 +82,11 @@ function renderSidebar() {
     </div>
 
     <nav class="profile-nav">
-      <button class="profile-nav-item ${activeSection === 'overview' ? 'active' : ''}" data-section="overview"><span class="nav-icon">${ICON.home}</span> Overview</button>
-      <button class="profile-nav-item ${activeSection === 'prompts' ? 'active' : ''}" data-section="prompts"><span class="nav-icon">${ICON.prompts}</span> Promptlar</button>
-      <button class="profile-nav-item ${activeSection === 'generated-visuals' ? 'active' : ''}" data-section="generated-visuals"><span class="nav-icon">${ICON.image}</span> Oluşturulan Görseller</button>
-      <button class="profile-nav-item ${activeSection === 'characters' ? 'active' : ''}" data-section="characters"><span class="nav-icon">${ICON.character}</span> Karakter Sheet'leri</button>
-      <button class="profile-nav-item" disabled title="Yakında aktif olacak"><span class="nav-icon">${ICON.social}</span> Sosyal Medya İçerikleri</button>
+      <button class="profile-nav-item ${activeSection === 'overview' ? 'active' : ''}" data-section="overview"><span class="nav-icon">${ICON.home}</span> ${escapeHtml(t('profile.nav_overview'))}</button>
+      <button class="profile-nav-item ${activeSection === 'prompts' ? 'active' : ''}" data-section="prompts"><span class="nav-icon">${ICON.prompts}</span> ${escapeHtml(t('profile.filter_prompts'))}</button>
+      <button class="profile-nav-item ${activeSection === 'generated-visuals' ? 'active' : ''}" data-section="generated-visuals"><span class="nav-icon">${ICON.image}</span> ${escapeHtml(t('profile.nav_visuals'))}</button>
+      <button class="profile-nav-item ${activeSection === 'characters' ? 'active' : ''}" data-section="characters"><span class="nav-icon">${ICON.character}</span> ${escapeHtml(t('profile.nav_characters'))}</button>
+      <button class="profile-nav-item" disabled title="${escapeAttr(t('profile.soon'))}"><span class="nav-icon">${ICON.social}</span> ${escapeHtml(t('profile.nav_social'))}</button>
     </nav>
   `;
 
@@ -119,16 +119,18 @@ function getInteractionRowsWithTypes() {
   return out;
 }
 
-const typeLabel = {
-  liked: `<span class="tile-badge-icon">${ICON.heart}</span> Beğenildi`,
-  saved: `<span class="tile-badge-icon">${ICON.bookmark}</span> Kaydedildi`,
-  purchased: `<span class="tile-badge-icon">${ICON.card}</span> Satın Alındı`
-};
+function getTypeLabel() {
+  return {
+    liked: `<span class="tile-badge-icon">${ICON.heart}</span> ${escapeHtml(t('profile.badge_liked'))}`,
+    saved: `<span class="tile-badge-icon">${ICON.bookmark}</span> ${escapeHtml(t('profile.badge_saved'))}`,
+    purchased: `<span class="tile-badge-icon">${ICON.card}</span> ${escapeHtml(t('profile.badge_purchased'))}`
+  };
+}
 
 function galleryTileHtml(row, extraLabels) {
   const tags = row.etiketler.split(',').map((t) => t.trim()).filter(Boolean);
   const source = row.isPremium ? 'premium' : 'public';
-  const labels = extraLabels && extraLabels.length ? extraLabels : [tags[0] || (row.isPremium ? 'Premium' : '')];
+  const labels = extraLabels && extraLabels.length ? extraLabels : [tags[0] || (row.isPremium ? t('gallery.premium_label') : '')];
   // NOT: labels typeLabel'dan geliyorsa SVG içerir; tag'leri değil, plain string ise escape et.
   const hintHtml = labels.map((l) => {
     const isHtml = /<span|<svg/.test(l);
@@ -143,25 +145,25 @@ function galleryTileHtml(row, extraLabels) {
 
 function generatedPromptTileHtml(r) {
   const tags = (r.style_tags || '').split(',').map((t) => t.trim()).filter(Boolean);
-  const hint = r.category || tags[0] || 'Prompt';
+  const hint = r.category || tags[0] || t('profile.hint_prompt');
   return `
-    <div class="profile-collection-tile" data-generated-prompt-id="${escapeAttr(r.id)}" title="Prompt metnini kopyalamak için tıkla">
+    <div class="profile-collection-tile" data-generated-prompt-id="${escapeAttr(r.id)}" title="${escapeAttr(t('profile.copy_prompt_hint_title'))}">
       <img src="${escapeAttr(r.image_url || '')}" alt="" loading="lazy">
       <div class="profile-collection-tile-hint"><span class="profile-tile-badge"><span class="tile-badge-icon">${ICON.sparkles}</span> ${escapeHtml(hint)}</span></div>
     </div>`;
 }
 
 function generatedVisualTileHtml(r, idx) {
-  const hint = r.provider || r.aspect_ratio || 'Görsel';
+  const hint = r.provider || r.aspect_ratio || t('profile.hint_visual');
   return `
-    <div class="profile-collection-tile" data-generated-visual-idx="${idx}" title="Prompt metnini kopyalamak için tıkla">
+    <div class="profile-collection-tile" data-generated-visual-idx="${idx}" title="${escapeAttr(t('profile.copy_prompt_hint_title'))}">
       <img src="${escapeAttr(r.image_url || '')}" alt="" loading="lazy">
       <div class="profile-collection-tile-hint"><span class="profile-tile-badge"><span class="tile-badge-icon">${ICON.image}</span> ${escapeHtml(hint)}</span></div>
     </div>`;
 }
 
 function characterTileHtml(r) {
-  const hint = r.name || 'Karakter';
+  const hint = r.name || t('profile.hint_character');
   return `
     <div class="profile-collection-tile" data-character-id="${escapeAttr(r.id)}" title="${escapeAttr(hint)}">
       <img src="${escapeAttr(r.image_url || '')}" alt="" loading="lazy">
@@ -178,14 +180,13 @@ function bindGalleryClicks(container) {
         (r) => String(r.id) === rowId && (r.isPremium ? 'premium' : 'public') === rowSource
       );
       if (row) {
-        // Modal'da göster (koleksiyon = gallery context)
         openDetailModal([row], 0, { context: 'gallery' });
       }
     });
   });
 }
 
-function bindCopyClicks(container, rowsById, promptField) {
+function bindCopyClicks(container, rowsById) {
   const rowsArray = Array.from(rowsById.values());
   container.querySelectorAll('[data-generated-prompt-id]').forEach((tile) => {
     const id = tile.dataset.generatedPromptId;
@@ -220,7 +221,7 @@ function bindVisualCopyClicks(container, rows) {
 async function fetchGeneratedPrompts(force = false) {
   if (cachedGeneratedPrompts && !force) return cachedGeneratedPrompts;
   if (!GENERATED_PROMPTS_URL || GENERATED_PROMPTS_URL.includes('YOUR-N8N-URL')) {
-    return { error: 'Servis henüz bağlanmadı.', rows: [] };
+    return { error: t('settings.billing.not_connected'), rows: [] };
   }
   try {
     const res = await fetch(GENERATED_PROMPTS_URL, {
@@ -240,7 +241,7 @@ async function fetchGeneratedPrompts(force = false) {
 async function fetchGeneratedVisuals(force = false) {
   if (cachedGeneratedVisuals && !force) return cachedGeneratedVisuals;
   if (!GENERATED_VISUALS_URL || GENERATED_VISUALS_URL.includes('YOUR-N8N-URL')) {
-    return { error: 'Servis henüz bağlanmadı.', rows: [] };
+    return { error: t('settings.billing.not_connected'), rows: [] };
   }
   try {
     const res = await fetch(GENERATED_VISUALS_URL, {
@@ -260,7 +261,7 @@ async function fetchGeneratedVisuals(force = false) {
 async function fetchCharacters(force = false) {
   if (cachedCharacters && !force) return cachedCharacters;
   if (!CHARACTERS_LIST_URL || CHARACTERS_LIST_URL.includes('YOUR-N8N-URL')) {
-    return { error: 'Servis henüz bağlanmadı.', rows: [] };
+    return { error: t('settings.billing.not_connected'), rows: [] };
   }
   try {
     const res = await fetch(CHARACTERS_LIST_URL, {
@@ -303,13 +304,12 @@ async function renderOverviewCollection() {
   // Loading state
   panel.innerHTML = `
     <div class="profile-collection-header">
-      <h2>Tümü</h2>
+      <h2>${escapeHtml(t('profile.filter_all'))}</h2>
       <span class="profile-collection-count">…</span>
     </div>
-    <div class="profile-empty-note">Yükleniyor...</div>
+    <div class="profile-empty-note">${escapeHtml(t('settings.common.loading'))}</div>
   `;
 
-  // Filtreye göre paralel fetch
   const wantPrompts = activeOverviewFilter === 'all' || activeOverviewFilter === 'prompts';
   const wantVisuals = activeOverviewFilter === 'all' || activeOverviewFilter === 'visuals';
   const wantCharacters = activeOverviewFilter === 'all' || activeOverviewFilter === 'characters';
@@ -322,17 +322,15 @@ async function renderOverviewCollection() {
 
   const interactions = wantPrompts ? getInteractionRowsWithTypes() : [];
 
-  // Filter değiştiyse iptal
   if (activeSection !== 'overview') return;
 
+  const typeLabel = getTypeLabel();
   const tiles = [];
 
   if (wantPrompts) {
-    // Koleksiyon (beğenilen/kaydedilen/satın alınan)
     interactions.forEach(({ row, types }) => {
-      tiles.push({ kind: 'gallery', html: galleryTileHtml(row, types.map((t) => typeLabel[t])) });
+      tiles.push({ kind: 'gallery', html: galleryTileHtml(row, types.map((tp) => typeLabel[tp])) });
     });
-    // Oluşturulan promptlar
     (gp.rows || []).forEach((r) => {
       tiles.push({ kind: 'gen-prompt', html: generatedPromptTileHtml(r), row: r });
     });
@@ -350,50 +348,41 @@ async function renderOverviewCollection() {
     });
   }
 
-  const headerLabel = {
-    all: 'Tümü',
-    prompts: 'Promptlar',
-    visuals: 'Görseller',
-    characters: 'Karakterler'
-  }[activeOverviewFilter] || 'Tümü';
+  const headerKeyMap = {
+    all: 'profile.filter_all',
+    prompts: 'profile.filter_prompts',
+    visuals: 'profile.filter_visuals',
+    characters: 'profile.filter_characters'
+  };
+  const headerLabel = t(headerKeyMap[activeOverviewFilter] || 'profile.filter_all');
 
   const gridHtml = tiles.length
-    ? `<div class="profile-collection-grid">${tiles.map((t) => t.html).join('')}</div>`
-    : `<div class="profile-empty-note">Henüz burada bir şey yok.</div>`;
+    ? `<div class="profile-collection-grid">${tiles.map((tl) => tl.html).join('')}</div>`
+    : `<div class="profile-empty-note">${escapeHtml(t('profile.empty_no_items'))}</div>`;
 
   panel.innerHTML = `
     <div class="profile-collection-header">
       <h2>${escapeHtml(headerLabel)}</h2>
-      <span class="profile-collection-count">${tiles.length} öğe</span>
+      <span class="profile-collection-count">${escapeHtml(t('profile.count_items', { count: tiles.length }))}</span>
     </div>
     ${gridHtml}
   `;
 
-  // Bindings
   bindGalleryClicks(panel);
 
   const gpMap = new Map((gp.rows || []).map((r) => [String(r.id), r]));
-  bindCopyClicks(panel, gpMap, 'prompt_text');
+  bindCopyClicks(panel, gpMap);
   bindVisualCopyClicks(panel, gv.rows || []);
 }
 
-// Overview üst chip'leri (Tümü/Promptlar/Görseller/Karakterler) — HTML'de var, JS ile aktif hale getir
+// Overview üst chip'leri — sistem anahtarı artık data-filter-key (dile bağımlı değil)
 function bindOverviewFilterChips() {
   const row = document.querySelector('.profile-filter-row');
   if (!row || row.dataset.bound === '1') return;
   row.dataset.bound = '1';
 
-  const chipMap = {
-    'Tümü': 'all',
-    'Promptlar': 'prompts',
-    'Görseller': 'visuals',
-    'Karakterler': 'characters'
-  };
-
-  row.querySelectorAll('.profile-filter-chip').forEach((chip) => {
-    const label = chip.textContent.trim();
-    const filterKey = chipMap[label];
-    if (!filterKey) return; // disabled chip
+  row.querySelectorAll('[data-filter-key]').forEach((chip) => {
+    const filterKey = chip.dataset.filterKey;
     chip.disabled = false;
     chip.removeAttribute('title');
     chip.addEventListener('click', () => {
@@ -408,34 +397,27 @@ function bindOverviewFilterChips() {
 function syncOverviewFilterActiveChip() {
   const row = document.querySelector('.profile-filter-row');
   if (!row) return;
-  const chipMap = {
-    'all': 'Tümü',
-    'prompts': 'Promptlar',
-    'visuals': 'Görseller',
-    'characters': 'Karakterler'
-  };
-  const wantLabel = chipMap[activeOverviewFilter] || 'Tümü';
   row.querySelectorAll('.profile-filter-chip').forEach((c) => {
-    c.classList.toggle('active', c.textContent.trim() === wantLabel);
+    c.classList.toggle('active', c.dataset.filterKey === activeOverviewFilter);
   });
 }
 
 function renderOverview() {
   const { name } = getUserInfo();
   const headerEl = document.getElementById('profileWelcomeName');
-  if (headerEl) headerEl.textContent = name ? name.split(' ')[0] : 'Kullanıcı';
+  if (headerEl) headerEl.textContent = name ? name.split(' ')[0] : t('profile.default_user');
 
   const toolsEl = document.getElementById('profileToolsList');
   if (toolsEl) {
     const tools = getMostUsedTools();
     toolsEl.innerHTML = tools.length
-      ? tools.map((t) => `
+      ? tools.map((tool) => `
         <div class="profile-tool-row">
-          <div class="profile-tool-label"><span>${t.icon}</span> ${escapeHtml(t.name)} <span class="profile-tool-pct">${t.percent}%</span></div>
-          <div class="profile-tool-bar"><div class="profile-tool-fill" style="width:${t.percent}%"></div></div>
+          <div class="profile-tool-label"><span>${tool.icon}</span> ${escapeHtml(tool.name)} <span class="profile-tool-pct">${tool.percent}%</span></div>
+          <div class="profile-tool-bar"><div class="profile-tool-fill" style="width:${tool.percent}%"></div></div>
         </div>
       `).join('')
-      : `<div class="profile-empty-note">Henüz araç kullanım verisi yok.</div>`;
+      : `<div class="profile-empty-note">${escapeHtml(t('profile.empty_tools'))}</div>`;
   }
 
   const activityEl = document.getElementById('profileActivityList');
@@ -449,7 +431,7 @@ function renderOverview() {
           <span class="profile-activity-time">${escapeHtml(a.time)}</span>
         </div>
       `).join('')
-      : `<div class="profile-empty-note">Henüz aktivite yok.</div>`;
+      : `<div class="profile-empty-note">${escapeHtml(t('profile.empty_activity'))}</div>`;
   }
 
   bindOverviewFilterChips();
@@ -474,16 +456,18 @@ function ensureCollectionPanel() {
   return panel;
 }
 
-const promptFilterChips = [
-  { key: 'all', label: 'Tümü', icon: ICON.all },
-  { key: 'liked', label: 'Beğenilen', icon: ICON.heart },
-  { key: 'saved', label: 'Kaydedilen', icon: ICON.bookmark },
-  { key: 'purchased', label: 'Satın Alınan', icon: ICON.card },
-  { key: 'generated', label: 'Oluşturulan', icon: ICON.sparkles }
-];
+function getPromptFilterChips() {
+  return [
+    { key: 'all', label: t('common.all'), icon: ICON.all },
+    { key: 'liked', label: t('profile.filter_liked'), icon: ICON.heart },
+    { key: 'saved', label: t('profile.filter_saved'), icon: ICON.bookmark },
+    { key: 'purchased', label: t('profile.filter_purchased'), icon: ICON.card },
+    { key: 'generated', label: t('profile.filter_generated'), icon: ICON.sparkles }
+  ];
+}
 
 function renderPromptChipsHtml() {
-  return promptFilterChips.map((c) => `
+  return getPromptFilterChips().map((c) => `
     <button class="profile-filter-chip ${c.key === activePromptFilter ? 'active' : ''}" data-prompt-filter="${c.key}"><span class="chip-icon">${c.icon}</span> ${escapeHtml(c.label)}</button>
   `).join('');
 }
@@ -492,25 +476,28 @@ async function renderPromptsPanel() {
   const panel = ensureCollectionPanel();
   if (!panel) return;
 
-  // Loading state
+  const promptsHeader = t('profile.filter_prompts');
+
   panel.innerHTML = `
     <div class="profile-collection-header">
-      <h2>Promptlar</h2>
+      <h2>${escapeHtml(promptsHeader)}</h2>
       <span class="profile-collection-count">…</span>
     </div>
     <div class="profile-filter-row" id="promptSubFilterRow">
       ${renderPromptChipsHtml()}
     </div>
-    <div class="profile-empty-note">Yükleniyor...</div>
+    <div class="profile-empty-note">${escapeHtml(t('settings.common.loading'))}</div>
   `;
 
-  // Alt chip bindings
-  panel.querySelectorAll('[data-prompt-filter]').forEach((chip) => {
-    chip.addEventListener('click', () => {
-      activePromptFilter = chip.dataset.promptFilter;
-      renderPromptsPanel();
+  const bindSubChips = () => {
+    panel.querySelectorAll('[data-prompt-filter]').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        activePromptFilter = chip.dataset.promptFilter;
+        renderPromptsPanel();
+      });
     });
-  });
+  };
+  bindSubChips();
 
   const wantGenerated = activePromptFilter === 'all' || activePromptFilter === 'generated';
   const wantInteractions = activePromptFilter === 'all' || ['liked', 'saved', 'purchased'].includes(activePromptFilter);
@@ -519,6 +506,7 @@ async function renderPromptsPanel() {
 
   if (activeSection !== 'prompts') return;
 
+  const typeLabel = getTypeLabel();
   const tiles = [];
 
   if (wantInteractions) {
@@ -534,12 +522,11 @@ async function renderPromptsPanel() {
 
       if (!types.length) return;
 
-      // Alt filtre uygula
       if (activePromptFilter === 'liked' && !types.includes('liked')) return;
       if (activePromptFilter === 'saved' && !types.includes('saved')) return;
       if (activePromptFilter === 'purchased' && !types.includes('purchased')) return;
 
-      tiles.push({ html: galleryTileHtml(r, types.map((t) => typeLabel[t])) });
+      tiles.push({ html: galleryTileHtml(r, types.map((tp) => typeLabel[tp])) });
     });
   }
 
@@ -550,13 +537,13 @@ async function renderPromptsPanel() {
   }
 
   const gridHtml = tiles.length
-    ? `<div class="profile-collection-grid">${tiles.map((t) => t.html).join('')}</div>`
-    : `<div class="profile-empty-note">Bu filtrede gösterilecek bir şey yok.</div>`;
+    ? `<div class="profile-collection-grid">${tiles.map((tl) => tl.html).join('')}</div>`
+    : `<div class="profile-empty-note">${escapeHtml(t('profile.empty_filtered'))}</div>`;
 
   panel.innerHTML = `
     <div class="profile-collection-header">
-      <h2>Promptlar</h2>
-      <span class="profile-collection-count">${tiles.length} öğe</span>
+      <h2>${escapeHtml(promptsHeader)}</h2>
+      <span class="profile-collection-count">${escapeHtml(t('profile.count_items', { count: tiles.length }))}</span>
     </div>
     <div class="profile-filter-row" id="promptSubFilterRow">
       ${renderPromptChipsHtml()}
@@ -564,17 +551,10 @@ async function renderPromptsPanel() {
     ${gridHtml}
   `;
 
-  // Rebind chip'ler (innerHTML overwrite ettiği için)
-  panel.querySelectorAll('[data-prompt-filter]').forEach((chip) => {
-    chip.addEventListener('click', () => {
-      activePromptFilter = chip.dataset.promptFilter;
-      renderPromptsPanel();
-    });
-  });
-
+  bindSubChips();
   bindGalleryClicks(panel);
   const gpMap = new Map((gp.rows || []).map((r) => [String(r.id), r]));
-  bindCopyClicks(panel, gpMap, 'prompt_text');
+  bindCopyClicks(panel, gpMap);
 }
 
 // ---- Oluşturulan Görseller paneli ----
@@ -586,12 +566,14 @@ async function renderGeneratedVisualsPanel() {
   if (generatedVisualsLoading) return;
   generatedVisualsLoading = true;
 
+  const header = t('profile.nav_visuals');
+
   panel.innerHTML = `
     <div class="profile-collection-header">
-      <h2>Oluşturulan Görseller</h2>
+      <h2>${escapeHtml(header)}</h2>
       <span class="profile-collection-count">…</span>
     </div>
-    <div class="profile-empty-note">Yükleniyor...</div>
+    <div class="profile-empty-note">${escapeHtml(t('settings.common.loading'))}</div>
   `;
 
   const { rows, error } = await fetchGeneratedVisuals();
@@ -602,10 +584,10 @@ async function renderGeneratedVisualsPanel() {
   if (error) {
     panel.innerHTML = `
       <div class="profile-collection-header">
-        <h2>Oluşturulan Görseller</h2>
-        <span class="profile-collection-count">0 öğe</span>
+        <h2>${escapeHtml(header)}</h2>
+        <span class="profile-collection-count">${escapeHtml(t('profile.count_items', { count: 0 }))}</span>
       </div>
-      <div class="profile-empty-note">Yüklenemedi: ${escapeHtml(error)}</div>
+      <div class="profile-empty-note">${escapeHtml(t('profile.load_error', { msg: error }))}</div>
     `;
     return;
   }
@@ -614,12 +596,12 @@ async function renderGeneratedVisualsPanel() {
     ? `<div class="profile-collection-grid">
         ${rows.map((r, i) => generatedVisualTileHtml(r, i)).join('')}
       </div>`
-    : `<div class="profile-empty-note">Henüz görsel üretmedin. "Görsel Oluşturucu" sekmesinden başlayabilirsin.</div>`;
+    : `<div class="profile-empty-note">${escapeHtml(t('profile.empty_visuals'))}</div>`;
 
   panel.innerHTML = `
     <div class="profile-collection-header">
-      <h2>Oluşturulan Görseller</h2>
-      <span class="profile-collection-count">${rows.length} öğe</span>
+      <h2>${escapeHtml(header)}</h2>
+      <span class="profile-collection-count">${escapeHtml(t('profile.count_items', { count: rows.length }))}</span>
     </div>
     ${gridHtml}
   `;
@@ -636,12 +618,14 @@ async function renderCharactersPanel() {
   if (charactersLoading) return;
   charactersLoading = true;
 
+  const header = t('profile.nav_characters');
+
   panel.innerHTML = `
     <div class="profile-collection-header">
-      <h2>Karakter Sheet'leri</h2>
+      <h2>${escapeHtml(header)}</h2>
       <span class="profile-collection-count">…</span>
     </div>
-    <div class="profile-empty-note">Yükleniyor...</div>
+    <div class="profile-empty-note">${escapeHtml(t('settings.common.loading'))}</div>
   `;
 
   const { rows, error } = await fetchCharacters();
@@ -652,10 +636,10 @@ async function renderCharactersPanel() {
   if (error) {
     panel.innerHTML = `
       <div class="profile-collection-header">
-        <h2>Karakter Sheet'leri</h2>
-        <span class="profile-collection-count">0 öğe</span>
+        <h2>${escapeHtml(header)}</h2>
+        <span class="profile-collection-count">${escapeHtml(t('profile.count_items', { count: 0 }))}</span>
       </div>
-      <div class="profile-empty-note">Yüklenemedi: ${escapeHtml(error)}</div>
+      <div class="profile-empty-note">${escapeHtml(t('profile.load_error', { msg: error }))}</div>
     `;
     return;
   }
@@ -664,17 +648,16 @@ async function renderCharactersPanel() {
     ? `<div class="profile-collection-grid">
         ${rows.map((r) => characterTileHtml(r)).join('')}
       </div>`
-    : `<div class="profile-empty-note">Henüz karakter oluşturmadın. "AI Avatar / Karakter Oluşturucu" sekmesinden başlayabilirsin.</div>`;
+    : `<div class="profile-empty-note">${escapeHtml(t('profile.empty_characters'))}</div>`;
 
   panel.innerHTML = `
     <div class="profile-collection-header">
-      <h2>Karakter Sheet'leri</h2>
-      <span class="profile-collection-count">${rows.length} öğe</span>
+      <h2>${escapeHtml(header)}</h2>
+      <span class="profile-collection-count">${escapeHtml(t('profile.count_items', { count: rows.length }))}</span>
     </div>
     ${gridHtml}
   `;
 
-  // Karakter tıklama - detail modal
   panel.querySelectorAll('[data-character-id]').forEach((tile) => {
     const id = tile.dataset.characterId;
     const idx = rows.findIndex((r) => String(r.id) === id);
@@ -720,11 +703,7 @@ function renderProfilePage() {
     setMainVisibility(false);
     renderCharactersPanel();
   } else {
-    // Eski section adları (liked/saved/purchased/generated-prompts) — Promptlar'a yönlendir
     activeSection = 'prompts';
-    if (['liked', 'saved', 'purchased'].includes(activePromptFilter) === false) {
-      // eski isim gelirse map et
-    }
     setMainVisibility(false);
     renderPromptsPanel();
   }
@@ -740,7 +719,6 @@ export function openPurchaseHistorySection() {
   openSettingsModal('billing');
 }
 
-// Cache invalidation — dışarıdan çağrılabilir (yeni prompt/görsel/karakter üretilince)
 export function invalidateProfileCache(kind) {
   if (!kind || kind === 'prompts') cachedGeneratedPrompts = null;
   if (!kind || kind === 'visuals') cachedGeneratedVisuals = null;
@@ -750,7 +728,6 @@ export function invalidateProfileCache(kind) {
 export function initProfile() {
   bindQuickActions();
   onProfileSectionRequest((section) => {
-    // Eski section isimlerini map et
     const legacyMap = {
       'liked': { section: 'prompts', filter: 'liked' },
       'saved': { section: 'prompts', filter: 'saved' },
@@ -769,6 +746,12 @@ export function initProfile() {
     if (tab === 'profile') renderProfilePage();
   });
   onBalanceChange(() => {
+    const view = document.getElementById('profileView');
+    if (view && view.style.display !== 'none') renderProfilePage();
+  });
+  // Dil değişince aktif panel dinamik metinleriyle yeniden çizilsin (statik data-i18n
+  // metinleri i18n.js zaten kendi hallediyor).
+  window.addEventListener('langchange', () => {
     const view = document.getElementById('profileView');
     if (view && view.style.display !== 'none') renderProfilePage();
   });

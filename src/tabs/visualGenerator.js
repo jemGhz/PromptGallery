@@ -1,6 +1,6 @@
 // src/tabs/visualGenerator.js
 import {
-  AI_MODELS, CAMERA_OPTIONS, CAMERA_OPTION_IMAGES, CAMERA_OPTION_LABEL_KEYS,
+  AI_MODELS, AI_MODEL_LABEL_KEYS, CAMERA_OPTIONS, CAMERA_OPTION_IMAGES, CAMERA_OPTION_LABEL_KEYS,
   EFFECT_OPTIONS, EFFECT_OPTION_IMAGES, EFFECT_OPTION_LABEL_KEYS,
   POSE_OPTIONS, POSE_OPTION_IMAGES, POSE_OPTION_LABEL_KEYS,
   STYLE_OPTIONS, STYLE_OPTION_IMAGES, STYLE_OPTION_LABEL_KEYS,
@@ -26,6 +26,20 @@ const cameraLabel = (opt) => t(CAMERA_OPTION_LABEL_KEYS[opt] || opt);
 const effectsLabel = (opt) => t(EFFECT_OPTION_LABEL_KEYS[opt] || opt);
 const posesLabel = (opt) => t(POSE_OPTION_LABEL_KEYS[opt] || opt);
 const styleLabel = (opt) => t(STYLE_OPTION_LABEL_KEYS[opt] || opt);
+
+// model.key üzerinden çeviri yapar — characterGenerator.js'deki provider deseninin aynısı.
+function modelName(m) {
+  const keys = AI_MODEL_LABEL_KEYS[m.key];
+  return keys ? t(keys.name) : m.name;
+}
+function modelDesc(m) {
+  const keys = AI_MODEL_LABEL_KEYS[m.key];
+  return keys ? t(keys.desc) : m.desc;
+}
+function modelBadge(m) {
+  const keys = AI_MODEL_LABEL_KEYS[m.key];
+  return keys ? t(keys.badge) : m.badge;
+}
 
 let genSelectedSize = '1:1';
 let genSelectedCount = 4;
@@ -70,8 +84,8 @@ function renderModelMenu() {
   menu.innerHTML = AI_MODELS.map(
     (m, i) => `
     <button type="button" class="model-option" data-model-idx="${i}" ${m.comingSoon ? 'disabled style="opacity:.4;pointer-events:none;"' : ''}>
-      <span class="m-name">${m.icon} ${escapeHtml(m.name)} ${m.badge ? `<span class="model-badge-new">${escapeHtml(m.badge)}</span>` : ''}</span>
-      <span class="m-desc">${escapeHtml(m.desc)} · ${escapeHtml(creditPerImageSuffix(m.creditCost))}</span>
+      <span class="m-name">${m.icon} ${escapeHtml(modelName(m))} ${modelBadge(m) ? `<span class="model-badge-new">${escapeHtml(modelBadge(m))}</span>` : ''}</span>
+      <span class="m-desc">${escapeHtml(modelDesc(m))} · ${escapeHtml(creditPerImageSuffix(m.creditCost))}</span>
     </button>`
   ).join('');
   menu.querySelectorAll('[data-model-idx]').forEach((btn) => {
@@ -98,10 +112,12 @@ function selectModel(i, silent) {
   genSelectedModelIdx = i;
   const m = AI_MODELS[i];
   $('genModelIcon').textContent = m.icon;
-  $('genModelName').textContent = m.name;
-  $('genModelDesc').textContent = `${m.desc} · ${creditPerImageSuffix(m.creditCost)}`;
+  $('genModelName').textContent = modelName(m);
+  $('genModelDesc').textContent = `${modelDesc(m)} · ${creditPerImageSuffix(m.creditCost)}`;
   const badgeEl = $('genModelBadge');
-  badgeEl.style.display = m.badge ? 'inline-block' : 'none';
+  const badge = modelBadge(m);
+  badgeEl.style.display = badge ? 'inline-block' : 'none';
+  badgeEl.textContent = badge;
   if (!silent) $('genModelMenu').classList.remove('open');
   applyGenCountRestriction(m.key === 'free_draft');
   updateGenQuotaNote();

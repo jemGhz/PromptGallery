@@ -317,3 +317,12 @@ export const AVATAR_PROVIDER_LABEL_KEYS = {
   gemini_paid: { name: 'avatar.provider.gemini_paid.name', desc: 'avatar.provider.gemini_paid.desc', badge: 'avatar.provider.gemini_paid.badge' },
   openai: { name: 'avatar.provider.openai.name', desc: 'avatar.provider.openai.desc', badge: 'avatar.provider.openai.badge' }
 };
+
+// AI_MODELS içindeki 'key' alanına göre eşlenir — AVATAR_PROVIDER_LABEL_KEYS ile aynı desen.
+export const AI_MODEL_LABEL_KEYS = {
+  gemini_paid: { name: 'visual.model.gemini_paid.name', desc: 'visual.model.gemini_paid.desc', badge: 'visual.model.gemini_paid.badge' },
+  openai: { name: 'visual.model.openai.name', desc: 'visual.model.openai.desc', badge: 'visual.model.openai.badge' },
+  stability: { name: 'visual.model.stability.name', desc: 'visual.model.stability.desc', badge: 'visual.model.stability.badge' },
+  flux: { name: 'visual.model.flux.name', desc: 'visual.model.flux.desc', badge: 'visual.model.flux.badge' },
+  free_draft: { name: 'visual.model.free_draft.name', desc: 'visual.model.free_draft.desc', badge: 'visual.model.free_draft.badge' }
+};
