@@ -37,7 +37,7 @@ export const GENERATED_PROMPTS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/we
 export const GENERATED_VISUALS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/generated-visuals-list';
 export const CHARACTERS_LIST_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/characters-list';
 export const GENERATED_VISUAL_DELETE_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/generated-visual-delete';
-export const NOTIFICATIONS_URL =     'https://jg-n8n-server.tail1c97b1.ts.net/webhook/user-notifications';
+export const NOTIFICATIONS_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/user-notifications';
 export const MARK_NOTIFICATION_READ_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/mark-notification-read';
 export const PURCHASE_HISTORY_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/purchase-history';
 export const DELETE_NOTIFICATION_URL = 'https://jg-n8n-server.tail1c97b1.ts.net/webhook/delete-notification';
@@ -67,7 +67,7 @@ export const AVATAR_PROVIDERS = [
   { key: 'openai', name: 'OpenAI (GPT Image)', icon: '🤖', badge: '', desc: 'OpenAI görsel üretim modeli; yüksek detay ve prompt takibi.', creditCostPerImage: 3 }
 ];
 
-export const CAMERA_OPTIONS = ['Ön çekim','Yakın plan','Kuş bakışı','Alçak açı','Yandan (profil)','Geniş açı','Makro','Drone çekimi'];
+export const CAMERA_OPTIONS = ['Ön çekim', 'Yakın plan', 'Kuş bakışı', 'Alçak açı', 'Yandan (profil)', 'Geniş açı', 'Makro', 'Drone çekimi'];
 export const CAMERA_OPTION_IMAGES = {
   'Ön çekim': '/thumbnails/camera/on-cekim.webp',
   'Yakın plan': '/thumbnails/camera/yakin-plan.webp',
@@ -78,7 +78,7 @@ export const CAMERA_OPTION_IMAGES = {
   'Makro': '/thumbnails/camera/makro.webp',
   'Drone çekimi': '/thumbnails/camera/drone-cekimi.webp'
 };
-export const EFFECT_OPTIONS = ['Sinematik ışık','Bokeh','Duman / Sis','Neon parıltı','Film grain','Lens flare','Çift pozlama','Uzun pozlama','Yumuşak gölgeler','Yüksek kontrast'];
+export const EFFECT_OPTIONS = ['Sinematik ışık', 'Bokeh', 'Duman / Sis', 'Neon parıltı', 'Film grain', 'Lens flare', 'Çift pozlama', 'Uzun pozlama', 'Yumuşak gölgeler', 'Yüksek kontrast'];
 export const EFFECT_OPTION_IMAGES = {
   'Sinematik ışık': '/thumbnails/effects/sinematik-isik.webp',
   'Bokeh': '/thumbnails/effects/bokeh.webp',
@@ -91,7 +91,7 @@ export const EFFECT_OPTION_IMAGES = {
   'Yumuşak gölgeler': '/thumbnails/effects/yumusak-golgeler.webp',
   'Yüksek kontrast': '/thumbnails/effects/yuksek-kontrast.webp'
 };
-export const POSE_OPTIONS = ['Ayakta duruş','Yürüyüş','Oturma','Aksiyon / hareket','Doğal & rahat','Editorial poz','Yakın yüz ifadesi','Sırtı dönük'];
+export const POSE_OPTIONS = ['Ayakta duruş', 'Yürüyüş', 'Oturma', 'Aksiyon / hareket', 'Doğal & rahat', 'Editorial poz', 'Yakın yüz ifadesi', 'Sırtı dönük'];
 export const POSE_OPTION_IMAGES = {
   'Ayakta duruş': '/thumbnails/poses/ayakta-durus.webp',
   'Yürüyüş': '/thumbnails/poses/yuruyus.webp',
@@ -102,7 +102,7 @@ export const POSE_OPTION_IMAGES = {
   'Yakın yüz ifadesi': '/thumbnails/poses/yakin-yuz-ifadesi.webp',
   'Sırtı dönük': '/thumbnails/poses/sirti-donuk.webp'
 };
-export const STYLE_OPTIONS = ['Sinematik','Portre','Thumbnail','Eskiz (Sketch)','Piksel Sanatı','Anime','3D Render','Suluboya','Yağlıboya','Minimalist','Vintage Film','Fantastik','Ürün Fotoğrafçılığı','Moda / Editorial','Siyah-Beyaz','Gerçekçi (Realistic)','Konsept Sanat'];
+export const STYLE_OPTIONS = ['Sinematik', 'Portre', 'Thumbnail', 'Eskiz (Sketch)', 'Piksel Sanatı', 'Anime', '3D Render', 'Suluboya', 'Yağlıboya', 'Minimalist', 'Vintage Film', 'Fantastik', 'Ürün Fotoğrafçılığı', 'Moda / Editorial', 'Siyah-Beyaz', 'Gerçekçi (Realistic)', 'Konsept Sanat'];
 export const STYLE_OPTION_IMAGES = {
   'Sinematik': '/thumbnails/style/sinematik.webp',
   'Portre': '/thumbnails/style/portre.webp',
@@ -121,9 +121,10 @@ export const STYLE_OPTION_IMAGES = {
   'Siyah-Beyaz': '/thumbnails/style/siyah-beyaz.webp',
   'Gerçekçi (Realistic)': '/thumbnails/style/gercekci-realistic.webp',
   'Konsept Sanat': '/thumbnails/style/konsept-sanat.webp'
+
 };
 
-export const FACE_DETAIL_OPTIONS = ['Belirgin çene hattı','Yüksek elmacık kemikleri','Dolgun dudaklar','İnce burun','Yoğun kaşlar','Simetrik yüz','Çil','Gamze','Küçük burun','Badem gözler'];
+export const FACE_DETAIL_OPTIONS = ['Belirgin çene hattı', 'Yüksek elmacık kemikleri', 'Dolgun dudaklar', 'İnce burun', 'Yoğun kaşlar', 'Simetrik yüz', 'Çil', 'Gamze', 'Küçük burun', 'Badem gözler'];
 export const FACE_DETAIL_OPTION_IMAGES = {
   'Belirgin çene hattı': '/thumbnails/face/belirgin-cene-hatti.webp',
   'Yüksek elmacık kemikleri': '/thumbnails/face/yuksek-elmacik-kemikleri.webp',
@@ -136,7 +137,7 @@ export const FACE_DETAIL_OPTION_IMAGES = {
   'Küçük burun': '/thumbnails/face/kucuk-burun.webp',
   'Badem gözler': '/thumbnails/face/badem-gozler.webp'
 };
-export const AVATAR_STYLE_OPTIONS = ['Minimal / Modern','Sokak Stili','Klasik / Şık','Spor','Vintage','Lüks','Bohem','İş / Ofis','Gotik','Casual'];
+export const AVATAR_STYLE_OPTIONS = ['Minimal / Modern', 'Sokak Stili', 'Klasik / Şık', 'Spor', 'Vintage', 'Lüks', 'Bohem', 'İş / Ofis', 'Gotik', 'Casual'];
 export const AVATAR_STYLE_OPTION_IMAGES = {
   'Minimal / Modern': '/thumbnails/avatar-style/minimal-modern.webp',
   'Sokak Stili': '/thumbnails/avatar-style/sokak-stili.webp',
@@ -149,7 +150,7 @@ export const AVATAR_STYLE_OPTION_IMAGES = {
   'Gotik': '/thumbnails/avatar-style/gotik.webp',
   'Casual': '/thumbnails/avatar-style/casual.webp'
 };
-export const PERSONALITY_OPTIONS = ['Özgüvenli','Zeki','Bağımsız','Sıcakkanlı','Gizemli','Enerjik','Sakin','Maceraperest','Alaycı','Duygusal'];
+export const PERSONALITY_OPTIONS = ['Özgüvenli', 'Zeki', 'Bağımsız', 'Sıcakkanlı', 'Gizemli', 'Enerjik', 'Sakin', 'Maceraperest', 'Alaycı', 'Duygusal'];
 export const PERSONALITY_OPTION_IMAGES = {
   'Özgüvenli': '/thumbnails/personality/ozguvenli.webp',
   'Zeki': '/thumbnails/personality/zeki.webp',
@@ -162,7 +163,7 @@ export const PERSONALITY_OPTION_IMAGES = {
   'Alaycı': '/thumbnails/personality/alayci.webp',
   'Duygusal': '/thumbnails/personality/duygusal.webp'
 };
-export const OTHER_DETAIL_OPTIONS = ['Fotoğrafçı','Model','Sanatçı','Girişimci','Sporcu','Öğrenci','Yazar','Mühendis','Müzisyen','Aktör/Aktris'];
+export const OTHER_DETAIL_OPTIONS = ['Fotoğrafçı', 'Model', 'Sanatçı', 'Girişimci', 'Sporcu', 'Öğrenci', 'Yazar', 'Mühendis', 'Müzisyen', 'Aktör/Aktris'];
 export const OTHER_DETAIL_OPTION_IMAGES = {
   'Fotoğrafçı': '/thumbnails/other-detail/fotografci.webp',
   'Model': '/thumbnails/other-detail/model.webp',
@@ -175,7 +176,7 @@ export const OTHER_DETAIL_OPTION_IMAGES = {
   'Müzisyen': '/thumbnails/other-detail/muzisyen.webp',
   'Aktör/Aktris': '/thumbnails/other-detail/aktor-aktris.webp'
 };
-export const SKIN_TONES = ['#F5D5B8','#E8B88C','#D39C6E','#B57A4A','#8B5A2B','#5C3A1E'];
+export const SKIN_TONES = ['#F5D5B8', '#E8B88C', '#D39C6E', '#B57A4A', '#8B5A2B', '#5C3A1E'];
 
 // Artık tek API çağrısıyla 5 panelli tek bir karakter sheet görseli üretiliyor
 // (eskiden 13 ayrı çağrıydı). Bu değer artık sadece kredi maliyeti çarpanı.
@@ -194,3 +195,125 @@ export const FAQ_ITEMS = [
   { q: 'Beğendiğim/kaydettiğim promptları nereden görebilirim?', a: 'Profil sayfandaki soldaki menüden "Beğenilen Promptlar", "Kaydedilen Promptlar" ve "Satın Alınan Promptlar" bölümlerinden erişebilirsin.' },
   { q: 'Sorunum burada yok, ne yapmalıyım?', a: 'Aşağıdaki formu doldurarak bize doğrudan ulaşabilirsin, en kısa sürede e-posta adresin üzerinden dönüş yaparız.' }
 ];
+
+
+export const CAMERA_OPTION_LABEL_KEYS = {
+  'Ön çekim': 'options.camera.on_cekim',
+  'Yakın plan': 'options.camera.yakin_plan',
+  'Kuş bakışı': 'options.camera.kus_bakisi',
+  'Alçak açı': 'options.camera.alcak_aci',
+  'Yandan (profil)': 'options.camera.yandan_profil',
+  'Geniş açı': 'options.camera.genis_aci',
+  'Makro': 'options.camera.makro',
+  'Drone çekimi': 'options.camera.drone_cekimi'
+};
+
+export const EFFECT_OPTION_LABEL_KEYS = {
+  'Sinematik ışık': 'options.effects.sinematik_isik',
+  'Bokeh': 'options.effects.bokeh',
+  'Duman / Sis': 'options.effects.duman_sis',
+  'Neon parıltı': 'options.effects.neon_parilti',
+  'Film grain': 'options.effects.film_grain',
+  'Lens flare': 'options.effects.lens_flare',
+  'Çift pozlama': 'options.effects.cift_pozlama',
+  'Uzun pozlama': 'options.effects.uzun_pozlama',
+  'Yumuşak gölgeler': 'options.effects.yumusak_golgeler',
+  'Yüksek kontrast': 'options.effects.yuksek_kontrast'
+};
+
+export const POSE_OPTION_LABEL_KEYS = {
+  'Ayakta duruş': 'options.poses.ayakta_durus',
+  'Yürüyüş': 'options.poses.yuruyus',
+  'Oturma': 'options.poses.oturma',
+  'Aksiyon / hareket': 'options.poses.aksiyon_hareket',
+  'Doğal & rahat': 'options.poses.dogal_rahat',
+  'Editorial poz': 'options.poses.editorial_poz',
+  'Yakın yüz ifadesi': 'options.poses.yakin_yuz_ifadesi',
+  'Sırtı dönük': 'options.poses.sirti_donuk'
+};
+
+export const STYLE_OPTION_LABEL_KEYS = {
+  'Sinematik': 'options.style.sinematik',
+  'Portre': 'options.style.portre',
+  'Thumbnail': 'options.style.thumbnail',
+  'Eskiz (Sketch)': 'options.style.eskiz_sketch',
+  'Piksel Sanatı': 'options.style.piksel_sanati',
+  'Anime': 'options.style.anime',
+  '3D Render': 'options.style.render_3d',
+  'Suluboya': 'options.style.suluboya',
+  'Yağlıboya': 'options.style.yagliboya',
+  'Minimalist': 'options.style.minimalist',
+  'Vintage Film': 'options.style.vintage_film',
+  'Fantastik': 'options.style.fantastik',
+  'Ürün Fotoğrafçılığı': 'options.style.urun_fotografciligi',
+  'Moda / Editorial': 'options.style.moda_editorial',
+  'Siyah-Beyaz': 'options.style.siyah_beyaz',
+  'Gerçekçi (Realistic)': 'options.style.gercekci_realistic',
+  'Konsept Sanat': 'options.style.konsept_sanat'
+};
+
+// ============================================================
+// config.js DOSYASINA EKLENECEK KISIM
+// Mevcut dosyanın SONUNA (STYLE_OPTION_LABEL_KEYS'ten sonra) ekle.
+// AI_MODELS / AVATAR_PROVIDERS içindeki name/desc/badge alanlarını
+// SİLME — LABEL_KEYS eşlemesi ayrı tutuluyor ki eski davranış bozulmasın.
+// ============================================================
+
+export const FACE_DETAIL_OPTION_LABEL_KEYS = {
+  'Belirgin çene hattı': 'options.face.belirgin_cene_hatti',
+  'Yüksek elmacık kemikleri': 'options.face.yuksek_elmacik_kemikleri',
+  'Dolgun dudaklar': 'options.face.dolgun_dudaklar',
+  'İnce burun': 'options.face.ince_burun',
+  'Yoğun kaşlar': 'options.face.yogun_kaslar',
+  'Simetrik yüz': 'options.face.simetrik_yuz',
+  'Çil': 'options.face.cil',
+  'Gamze': 'options.face.gamze',
+  'Küçük burun': 'options.face.kucuk_burun',
+  'Badem gözler': 'options.face.badem_gozler'
+};
+
+export const AVATAR_STYLE_OPTION_LABEL_KEYS = {
+  'Minimal / Modern': 'options.avstyle.minimal_modern',
+  'Sokak Stili': 'options.avstyle.sokak_stili',
+  'Klasik / Şık': 'options.avstyle.klasik_sik',
+  'Spor': 'options.avstyle.spor',
+  'Vintage': 'options.avstyle.vintage',
+  'Lüks': 'options.avstyle.luks',
+  'Bohem': 'options.avstyle.bohem',
+  'İş / Ofis': 'options.avstyle.is_ofis',
+  'Gotik': 'options.avstyle.gotik',
+  'Casual': 'options.avstyle.casual'
+};
+
+export const PERSONALITY_OPTION_LABEL_KEYS = {
+  'Özgüvenli': 'options.personality.ozguvenli',
+  'Zeki': 'options.personality.zeki',
+  'Bağımsız': 'options.personality.bagimsiz',
+  'Sıcakkanlı': 'options.personality.sicakkanli',
+  'Gizemli': 'options.personality.gizemli',
+  'Enerjik': 'options.personality.enerjik',
+  'Sakin': 'options.personality.sakin',
+  'Maceraperest': 'options.personality.maceraperest',
+  'Alaycı': 'options.personality.alayci',
+  'Duygusal': 'options.personality.duygusal'
+};
+
+export const OTHER_DETAIL_OPTION_LABEL_KEYS = {
+  'Fotoğrafçı': 'options.otherdetail.fotografci',
+  'Model': 'options.otherdetail.model',
+  'Sanatçı': 'options.otherdetail.sanatci',
+  'Girişimci': 'options.otherdetail.girisimci',
+  'Sporcu': 'options.otherdetail.sporcu',
+  'Öğrenci': 'options.otherdetail.ogrenci',
+  'Yazar': 'options.otherdetail.yazar',
+  'Mühendis': 'options.otherdetail.muhendis',
+  'Müzisyen': 'options.otherdetail.muzisyen',
+  'Aktör/Aktris': 'options.otherdetail.aktor_aktris'
+};
+
+// AVATAR_PROVIDERS içindeki 'key' alanına göre eşlenir (isim sabit değil, provider
+// eklenip çıkarılabildiği için CAMERA/EFFECT gibi opt->key değil, provider.key->key).
+export const AVATAR_PROVIDER_LABEL_KEYS = {
+  gemini_paid: { name: 'avatar.provider.gemini_paid.name', desc: 'avatar.provider.gemini_paid.desc', badge: 'avatar.provider.gemini_paid.badge' },
+  openai: { name: 'avatar.provider.openai.name', desc: 'avatar.provider.openai.desc', badge: 'avatar.provider.openai.badge' }
+};

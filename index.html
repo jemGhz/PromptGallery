@@ -1,1098 +1,1264 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vero Scena</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!--
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vero Scena</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <!--
   NOT: CSS burada değil; src/style.css (ve styles/base|gallery|generator|avatar|credits|profile|onboarding.css)
   içinde. main.js zaten `import './style.css'` yapıyor, o yüzden burada <style>/<link> gerekmiyor.
 -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
+
 <body>
 
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="mark"><span class="mark-jg">Vero</span> Scena</div>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="mark"><span class="mark-jg">Vero</span> Scena</div>
 
-    <div class="search-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="searchInput" placeholder="Arama yapın (ör. minimalist çanta, street style...)">
-    </div>
-
-    <div class="credit-pill" id="creditPill">
-      <span class="credit-pill-inner">
-        <svg class="credit-pill-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="6 3 18 3 22 9 12 22 2 9"/>
-          <line x1="11" y1="3" x2="8" y2="9"/>
-          <line x1="13" y1="3" x2="16" y2="9"/>
-          <line x1="2" y1="9" x2="22" y2="9"/>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="7" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
-        <span class="credit-amount" id="creditAmountText">0</span> VSP
-      </span>
-      <button class="credit-add-btn" id="creditAddBtn" title="Kredi satın al">+</button>
-    </div>
+        <input type="text" id="searchInput" data-i18n-placeholder="topbar.search_placeholder"
+          placeholder="Arama yapın (ör. minimalist çanta, street style...)">
+      </div>
 
-    <div class="notif-wrap" id="notifWrap">
-      <button class="bell-btn" id="notifBellBtn" title="Bildirimler" aria-label="Bildirimler">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
-          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+
+
+      <div class="credit-pill" id="creditPill">
+        <span class="credit-pill-inner">
+          <svg class="credit-pill-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="6 3 18 3 22 9 12 22 2 9" />
+            <line x1="11" y1="3" x2="8" y2="9" />
+            <line x1="13" y1="3" x2="16" y2="9" />
+            <line x1="2" y1="9" x2="22" y2="9" />
+          </svg>
+          <span class="credit-amount" id="creditAmountText">0</span> VSP
+        </span>
+        <button class="credit-add-btn" id="creditAddBtn" data-i18n-title="topbar.credit_buy_title"
+          title="Kredi satın al">+</button>
+      </div>
+
+      <div class="notif-wrap" id="notifWrap">
+        <button class="bell-btn" id="notifBellBtn" data-i18n-title="topbar.notif_title"
+          data-i18n-aria-label="topbar.notif_title" title="Bildirimler" aria-label="Bildirimler">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+          </svg>
+          <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+        </button>
+        <div class="notif-menu" id="notifMenu">
+          <div class="notif-menu-header" data-i18n="notif.header">Bildirimler</div>
+          <div class="notif-list" id="notifList"></div>
+        </div>
+      </div>
+
+      <div id="authArea"></div>
+    </div>
+  </header>
+
+  <div class="tabbar" id="tabbar" data-active-tab="gallery">
+    <div class="tabbar-tabs">
+      <button class="tab-btn active" data-tab="gallery" data-i18n="tabbar.gallery">Galeri</button>
+      <button class="tab-btn" data-tab="maker" data-i18n="tabbar.maker">Prompt Üretici</button>
+      <button class="tab-btn" data-tab="visual" data-i18n="tabbar.visual">Görsel Oluşturucu</button>
+      <button class="tab-btn" data-tab="avatar" data-i18n="tabbar.avatar">AI Avatar / Karakter Oluşturucu</button>
+    </div>
+    <div class="tabbar-actions" id="galleryActions">
+      <button class="icon-square-btn" id="sidebarToggleBtn" data-i18n-title="tabbar.filters_title"
+        data-i18n-aria-label="tabbar.filters_title" title="Filtreler" aria-label="Filtreler">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <line x1="4" y1="6" x2="20" y2="6" />
+          <line x1="7" y1="12" x2="17" y2="12" />
+          <line x1="10" y1="18" x2="14" y2="18" />
         </svg>
-        <span class="notif-badge" id="notifBadge" style="display:none">0</span>
       </button>
-      <div class="notif-menu" id="notifMenu">
-        <div class="notif-menu-header">Bildirimler</div>
-        <div class="notif-list" id="notifList"></div>
-      </div>
-    </div>
-
-    <div id="authArea"></div>
-  </div>
-</header>
-
-<div class="tabbar" id="tabbar" data-active-tab="gallery">
-  <div class="tabbar-tabs">
-    <button class="tab-btn active" data-tab="gallery">Galeri</button>
-    <button class="tab-btn" data-tab="maker">Prompt Üretici</button>
-    <button class="tab-btn" data-tab="visual">Görsel Oluşturucu</button>
-    <button class="tab-btn" data-tab="avatar">AI Avatar / Karakter Oluşturucu</button>
-  </div>
-  <div class="tabbar-actions" id="galleryActions">
-    <button class="icon-square-btn" id="sidebarToggleBtn" title="Filtreler" aria-label="Filtreler">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/>
-      </svg>
-    </button>
-    <button class="icon-square-btn" id="densityToggleBtn" title="Görünümü değiştir" aria-label="Görünümü değiştir">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-      </svg>
-    </button>
-    <button class="icon-square-btn" id="refreshBtn" title="Yenile" aria-label="Yenile">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/>
-      </svg>
-    </button>
-    <div class="sort-wrap">
-      <button class="sort-btn" id="sortBtn"><span id="sortLabel">En yeni</span> <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
-      <div class="sort-menu" id="sortMenu">
-        <button id="sortNewestBtn" class="active">En yeni</button>
-        <button id="sortOldestBtn">En eski</button>
-        <button id="sortMostViewedBtn">En çok görüntülenen</button>
-        <button id="sortMostLikedBtn">En çok beğenilen</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="galleryView" class="gallery-layout">
-
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-meta">
-      <span id="countLabel"></span>
-    </div>
-
-    <div class="sidebar-section">
-      <button class="sidebar-header" id="catToggleBtn">
-        <span>Kategoriler</span><span class="chev" id="catChev">⌄</span>
+      <button class="icon-square-btn" id="densityToggleBtn" data-i18n-title="tabbar.view_toggle_title"
+        data-i18n-aria-label="tabbar.view_toggle_title" title="Görünümü değiştir" aria-label="Görünümü değiştir">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+        </svg>
       </button>
-      <div class="cat-list" id="catBody"></div>
-    </div>
-
-    <div class="sidebar-section">
-      <button class="sidebar-header" id="prodToggleBtn">
-        <span>Ürün Türü</span><span class="chev" id="prodChev">⌄</span>
+      <button class="icon-square-btn" id="refreshBtn" data-i18n-title="tabbar.refresh_title"
+        data-i18n-aria-label="tabbar.refresh_title" title="Yenile" aria-label="Yenile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M23 4v6h-6" />
+          <path d="M1 20v-6h6" />
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10" />
+          <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14" />
+        </svg>
       </button>
-      <div id="prodBody">
-        <select class="sidebar-select" id="productTypeSelect">
-          <option value="">Tümü</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <button class="sidebar-header" id="genderToggleBtn">
-        <span>Cinsiyet</span><span class="chev" id="genderChev">⌄</span>
-      </button>
-      <div id="genderBody">
-        <select class="sidebar-select" id="audienceGenderSelect">
-          <option value="">Tümü</option>
-          <option value="women">Kadın</option>
-          <option value="men">Erkek</option>
-          <option value="unisex">Unisex</option>
-          <option value="kids">Çocuk</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <button class="sidebar-header" id="tagToggleBtn">
-        <span>Popüler Etiketler</span><span class="chev" id="tagChev">⌄</span>
-      </button>
-      <div id="tagBody">
-        <div class="tag-cloud" id="tagCloud"></div>
-        <button class="see-all-tags" id="seeAllTagsBtn">Tüm etiketleri gör</button>
-      </div>
-    </div>
-  </aside>
-
-  <div class="gallery-main">
-    <div class="status" id="status"></div>
-    <div class="masonry" id="grid"></div>
-  </div>
-
-</div>
-
-<div id="makerView" style="display:none">
-
-  <div class="maker-header">
-    <h1>Prompt Üretici</h1>
-    <p>Görselini yükle, stilini koruyarak ürününü sahneye yerleştirecek promptu senin için üretelim.</p>
-  </div>
-
-  <div class="maker-columns">
-
-    <div class="maker-col">
-      <div class="col-header"><span class="col-num">1</span> Görsel Yükle</div>
-
-      <div id="makerDropZone" class="upload-box">
-        <img id="makerPreview" alt="yüklenen görsel">
-        <button class="remove-img-btn" id="removeImgBtn">✕</button>
-        <div class="drop-placeholder" id="makerPlaceholder">Bir görsel sürükle ya da tıklayıp seç</div>
-      </div>
-      <input type="file" id="makerFileInput" accept="image/*" style="display:none">
-
-      <button class="btn" id="changeImgBtn" style="width:100%">⭱ Görseli Değiştir</button>
-    </div>
-
-    <div class="maker-arrow">→</div>
-
-    <div class="maker-col">
-      <div class="col-header-row">
-        <div class="col-header"><span class="col-num">2</span> Prompt Oluştur</div>
-        <button class="btn primary" id="makerGenerateBtn" disabled>✨ Prompt Oluştur</button>
-      </div>
-
-      <div class="maker-status" id="makerStatus"></div>
-
-      <div class="result-label">Oluşturulan Prompt</div>
-      <div class="result-box empty-state" id="makerResultBox">
-        <span id="makerEmptyMsg">Prompt üretildiğinde burada görünecek.</span>
-      </div>
-
-      <div class="result-actions">
-        <button class="btn primary" id="makerCopyBtn" disabled>Kopyala</button>
-        <button class="btn" id="makerDownloadBtn" disabled>⬇ İndir (.txt)</button>
-      </div>
-
-      <div class="tip-box">
-        <span class="tip-icon">💡</span>
-        <div>
-          <strong>İpucu</strong>
-          Daha iyi sonuçlar için görselinizin net, iyi ışıklandırılmış ve ürünün detaylarını gösteren bir açıdan olması önerilir.
+      <div class="sort-wrap">
+        <button class="sort-btn" id="sortBtn"><span id="sortLabel" data-i18n="sort.newest">En yeni</span> <svg
+            viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg></button>
+        <div class="sort-menu" id="sortMenu">
+          <button id="sortNewestBtn" class="active" data-i18n="sort.newest">En yeni</button>
+          <button id="sortOldestBtn" data-i18n="sort.oldest">En eski</button>
+          <button id="sortMostViewedBtn" data-i18n="sort.most_viewed">En çok görüntülenen</button>
+          <button id="sortMostLikedBtn" data-i18n="sort.most_liked">En çok beğenilen</button>
         </div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="maker-features">
-    <div class="feature">
-      <span class="feature-icon">🛡️</span>
-      <div>
-        <strong>Güvenli & Gizli</strong>
-        <p>Yüklediğiniz görseller sadece sizin tarafınızdan görülebilir ve işlenir.</p>
-      </div>
-    </div>
-    <div class="feature">
-      <span class="feature-icon">💎</span>
-      <div>
-        <strong id="featureFreeTitle">Kredi Bakiyenizden Düşülür</strong>
-        <p id="featureFreeDesc">Her prompt üretimi sabit bir kredi tutarı karşılığında yapılır.</p>
-      </div>
-    </div>
-    <div class="feature">
-      <span class="feature-icon">🕐</span>
-      <div>
-        <strong>Anında Sonuç</strong>
-        <p>Kredi bakiyeniz yeterliyse üretim birkaç saniye içinde tamamlanır.</p>
       </div>
     </div>
   </div>
 
-</div>
+  <div id="galleryView" class="gallery-layout">
 
-<div id="visualView" style="display:none">
-
-  <div class="gen-header">
-    <h1>Görsel Oluşturucu</h1>
-    <p>Promptunu yaz, ayarlarını seç ve hayalindeki görseli yapay zeka ile birkaç saniyede oluştur.</p>
-  </div>
-
-  <div class="gen-layout">
-
-    <div class="gen-left">
-
-      <div>
-        <div class="gen-block-label">Prompt</div>
-        <div class="gen-block-hint">Ne görmek istersiniz? Detaylı yazmanız daha iyi sonuçlar verir.</div>
-        <textarea class="gen-textarea" id="genPromptInput" maxlength="2000" placeholder="Örn. Gün batımında sahilde yürüyen bir kadın, sinematik, warm tones..."></textarea>
-        <div class="gen-textarea-toolbar">
-          <div class="chip-btn-row">
-            <button type="button" class="chip-btn">✨ Öneri Al</button>
-            <button type="button" class="chip-btn">⭱ Prompt Üretici'den Al</button>
-          </div>
-          <span class="char-count" id="genCharCount">0 / 2000</span>
-        </div>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-meta">
+        <span id="countLabel"></span>
       </div>
 
-      <div>
-        <div class="gen-block-label">Görsel Boyutu</div>
-        <div class="opt-grid" id="genSizeGrid">
-          <button type="button" class="opt-btn active" data-ratio="1:1"><span class="ratio-icon"></span>1:1</button>
-          <button type="button" class="opt-btn" data-ratio="3:4"><span class="ratio-icon"></span>3:4</button>
-          <button type="button" class="opt-btn" data-ratio="4:3"><span class="ratio-icon"></span>4:3</button>
-          <button type="button" class="opt-btn" data-ratio="9:16"><span class="ratio-icon"></span>9:16</button>
-          <button type="button" class="opt-btn" data-ratio="16:9"><span class="ratio-icon"></span>16:9</button>
-          <button type="button" class="opt-btn" data-ratio="custom"><span class="ratio-icon"></span>Özel</button>
-        </div>
+      <div class="sidebar-section">
+        <button class="sidebar-header" id="catToggleBtn">
+          <span data-i18n="sidebar.categories">Kategoriler</span><span class="chev" id="catChev">⌄</span>
+        </button>
+        <div class="cat-list" id="catBody"></div>
       </div>
 
-      <div>
-        <div class="gen-block-label">Görsel Adeti</div>
-        <div class="count-row" id="genCountRow">
-          <button type="button" class="count-btn">1</button>
-          <button type="button" class="count-btn">2</button>
-          <button type="button" class="count-btn active">4</button>
-          <button type="button" class="count-btn">8</button>
-        </div>
-      </div>
-
-      <div>
-        <div class="gen-block-label">Kullanılan AI</div>
-        <div class="model-select-wrap">
-          <button type="button" class="model-select-btn">
-            <span class="model-current"><span id="genModelIcon">🎨</span> <span id="genModelName">DALL·E 3</span> <span class="model-badge-new" id="genModelBadge">New</span></span>
-            <span>⌄</span>
-          </button>
-          <div class="model-menu" id="genModelMenu"></div>
-        </div>
-        <div class="model-desc" id="genModelDesc">Daha yüksek kalite ve detay için en iyi seçim.</div>
-      </div>
-
-      <div class="accordion">
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" data-acc-target="cameraAccPanel">
-            <span>📷 Kamera Açısı</span>
-            <span class="acc-right"><span class="acc-count" id="cameraAccCount"></span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="cameraAccPanel">
-            <div class="chip-multi" id="cameraChips"></div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" data-acc-target="effectsAccPanel">
-            <span>✨ Efektler</span>
-            <span class="acc-right"><span class="acc-count" id="effectsAccCount"></span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="effectsAccPanel">
-            <div class="chip-multi" id="effectsChips"></div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" data-acc-target="posesAccPanel">
-            <span>🧍 Pozlar</span>
-            <span class="acc-right"><span class="acc-count" id="posesAccCount"></span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="posesAccPanel">
-            <div class="chip-multi" id="posesChips"></div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" data-acc-target="styleAccPanel">
-            <span>🎬 Görsel Türü</span>
-            <span class="acc-right"><span class="acc-count" id="styleAccCount"></span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="styleAccPanel">
-            <div class="chip-multi" id="styleChips"></div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" data-acc-target="refAccPanel">
-            <span>🖼 Referans Görsel</span>
-            <span class="acc-right"><span class="optional-badge">İsteğe bağlı</span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="refAccPanel">
-            <div class="gen-block-hint">Benzetmek istediğiniz bir görsel, kişi ya da sahne varsa ekleyin.</div>
-            <div class="ref-upload-box" id="refUploadBox">
-              <img id="refPreviewImg" alt="referans">
-              <button type="button" class="ref-remove-btn" id="refRemoveBtn">✕</button>
-              <span id="refPlaceholder">Görsel yüklemek için tıklayın</span>
-            </div>
-            <div id="refModeSection" style="display:none; margin-top:12px;">
-              <div class="gen-block-hint" style="margin-bottom:6px;">Bu görsel nasıl kullanılsın?</div>
-              <label class="ref-mode-option">
-                <input type="radio" name="refMode" value="product" checked>
-                <span><strong>Ürün olarak</strong> — sahnedeki karakter bu ürünü kullansın (birebir aynı)</span>
-              </label>
-              <label class="ref-mode-option">
-                <input type="radio" name="refMode" value="style">
-                <span><strong>Stil olarak</strong> — sadece atmosfer/renk/ışık örneği, içeriği kopyalama</span>
-              </label>
-            </div>
-            <input type="file" id="refFileInput" accept="image/*" style="display:none">
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" data-acc-target="charAccPanel">
-            <span>👤 Karakter Ekle</span>
-            <span class="acc-right"><span class="optional-badge">İsteğe bağlı</span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="charAccPanel">
-            <div class="gen-block-hint">Görsele eklemek istediğiniz karakterleri tanımlayın; isteğe bağlı özel isim ve referans görsel verebilirsiniz.</div>
-            <div class="char-list" id="charList"></div>
-            <button type="button" class="add-char-btn" id="addCharBtn" style="margin-top:10px;">+ Karakter Ekle</button>
-          </div>
-        </div>
-
-      </div>
-
-      <button type="button" class="gen-submit-btn" id="genSubmitBtn" disabled>✨ Görseli Oluştur</button>
-      <div class="gen-quota-note" id="genQuotaNote"></div>
-
-    </div>
-
-    <div class="gen-right">
-      <div class="gen-right-header">
-        <div class="gen-right-title">Oluşturulan Görseller <span class="gen-count-badge" id="genResultCount">0</span></div>
-        <button class="btn" disabled title="Yakında aktif olacak">🕐 Geçmişi Gör</button>
-      </div>
-
-      <div class="gen-canvas" id="genCanvas">
-        <div class="gen-empty" id="genEmptyState">
-          <div class="gen-empty-icon">🖼</div>
-          <h3>İlk görselini oluştur</h3>
-          <p>Promptunu yaz, ayarlarını seç ve hayalindeki görseli gerçeğe dönüştür.</p>
-        </div>
-        <div class="gen-results-grid" id="genResultsGrid" style="display:none"></div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="gen-lower-banner">
-    <div class="maker-features" style="max-width:none; margin:0; padding:32px 0 0; border-top:1px solid var(--line);">
-      <div class="feature">
-        <span class="feature-icon">💎</span>
-        <div>
-          <strong>Kredi bitti mi? Hemen yükle!</strong>
-          <p>VSP satın al, dilediğin an dilediğin kadar görsel üretmeye devam et.</p>
-        </div>
-      </div>
-      <div class="feature">
-        <span class="feature-icon">⚡</span>
-        <div>
-          <strong>Gelişmiş Modeller</strong>
-          <p>Gemini (Ücretli Katman) ile daha yüksek öncelik ve kalitede görsel üretebilirsin.</p>
-        </div>
-      </div>
-      <div class="feature" style="align-items:center;">
-        <button class="upgrade-btn" id="genUpgradeBtn" style="width:auto; padding:12px 22px; white-space:nowrap;">💎 VSP Yükle</button>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<div id="avatarView" style="display:none">
-
-  <div class="gen-header">
-    <h1>AI Avatar / Karakter Oluşturucu</h1>
-    <p>Karakterinin özelliklerini tanımla, istersen bir referans görsel ekle; portreden tam vücut görünümlerine kadar eksiksiz bir karakter sheet'i senin için oluşturalım.</p>
-  </div>
-
-  <div class="gen-layout">
-
-    <div class="gen-left">
-
-      <div>
-        <div class="avatar-panel-title">Karakter Bilgileri</div>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Cinsiyet</div>
-        <div class="gender-row" id="avatarGenderRow">
-          <button type="button" class="gender-btn active" data-gender="Kadın">♀ Kadın</button>
-          <button type="button" class="gender-btn" data-gender="Erkek">♂ Erkek</button>
-          <button type="button" class="gender-btn" data-gender="Diğer">⚧ Diğer</button>
-        </div>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Ad <span class="optional-badge">(isteğe bağlı)</span></div>
-        <input type="text" class="field-input" id="avatarNameInput" placeholder="Örn. Elara" maxlength="40">
-      </div>
-
-      <div class="field-row">
-        <div class="field-group">
-          <div class="field-label">Yaş</div>
-          <input type="number" class="field-input" id="avatarAgeInput" placeholder="28" min="1" max="99">
-        </div>
-        <div class="field-group">
-          <div class="field-label">Boy (cm)</div>
-          <input type="number" class="field-input" id="avatarHeightInput" placeholder="168" min="100" max="230">
-        </div>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Irk / Köken</div>
-        <select class="select-input" id="avatarEthnicitySelect">
-          <option>Avrupa - Akdeniz</option>
-          <option>Avrupa - Kuzey</option>
-          <option>Asya - Doğu</option>
-          <option>Asya - Güney</option>
-          <option>Orta Doğu</option>
-          <option>Afrika</option>
-          <option>Latin Amerika</option>
-          <option>Karma</option>
-        </select>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Ten Rengi</div>
-        <div class="swatch-row" id="avatarSkinRow"></div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-group">
-          <div class="field-label">Saç Rengi</div>
-          <select class="select-input" id="avatarHairColorSelect">
-            <option>Siyah</option>
-            <option>Koyu Kahverengi</option>
-            <option>Açık Kahverengi</option>
-            <option>Kumral</option>
-            <option>Sarı</option>
-            <option>Kızıl</option>
-            <option>Gri / Beyaz</option>
-            <option>Renkli</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <div class="field-label">Saç Tipi</div>
-          <select class="select-input" id="avatarHairTypeSelect">
-            <option>Düz</option>
-            <option>Dalgalı</option>
-            <option>Kıvırcık</option>
-            <option>Afro</option>
-            <option>Kısa</option>
-            <option>Uzun</option>
-            <option>Örgülü</option>
+      <div class="sidebar-section">
+        <button class="sidebar-header" id="prodToggleBtn">
+          <span data-i18n="sidebar.product_type">Ürün Türü</span><span class="chev" id="prodChev">⌄</span>
+        </button>
+        <div id="prodBody">
+          <select class="sidebar-select" id="productTypeSelect">
+            <option value="" data-i18n="common.all">Tümü</option>
           </select>
         </div>
       </div>
 
-      <div class="field-row">
-        <div class="field-group">
-          <div class="field-label">Göz Rengi</div>
-          <select class="select-input" id="avatarEyeColorSelect">
-            <option>Kahverengi</option>
-            <option>Ela</option>
-            <option>Yeşil</option>
-            <option>Mavi</option>
-            <option>Gri</option>
-            <option>Siyah</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <div class="field-label">Vücut Yapısı</div>
-          <select class="select-input" id="avatarBodyTypeSelect">
-            <option>İnce / Atletik</option>
-            <option>Ortalama</option>
-            <option>Kaslı</option>
-            <option>Dolgun</option>
-            <option>Uzun / İnce</option>
-            <option>Kısa / Tıknaz</option>
+      <div class="sidebar-section">
+        <button class="sidebar-header" id="genderToggleBtn">
+          <span data-i18n="sidebar.gender">Cinsiyet</span><span class="chev" id="genderChev">⌄</span>
+        </button>
+        <div id="genderBody">
+          <select class="sidebar-select" id="audienceGenderSelect">
+            <option value="" data-i18n="common.all">Tümü</option>
+            <option value="women" data-i18n="sidebar.gender_women">Kadın</option>
+            <option value="men" data-i18n="sidebar.gender_men">Erkek</option>
+            <option value="unisex" data-i18n="sidebar.gender_unisex">Unisex</option>
+            <option value="kids" data-i18n="sidebar.gender_kids">Çocuk</option>
           </select>
         </div>
       </div>
 
-      <div>
-        <div class="gen-block-label">Görsel Üretim Servisi</div>
-        <div class="model-select-wrap" id="avatarProviderWrap">
-          <button type="button" class="model-select-btn">
-            <span class="model-current"><span id="avatarProviderIcon">✨</span> <span id="avatarProviderName">Gemini (Ücretsiz)</span> <span class="model-badge-new" id="avatarProviderBadge">Free</span></span>
-            <span>⌄</span>
-          </button>
-          <div class="model-menu" id="avatarProviderMenu"></div>
-        </div>
-        <div class="model-desc" id="avatarProviderDesc"></div>
-      </div>
-
-      <div class="accordion">
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" data-acc-target="faceAccPanel">
-            <span>😊 Yüz Detayları</span>
-            <span class="acc-right"><span class="acc-count" id="faceAccCount"></span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="faceAccPanel">
-            <div class="chip-multi" id="faceChips"></div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" data-acc-target="avstyleAccPanel">
-            <span>👗 Stil & Giyim</span>
-            <span class="acc-right"><span class="acc-count" id="avstyleAccCount"></span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="avstyleAccPanel">
-            <div class="chip-multi" id="avstyleChips"></div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" data-acc-target="personalityAccPanel">
-            <span>🧠 Kişilik & Özellikler</span>
-            <span class="acc-right"><span class="acc-count" id="personalityAccCount"></span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="personalityAccPanel">
-            <div class="chip-multi" id="personalityChips"></div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" data-acc-target="otherdetailAccPanel">
-            <span>📌 Diğer Detaylar</span>
-            <span class="acc-right"><span class="optional-badge">İsteğe bağlı</span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="otherdetailAccPanel">
-            <div class="gen-block-hint">Meslek, ilgi alanı veya karaktere özgü ek detaylar seçebilirsiniz.</div>
-            <div class="chip-multi" id="otherdetailChips"></div>
-            <div class="field-group" style="margin-top:12px;">
-              <div class="field-label">Ek notlar</div>
-              <textarea class="gen-textarea" id="avatarExtraNotes" style="min-height:70px;" maxlength="400" placeholder="Karakterle ilgili eklemek istediğin başka bir detay varsa buraya yaz..."></textarea>
-            </div>
-          </div>
-        </div>
-
-        <div class="acc-item">
-          <button type="button" class="acc-trigger" data-acc-target="avrefAccPanel">
-            <span>🖼 Referans Görsel</span>
-            <span class="acc-right"><span class="optional-badge">İsteğe bağlı</span><span class="acc-chev">⌄</span></span>
-          </button>
-          <div class="acc-panel" id="avrefAccPanel">
-            <div class="gen-block-hint">Benzetmek istediğin gerçek ya da hayali bir karakter görseli varsa ekle; en ince detaylarına kadar incelenir.</div>
-            <div class="ref-upload-box" id="avatarRefUploadBox">
-              <img id="avatarRefPreviewImg" alt="referans">
-              <button type="button" class="ref-remove-btn" id="avatarRefRemoveBtn">✕</button>
-              <span id="avatarRefPlaceholder">Görsel yüklemek için tıklayın</span>
-            </div>
-            <input type="file" id="avatarRefFileInput" accept="image/*" style="display:none">
-          </div>
-        </div>
-
-      </div>
-
-      <button type="button" class="gen-submit-btn" id="avatarSubmitBtn">✨ Karakter Oluştur</button>
-      <div class="gen-quota-note" id="avatarQuotaNote"></div>
-
-    </div>
-
-    <div class="gen-right">
-      <div class="gen-right-header">
-        <div class="gen-right-title">Karakter Sheet</div>
-        <button class="btn" disabled title="Yakında aktif olacak">🕐 Geçmişi Gör</button>
-      </div>
-
-      <div class="gen-canvas" id="avatarCanvas" style="align-items:stretch; min-height:auto;">
-        <div class="avatar-empty-sheet" id="avatarEmptyState" style="margin:auto;">
-          <div class="gen-empty-icon">🧬</div>
-          <h3>İlk karakterini oluştur</h3>
-          <p>Soldaki bilgileri doldur, "Karakter Oluştur" butonuna bas; portre, tam vücut görünümleri ve yüz/saç detaylarıyla eksiksiz bir sheet burada belirecek.</p>
-        </div>
-
-        <div id="avatarSheetResult" style="display:none; width:100%;">
-
-          <div class="sheet-panel">
-            <div class="sheet-header">
-              <div class="sheet-title" id="sheetTitle">Oluşturulan Karakter Sheet <span class="new-badge">Yeni</span></div>
-              <div class="sheet-actions">
-                <button class="btn" id="downloadSheetBtn">⬇ İndir</button>
-                <button class="btn" id="shareSheetBtn">⇗ Paylaş</button>
-                <button class="btn" id="avatarSaveBtn" disabled title="Yakında aktif olacak">💾 Profile Kaydet</button>
-              </div>
-            </div>
-
-            <div>
-              <div class="sheet-block-label">Karakter Sheet (5 panel)</div>
-              <div class="sheet-portrait"><img id="sheetPortraitImg" alt="karakter sheet"></div>
-            </div>
-          </div>
-
-          <div class="sheet-panel" style="display:flex; gap:20px; flex-wrap:wrap;">
-            <div style="flex:1; min-width:240px;">
-              <div class="sheet-block-label">Karakter Bilgileri</div>
-              <dl class="sheet-info-grid" id="sheetInfoGrid"></dl>
-            </div>
-            <div style="flex:1; min-width:200px;">
-              <div class="sheet-block-label">Önerilen Kullanımlar</div>
-              <div class="sheet-uses" id="sheetUses"></div>
-              <div class="save-login-hint" id="avatarSaveHint" style="margin-top:14px;">Profile kaydetme yakında eklenecek. Şimdilik karakterini indirebilirsin.</div>
-            </div>
-          </div>
-
+      <div class="sidebar-section">
+        <button class="sidebar-header" id="tagToggleBtn">
+          <span data-i18n="sidebar.popular_tags">Popüler Etiketler</span><span class="chev" id="tagChev">⌄</span>
+        </button>
+        <div id="tagBody">
+          <div class="tag-cloud" id="tagCloud"></div>
+          <button class="see-all-tags" id="seeAllTagsBtn" data-i18n="sidebar.see_all_tags">Tüm etiketleri gör</button>
         </div>
       </div>
+    </aside>
+
+    <div class="gallery-main">
+      <div class="status" id="status"></div>
+      <div class="masonry" id="grid"></div>
     </div>
 
   </div>
 
-  <div class="gen-lower-banner">
-    <div class="maker-features" style="max-width:none; margin:0; padding:32px 0 0; border-top:1px solid var(--line);">
+  <div id="makerView" style="display:none">
+
+    <div class="maker-header">
+      <h1 data-i18n="maker.title">Prompt Üretici</h1>
+      <p data-i18n="maker.subtitle">Görselini yükle, stilini koruyarak ürününü sahneye yerleştirecek promptu senin için
+        üretelim.</p>
+    </div>
+
+    <div class="maker-columns">
+
+      <div class="maker-col">
+        <div class="col-header"><span class="col-num">1</span> <span data-i18n="maker.step1_label">Görsel Yükle</span>
+        </div>
+
+        <div id="makerDropZone" class="upload-box">
+          <img id="makerPreview" alt="yüklenen görsel">
+          <button class="remove-img-btn" id="removeImgBtn">✕</button>
+          <div class="drop-placeholder" id="makerPlaceholder" data-i18n="maker.drop_placeholder">Bir görsel sürükle ya
+            da tıklayıp seç</div>
+        </div>
+        <input type="file" id="makerFileInput" accept="image/*" style="display:none">
+
+        <button class="btn" id="changeImgBtn" style="width:100%" data-i18n="maker.change_image_btn">⭱ Görseli
+          Değiştir</button>
+      </div>
+
+      <div class="maker-arrow">→</div>
+
+      <div class="maker-col">
+        <div class="col-header-row">
+          <div class="col-header"><span class="col-num">2</span> <span data-i18n="maker.step2_label">Prompt
+              Oluştur</span></div>
+          <button class="btn primary" id="makerGenerateBtn" disabled data-i18n="maker.generate_btn">✨ Prompt
+            Oluştur</button>
+        </div>
+
+        <div class="maker-status" id="makerStatus"></div>
+
+        <div class="result-label" data-i18n="maker.result_label">Oluşturulan Prompt</div>
+        <div class="result-box empty-state" id="makerResultBox">
+          <span id="makerEmptyMsg" data-i18n="maker.empty_msg">Prompt üretildiğinde burada görünecek.</span>
+        </div>
+
+        <div class="result-actions">
+          <button class="btn primary" id="makerCopyBtn" disabled data-i18n="maker.copy_btn">Kopyala</button>
+          <button class="btn" id="makerDownloadBtn" disabled data-i18n="maker.download_btn">⬇ İndir (.txt)</button>
+        </div>
+
+        <div class="tip-box">
+          <span class="tip-icon">💡</span>
+          <div>
+            <strong data-i18n="maker.tip_title">İpucu</strong>
+            <span data-i18n="maker.tip_text">Daha iyi sonuçlar için görselinizin net, iyi ışıklandırılmış ve ürünün
+              detaylarını gösteren bir açıdan olması önerilir.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="maker-features">
       <div class="feature">
         <span class="feature-icon">🛡️</span>
         <div>
-          <strong>Fotorealistik & Tutarlı</strong>
-          <p>Gerçek fotoğraf kalitesinde üretilir. Yüz, saç ve kıyafet detayları tüm panellerde tutarlı kalır.</p>
+          <strong data-i18n="maker.feature_safe_title">Güvenli & Gizli</strong>
+          <p data-i18n="maker.feature_safe_desc">Yüklediğiniz görseller sadece sizin tarafınızdan görülebilir ve
+            işlenir.</p>
         </div>
       </div>
       <div class="feature">
         <span class="feature-icon">💎</span>
         <div>
-          <strong>Tek Görselde 5 Farklı Açı</strong>
-          <p>Ön, arka, yüz detayı — tek bir karakter sheet'inde tüm açılar. Gemini: 2 kredi, OpenAI: 3 kredi.</p>
+          <strong id="featureFreeTitle" data-i18n="maker.feature_credit_title">Kredi Bakiyenizden Düşülür</strong>
+          <p id="featureFreeDesc" data-i18n="maker.feature_credit_desc">Her prompt üretimi sabit bir kredi tutarı
+            karşılığında yapılır.</p>
         </div>
       </div>
       <div class="feature">
-        <span class="feature-icon">🎯</span>
+        <span class="feature-icon">🕐</span>
         <div>
-          <strong>Marka Yüzü Olarak Kullan</strong>
-          <p>Oluşturduğunuz karakteri görsel üretimlerinde referans olarak kullanabilirsiniz.</p>
+          <strong data-i18n="maker.feature_instant_title">Anında Sonuç</strong>
+          <p data-i18n="maker.feature_instant_desc">Kredi bakiyeniz yeterliyse üretim birkaç saniye içinde tamamlanır.
+          </p>
         </div>
       </div>
     </div>
+
   </div>
 
-</div>
-<!-- ↑ avatarView burada kapanıyor -->
+  <div id="visualView" style="display:none">
 
-<div id="profileView" style="display:none" class="profile-layout">
-
-  <aside class="profile-sidebar" id="profileSidebar">
-    <!-- profile.js tarafından doldurulur -->
-  </aside>
-
-  <div class="profile-main">
-    <div class="profile-welcome">
-      <h1>Hoş geldin, <span id="profileWelcomeName">Kullanıcı</span> 👋</h1>
-      <p>Yaratıcılığını keşfetmeye devam et.</p>
+    <div class="gen-header">
+      <h1 data-i18n="visual.title">Görsel Oluşturucu</h1>
+      <p data-i18n="visual.subtitle">Promptunu yaz, ayarlarını seç ve hayalindeki görseli yapay zeka ile birkaç saniyede
+        oluştur.</p>
     </div>
 
-    <div class="profile-filter-row">
-      <button class="profile-filter-chip active">Tümü</button>
-      <button class="profile-filter-chip" disabled title="Yakında aktif olacak">Promptlar</button>
-      <button class="profile-filter-chip" disabled title="Yakında aktif olacak">Görseller</button>
-      <button class="profile-filter-chip" disabled title="Yakında aktif olacak">Karakterler</button>
-      <button class="profile-filter-chip" disabled title="Yakında aktif olacak">Sosyal İçerikler</button>
-      <button class="profile-filter-chip" disabled title="Yakında aktif olacak">Yüklemeler</button>
-      <button class="profile-filter-chip" disabled title="Yakında aktif olacak">Favoriler</button>
-    </div>
+    <div class="gen-layout">
 
-    <div class="profile-content-placeholder">
-      İçerik galerisi (promptların/görsellerin/karakterlerin listesi) yakında burada görünecek.
-    </div>
+      <div class="gen-left">
 
-    <div class="profile-widgets-row">
-      <div class="profile-widget">
-        <div class="profile-widget-title">Son Aktiviteler</div>
-        <div id="profileActivityList"></div>
+        <div>
+          <div class="gen-block-label" data-i18n="visual.prompt_label">Prompt</div>
+          <div class="gen-block-hint" data-i18n="visual.prompt_hint">Ne görmek istersiniz? Detaylı yazmanız daha iyi
+            sonuçlar verir.</div>
+          <textarea class="gen-textarea" id="genPromptInput" maxlength="2000"
+            data-i18n-placeholder="visual.prompt_placeholder"
+            placeholder="Örn. Gün batımında sahilde yürüyen bir kadın, sinematik, warm tones..."></textarea>
+          <div class="gen-textarea-toolbar">
+            <div class="chip-btn-row">
+              <button type="button" class="chip-btn" data-i18n="visual.suggest_btn">✨ Öneri Al</button>
+              <button type="button" class="chip-btn" data-i18n="visual.from_maker_btn">⭱ Prompt Üretici'den Al</button>
+            </div>
+            <span class="char-count" id="genCharCount">0 / 2000</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="gen-block-label" data-i18n="visual.size_label">Görsel Boyutu</div>
+          <div class="opt-grid" id="genSizeGrid">
+            <button type="button" class="opt-btn active" data-ratio="1:1"><span class="ratio-icon"></span>1:1</button>
+            <button type="button" class="opt-btn" data-ratio="3:4"><span class="ratio-icon"></span>3:4</button>
+            <button type="button" class="opt-btn" data-ratio="4:3"><span class="ratio-icon"></span>4:3</button>
+            <button type="button" class="opt-btn" data-ratio="9:16"><span class="ratio-icon"></span>9:16</button>
+            <button type="button" class="opt-btn" data-ratio="16:9"><span class="ratio-icon"></span>16:9</button>
+            <button type="button" class="opt-btn" data-ratio="custom"><span class="ratio-icon"></span><span
+                data-i18n="visual.ratio_custom">Özel</span></button>
+          </div>
+        </div>
+
+        <div>
+          <div class="gen-block-label" data-i18n="visual.count_label">Görsel Adeti</div>
+          <div class="count-row" id="genCountRow">
+            <button type="button" class="count-btn">1</button>
+            <button type="button" class="count-btn">2</button>
+            <button type="button" class="count-btn active">4</button>
+            <button type="button" class="count-btn">8</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="gen-block-label" data-i18n="visual.model_label">Kullanılan AI</div>
+          <div class="model-select-wrap">
+            <button type="button" class="model-select-btn">
+              <span class="model-current"><span id="genModelIcon">🎨</span> <span id="genModelName">DALL·E 3</span>
+                <span class="model-badge-new" id="genModelBadge">New</span></span>
+              <span>⌄</span>
+            </button>
+            <div class="model-menu" id="genModelMenu"></div>
+          </div>
+          <div class="model-desc" id="genModelDesc">Daha yüksek kalite ve detay için en iyi seçim.</div>
+        </div>
+
+        <div class="accordion">
+
+          <div class="acc-item">
+            <button type="button" class="acc-trigger" data-acc-target="cameraAccPanel">
+              <span data-i18n="visual.camera_label">📷 Kamera Açısı</span>
+              <span class="acc-right"><span class="acc-count" id="cameraAccCount"></span><span
+                  class="acc-chev">⌄</span></span>
+            </button>
+            <div class="acc-panel" id="cameraAccPanel">
+              <div class="chip-multi" id="cameraChips"></div>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button type="button" class="acc-trigger" data-acc-target="effectsAccPanel">
+              <span data-i18n="visual.effects_label">✨ Efektler</span>
+              <span class="acc-right"><span class="acc-count" id="effectsAccCount"></span><span
+                  class="acc-chev">⌄</span></span>
+            </button>
+            <div class="acc-panel" id="effectsAccPanel">
+              <div class="chip-multi" id="effectsChips"></div>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button type="button" class="acc-trigger" data-acc-target="posesAccPanel">
+              <span data-i18n="visual.poses_label">🧍 Pozlar</span>
+              <span class="acc-right"><span class="acc-count" id="posesAccCount"></span><span
+                  class="acc-chev">⌄</span></span>
+            </button>
+            <div class="acc-panel" id="posesAccPanel">
+              <div class="chip-multi" id="posesChips"></div>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button type="button" class="acc-trigger" data-acc-target="styleAccPanel">
+              <span data-i18n="visual.style_label">🎬 Görsel Türü</span>
+              <span class="acc-right"><span class="acc-count" id="styleAccCount"></span><span
+                  class="acc-chev">⌄</span></span>
+            </button>
+            <div class="acc-panel" id="styleAccPanel">
+              <div class="chip-multi" id="styleChips"></div>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button type="button" class="acc-trigger" data-acc-target="refAccPanel">
+              <span data-i18n="visual.ref_label">🖼 Referans Görsel</span>
+              <span class="acc-right"><span class="optional-badge" data-i18n="common.optional">İsteğe bağlı</span><span
+                  class="acc-chev">⌄</span></span>
+            </button>
+            <div class="acc-panel" id="refAccPanel">
+              <div class="gen-block-hint" data-i18n="visual.ref_hint">Benzetmek istediğiniz bir görsel, kişi ya da sahne
+                varsa ekleyin.</div>
+              <div class="ref-upload-box" id="refUploadBox">
+                <img id="refPreviewImg" alt="referans">
+                <button type="button" class="ref-remove-btn" id="refRemoveBtn">✕</button>
+                <span id="refPlaceholder" data-i18n="visual.ref_placeholder">Görsel yüklemek için tıklayın</span>
+              </div>
+              <div id="refModeSection" style="display:none; margin-top:12px;">
+                <div class="gen-block-hint" style="margin-bottom:6px;" data-i18n="visual.ref_mode_hint">Bu görsel nasıl
+                  kullanılsın?</div>
+                <label class="ref-mode-option">
+                  <input type="radio" name="refMode" value="product" checked>
+                  <span><strong data-i18n="visual.ref_mode_product_label">Ürün olarak</strong><span
+                      data-i18n="visual.ref_mode_product_desc"> — sahnedeki karakter bu ürünü kullansın (birebir
+                      aynı)</span></span>
+                </label>
+                <label class="ref-mode-option">
+                  <input type="radio" name="refMode" value="style">
+                  <span><strong data-i18n="visual.ref_mode_style_label">Stil olarak</strong><span
+                      data-i18n="visual.ref_mode_style_desc"> — sadece atmosfer/renk/ışık örneği, içeriği
+                      kopyalama</span></span>
+                </label>
+              </div>
+              <input type="file" id="refFileInput" accept="image/*" style="display:none">
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button type="button" class="acc-trigger" data-acc-target="charAccPanel">
+              <span data-i18n="visual.char_label">👤 Karakter Ekle</span>
+              <span class="acc-right"><span class="optional-badge" data-i18n="common.optional">İsteğe bağlı</span><span
+                  class="acc-chev">⌄</span></span>
+            </button>
+            <div class="acc-panel" id="charAccPanel">
+              <div class="gen-block-hint" data-i18n="visual.char_hint">Görsele eklemek istediğiniz karakterleri
+                tanımlayın; isteğe bağlı özel isim ve referans görsel verebilirsiniz.</div>
+              <div class="char-list" id="charList"></div>
+              <button type="button" class="add-char-btn" id="addCharBtn" style="margin-top:10px;"
+                data-i18n="visual.add_char_btn">+ Karakter Ekle</button>
+            </div>
+          </div>
+
+        </div>
+
+        <button type="button" class="gen-submit-btn" id="genSubmitBtn" disabled data-i18n="visual.submit_btn">✨ Görseli
+          Oluştur</button>
+        <div class="gen-quota-note" id="genQuotaNote"></div>
+
       </div>
-      <div class="profile-widget">
-        <div class="profile-widget-title">En Çok Kullandığın Araçlar</div>
-        <div id="profileToolsList"></div>
+
+      <div class="gen-right">
+        <div class="gen-right-header">
+          <div class="gen-right-title"><span data-i18n="visual.results_title">Oluşturulan Görseller</span> <span
+              class="gen-count-badge" id="genResultCount">0</span></div>
+          <button class="btn" disabled data-i18n-title="visual.history_soon" title="Yakında aktif olacak"
+            data-i18n="visual.history_btn">🕐 Geçmişi Gör</button>
+        </div>
+
+        <div class="gen-canvas" id="genCanvas">
+          <div class="gen-empty" id="genEmptyState">
+            <div class="gen-empty-icon">🖼</div>
+            <h3 data-i18n="visual.empty_title">İlk görselini oluştur</h3>
+            <p data-i18n="visual.empty_desc">Promptunu yaz, ayarlarını seç ve hayalindeki görseli gerçeğe dönüştür.</p>
+          </div>
+          <div class="gen-results-grid" id="genResultsGrid" style="display:none"></div>
+        </div>
       </div>
-      <div class="profile-widget">
-        <div class="profile-widget-title">Hızlı İşlemler</div>
-        <div class="profile-quick-actions">
-          <button class="profile-quick-action" data-tab="maker">📝 Prompt Oluşturucuya Git <span>→</span></button>
-          <button class="profile-quick-action" data-tab="visual">🖼️ Yeni Görsel Oluştur <span>→</span></button>
-          <button class="profile-quick-action" data-tab="avatar">🧬 Karakter Sheet Oluştur <span>→</span></button>
-          <button class="profile-quick-action" disabled title="Yakında aktif olacak">📱 Sosyal Medya İçeriği Oluştur <span>→</span></button>
+
+    </div>
+
+    <div class="gen-lower-banner">
+      <div class="maker-features" style="max-width:none; margin:0; padding:32px 0 0; border-top:1px solid var(--line);">
+        <div class="feature">
+          <span class="feature-icon">💎</span>
+          <div>
+            <strong data-i18n="visual.banner_credit_title">Kredi bitti mi? Hemen yükle!</strong>
+            <p data-i18n="visual.banner_credit_desc">VSP satın al, dilediğin an dilediğin kadar görsel üretmeye devam
+              et.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">⚡</span>
+          <div>
+            <strong data-i18n="visual.banner_models_title">Gelişmiş Modeller</strong>
+            <p data-i18n="visual.banner_models_desc">Gemini (Ücretli Katman) ile daha yüksek öncelik ve kalitede görsel
+              üretebilirsin.</p>
+          </div>
+        </div>
+        <div class="feature" style="align-items:center;">
+          <button class="upgrade-btn" id="genUpgradeBtn" style="width:auto; padding:12px 22px; white-space:nowrap;"
+            data-i18n="visual.upgrade_btn">💎 VSP Yükle</button>
         </div>
       </div>
     </div>
+
   </div>
 
-</div>
+  <div id="avatarView" style="display:none">
 
-<footer class="site-footer">
-  <a href="/privacy.html" target="_blank" rel="noopener noreferrer">Gizlilik Politikası</a>
-</footer>
-
-<div class="modal-backdrop" id="modalBackdrop">
-  <div class="modal">
-    <div class="modal-img-wrap">
-      <img id="modalImg" src="" alt="referans görsel">
-      <button class="modal-copy-icon-btn" id="copyIconBtn" title="Prompt'u kopyala" aria-label="Prompt'u kopyala">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-        </svg>
-      </button>
+    <div class="gen-header">
+      <h1 data-i18n="avatar.title">AI Avatar / Karakter Oluşturucu</h1>
+      <p data-i18n="avatar.subtitle">Karakterinin özelliklerini tanımla, istersen bir referans görsel ekle; portreden
+        tam vücut görünümlerine kadar eksiksiz bir karakter sheet'i senin için oluşturalım.</p>
     </div>
-    <div class="modal-body">
-      <div class="premium-eyebrow-badge" id="modalPremiumBadge" style="display:none">
-        <span class="premium-eyebrow-icon">◆</span> PREMIUM PROMPT
-      </div>
-      <div class="modal-eyebrow" id="modalDate"></div>
-      <div class="modal-tags" id="modalTags"></div>
 
-      <div id="promptSection" style="display:flex; flex-direction:column; flex:1;">
-        <div class="modal-prompt" id="modalPrompt"></div>
-        <div class="modal-actions">
-          <button class="btn">← Geri</button>
-          <button class="btn primary" id="useInVisualBtn">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px; vertical-align:-2px;">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <circle cx="9" cy="9" r="2"/>
-              <path d="M21 15l-5-5L5 21"/>
-            </svg>
-            Görsel Oluştur
-          </button>
+    <div class="gen-layout">
+
+      <div class="gen-left">
+
+        <div>
+          <div class="avatar-panel-title" data-i18n="avatar.info_title">Karakter Bilgileri</div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label" data-i18n="avatar.gender_label">Cinsiyet</div>
+          <div class="gender-row" id="avatarGenderRow">
+            <button type="button" class="gender-btn active" data-gender="Kadın" data-i18n="avatar.gender_female">♀
+              Kadın</button>
+            <button type="button" class="gender-btn" data-gender="Erkek" data-i18n="avatar.gender_male">♂ Erkek</button>
+            <button type="button" class="gender-btn" data-gender="Diğer" data-i18n="avatar.gender_other">⚧
+              Diğer</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label"><span data-i18n="avatar.name_label">Ad</span> <span class="optional-badge"
+              data-i18n="common.optional">(isteğe bağlı)</span></div>
+          <input type="text" class="field-input" id="avatarNameInput" data-i18n-placeholder="avatar.name_placeholder"
+            placeholder="Örn. Elara" maxlength="40">
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label" data-i18n="avatar.age_label">Yaş</div>
+            <input type="number" class="field-input" id="avatarAgeInput" placeholder="28" min="1" max="99">
+          </div>
+          <div class="field-group">
+            <div class="field-label" data-i18n="avatar.height_label">Boy (cm)</div>
+            <input type="number" class="field-input" id="avatarHeightInput" placeholder="168" min="100" max="230">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label" data-i18n="avatar.ethnicity_label">Irk / Köken</div>
+          <!-- DÜZELTME (madde 3): her option'a sabit TR value eklendi; data-i18n sadece
+               görünen metni değiştirir, dil değişse de gönderilen değer TR sabit kalır. -->
+          <select class="select-input" id="avatarEthnicitySelect">
+            <option value="Avrupa - Akdeniz" data-i18n="avatar.ethnicity_euro_med">Avrupa - Akdeniz</option>
+            <option value="Avrupa - Kuzey" data-i18n="avatar.ethnicity_euro_north">Avrupa - Kuzey</option>
+            <option value="Asya - Doğu" data-i18n="avatar.ethnicity_asia_east">Asya - Doğu</option>
+            <option value="Asya - Güney" data-i18n="avatar.ethnicity_asia_south">Asya - Güney</option>
+            <option value="Orta Doğu" data-i18n="avatar.ethnicity_middle_east">Orta Doğu</option>
+            <option value="Afrika" data-i18n="avatar.ethnicity_africa">Afrika</option>
+            <option value="Latin Amerika" data-i18n="avatar.ethnicity_latin">Latin Amerika</option>
+            <option value="Karma" data-i18n="avatar.ethnicity_mixed">Karma</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label" data-i18n="avatar.skin_label">Ten Rengi</div>
+          <div class="swatch-row" id="avatarSkinRow"></div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label" data-i18n="avatar.hair_color_label">Saç Rengi</div>
+            <!-- DÜZELTME (madde 3): sabit TR value eklendi -->
+            <select class="select-input" id="avatarHairColorSelect">
+              <option value="Siyah" data-i18n="avatar.hair_black">Siyah</option>
+              <option value="Koyu Kahverengi" data-i18n="avatar.hair_dark_brown">Koyu Kahverengi</option>
+              <option value="Açık Kahverengi" data-i18n="avatar.hair_light_brown">Açık Kahverengi</option>
+              <option value="Kumral" data-i18n="avatar.hair_ash_blonde">Kumral</option>
+              <option value="Sarı" data-i18n="avatar.hair_blonde">Sarı</option>
+              <option value="Kızıl" data-i18n="avatar.hair_red">Kızıl</option>
+              <option value="Gri / Beyaz" data-i18n="avatar.hair_gray">Gri / Beyaz</option>
+              <option value="Renkli" data-i18n="avatar.hair_colorful">Renkli</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <div class="field-label" data-i18n="avatar.hair_type_label">Saç Tipi</div>
+            <!-- DÜZELTME (madde 3): sabit TR value eklendi -->
+            <select class="select-input" id="avatarHairTypeSelect">
+              <option value="Düz" data-i18n="avatar.hair_straight">Düz</option>
+              <option value="Dalgalı" data-i18n="avatar.hair_wavy">Dalgalı</option>
+              <option value="Kıvırcık" data-i18n="avatar.hair_curly">Kıvırcık</option>
+              <option value="Afro" data-i18n="avatar.hair_afro">Afro</option>
+              <option value="Kısa" data-i18n="avatar.hair_short">Kısa</option>
+              <option value="Uzun" data-i18n="avatar.hair_long">Uzun</option>
+              <option value="Örgülü" data-i18n="avatar.hair_braided">Örgülü</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label" data-i18n="avatar.eye_color_label">Göz Rengi</div>
+            <!-- DÜZELTME (madde 3): sabit TR value eklendi -->
+            <select class="select-input" id="avatarEyeColorSelect">
+              <option value="Kahverengi" data-i18n="avatar.eye_brown">Kahverengi</option>
+              <option value="Ela" data-i18n="avatar.eye_hazel">Ela</option>
+              <option value="Yeşil" data-i18n="avatar.eye_green">Yeşil</option>
+              <option value="Mavi" data-i18n="avatar.eye_blue">Mavi</option>
+              <option value="Gri" data-i18n="avatar.eye_gray">Gri</option>
+              <option value="Siyah" data-i18n="avatar.eye_black">Siyah</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <div class="field-label" data-i18n="avatar.body_type_label">Vücut Yapısı</div>
+            <!-- DÜZELTME (madde 3): sabit TR value eklendi -->
+            <select class="select-input" id="avatarBodyTypeSelect">
+              <option value="İnce / Atletik" data-i18n="avatar.body_slim_athletic">İnce / Atletik</option>
+              <option value="Ortalama" data-i18n="avatar.body_average">Ortalama</option>
+              <option value="Kaslı" data-i18n="avatar.body_muscular">Kaslı</option>
+              <option value="Dolgun" data-i18n="avatar.body_curvy">Dolgun</option>
+              <option value="Uzun / İnce" data-i18n="avatar.body_tall_slim">Uzun / İnce</option>
+              <option value="Kısa / Tıknaz" data-i18n="avatar.body_short_stocky">Kısa / Tıknaz</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <div class="gen-block-label" data-i18n="avatar.provider_label">Görsel Üretim Servisi</div>
+          <div class="model-select-wrap" id="avatarProviderWrap">
+            <button type="button" class="model-select-btn">
+              <span class="model-current"><span id="avatarProviderIcon">✨</span> <span id="avatarProviderName">Gemini
+                  (Ücretsiz)</span> <span class="model-badge-new" id="avatarProviderBadge">Free</span></span>
+              <span>⌄</span>
+            </button>
+            <div class="model-menu" id="avatarProviderMenu"></div>
+          </div>
+          <div class="model-desc" id="avatarProviderDesc"></div>
+        </div>
+
+        <div class="accordion">
+
+          <div class="acc-item">
+            <button type="button" class="acc-trigger" data-acc-target="faceAccPanel">
+              <span data-i18n="avatar.face_label">😊 Yüz Detayları</span>
+              <span class="acc-right"><span class="acc-count" id="faceAccCount"></span><span
+                  class="acc-chev">⌄</span></span>
+            </button>
+            <div class="acc-panel" id="faceAccPanel">
+              <div class="chip-multi" id="faceChips"></div>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button type="button" class="acc-trigger" data-acc-target="avstyleAccPanel">
+              <span data-i18n="avatar.style_label">👗 Stil & Giyim</span>
+              <span class="acc-right"><span class="acc-count" id="avstyleAccCount"></span><span
+                  class="acc-chev">⌄</span></span>
+            </button>
+            <div class="acc-panel" id="avstyleAccPanel">
+              <div class="chip-multi" id="avstyleChips"></div>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button type="button" class="acc-trigger" data-acc-target="personalityAccPanel">
+              <span data-i18n="avatar.personality_label">🧠 Kişilik & Özellikler</span>
+              <span class="acc-right"><span class="acc-count" id="personalityAccCount"></span><span
+                  class="acc-chev">⌄</span></span>
+            </button>
+            <div class="acc-panel" id="personalityAccPanel">
+              <div class="chip-multi" id="personalityChips"></div>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button type="button" class="acc-trigger" data-acc-target="otherdetailAccPanel">
+              <span data-i18n="avatar.other_label">📌 Diğer Detaylar</span>
+              <span class="acc-right"><span class="optional-badge" data-i18n="common.optional">İsteğe bağlı</span><span
+                  class="acc-chev">⌄</span></span>
+            </button>
+            <div class="acc-panel" id="otherdetailAccPanel">
+              <div class="gen-block-hint" data-i18n="avatar.other_hint">Meslek, ilgi alanı veya karaktere özgü ek
+                detaylar seçebilirsiniz.</div>
+              <div class="chip-multi" id="otherdetailChips"></div>
+              <div class="field-group" style="margin-top:12px;">
+                <div class="field-label" data-i18n="avatar.notes_label">Ek notlar</div>
+                <textarea class="gen-textarea" id="avatarExtraNotes" style="min-height:70px;" maxlength="400"
+                  data-i18n-placeholder="avatar.notes_placeholder"
+                  placeholder="Karakterle ilgili eklemek istediğin başka bir detay varsa buraya yaz..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button type="button" class="acc-trigger" data-acc-target="avrefAccPanel">
+              <span data-i18n="avatar.ref_label">🖼 Referans Görsel</span>
+              <span class="acc-right"><span class="optional-badge" data-i18n="common.optional">İsteğe bağlı</span><span
+                  class="acc-chev">⌄</span></span>
+            </button>
+            <div class="acc-panel" id="avrefAccPanel">
+              <div class="gen-block-hint" data-i18n="avatar.ref_hint">Benzetmek istediğin gerçek ya da hayali bir
+                karakter görseli varsa ekle; en ince detaylarına kadar incelenir.</div>
+              <div class="ref-upload-box" id="avatarRefUploadBox">
+                <img id="avatarRefPreviewImg" alt="referans">
+                <button type="button" class="ref-remove-btn" id="avatarRefRemoveBtn">✕</button>
+                <span id="avatarRefPlaceholder" data-i18n="avatar.ref_placeholder">Görsel yüklemek için tıklayın</span>
+              </div>
+              <input type="file" id="avatarRefFileInput" accept="image/*" style="display:none">
+            </div>
+          </div>
+
+        </div>
+
+        <button type="button" class="gen-submit-btn" id="avatarSubmitBtn" data-i18n="avatar.submit_btn">✨ Karakter
+          Oluştur</button>
+        <div class="gen-quota-note" id="avatarQuotaNote"></div>
+
+      </div>
+
+      <div class="gen-right">
+        <div class="gen-right-header">
+          <div class="gen-right-title" data-i18n="avatar.sheet_title">Karakter Sheet</div>
+          <button class="btn" disabled data-i18n-title="visual.history_soon" title="Yakında aktif olacak"
+            data-i18n="visual.history_btn">🕐 Geçmişi Gör</button>
+        </div>
+
+        <div class="gen-canvas" id="avatarCanvas" style="align-items:stretch; min-height:auto;">
+          <div class="avatar-empty-sheet" id="avatarEmptyState" style="margin:auto;">
+            <div class="gen-empty-icon">🧬</div>
+            <h3 data-i18n="avatar.empty_title">İlk karakterini oluştur</h3>
+            <p data-i18n="avatar.empty_desc">Soldaki bilgileri doldur, "Karakter Oluştur" butonuna bas; portre, tam
+              vücut görünümleri ve yüz/saç detaylarıyla eksiksiz bir sheet burada belirecek.</p>
+          </div>
+
+          <div id="avatarSheetResult" style="display:none; width:100%;">
+
+            <div class="sheet-panel">
+              <div class="sheet-header">
+                <div class="sheet-title" id="sheetTitle"><span data-i18n="avatar.sheet_result_title">Oluşturulan
+                    Karakter Sheet</span> <span class="new-badge" data-i18n="avatar.sheet_new_badge">Yeni</span></div>
+                <div class="sheet-actions">
+                  <button class="btn" id="downloadSheetBtn" data-i18n="avatar.download_btn">⬇ İndir</button>
+                  <button class="btn" id="shareSheetBtn" data-i18n="avatar.share_btn">⇗ Paylaş</button>
+                  <button class="btn" id="avatarSaveBtn" disabled data-i18n-title="visual.history_soon"
+                    title="Yakında aktif olacak" data-i18n="avatar.save_btn">💾 Profile Kaydet</button>
+                </div>
+              </div>
+
+              <div>
+                <div class="sheet-block-label" data-i18n="avatar.sheet_panel_label">Karakter Sheet (5 panel)</div>
+                <div class="sheet-portrait"><img id="sheetPortraitImg" alt="karakter sheet"></div>
+              </div>
+            </div>
+
+            <div class="sheet-panel" style="display:flex; gap:20px; flex-wrap:wrap;">
+              <div style="flex:1; min-width:240px;">
+                <div class="sheet-block-label" data-i18n="avatar.info_grid_label">Karakter Bilgileri</div>
+                <dl class="sheet-info-grid" id="sheetInfoGrid"></dl>
+              </div>
+              <div style="flex:1; min-width:200px;">
+                <div class="sheet-block-label" data-i18n="avatar.uses_label">Önerilen Kullanımlar</div>
+                <div class="sheet-uses" id="sheetUses"></div>
+                <div class="save-login-hint" id="avatarSaveHint" style="margin-top:14px;" data-i18n="avatar.save_hint">
+                  Profile kaydetme yakında eklenecek. Şimdilik karakterini indirebilirsin.</div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
 
-      <!--
+    </div>
+
+    <div class="gen-lower-banner">
+      <div class="maker-features" style="max-width:none; margin:0; padding:32px 0 0; border-top:1px solid var(--line);">
+        <div class="feature">
+          <span class="feature-icon">🛡️</span>
+          <div>
+            <strong data-i18n="avatar.banner_realistic_title">Fotorealistik & Tutarlı</strong>
+            <p data-i18n="avatar.banner_realistic_desc">Gerçek fotoğraf kalitesinde üretilir. Yüz, saç ve kıyafet
+              detayları tüm panellerde tutarlı kalır.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">💎</span>
+          <div>
+            <strong data-i18n="avatar.banner_5angles_title">Tek Görselde 5 Farklı Açı</strong>
+            <p data-i18n="avatar.banner_5angles_desc">Ön, arka, yüz detayı — tek bir karakter sheet'inde tüm açılar.
+              Gemini: 2 kredi, OpenAI: 3 kredi.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">🎯</span>
+          <div>
+            <strong data-i18n="avatar.banner_brandface_title">Marka Yüzü Olarak Kullan</strong>
+            <p data-i18n="avatar.banner_brandface_desc">Oluşturduğunuz karakteri görsel üretimlerinde referans olarak
+              kullanabilirsiniz.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- ↑ avatarView burada kapanıyor -->
+
+  <div id="profileView" style="display:none" class="profile-layout">
+
+    <aside class="profile-sidebar" id="profileSidebar">
+      <!-- profile.js tarafından doldurulur -->
+    </aside>
+
+    <div class="profile-main">
+      <div class="profile-welcome">
+        <h1><span data-i18n="profile.greeting">Hoş geldin,</span> <span id="profileWelcomeName"
+            data-i18n="profile.default_user">Kullanıcı</span> 👋</h1>
+        <p data-i18n="profile.subtitle">Yaratıcılığını keşfetmeye devam et.</p>
+      </div>
+
+      <div class="profile-filter-row">
+        <button class="profile-filter-chip active" data-i18n="profile.filter_all">Tümü</button>
+        <button class="profile-filter-chip" disabled data-i18n-title="profile.soon" title="Yakında aktif olacak"
+          data-i18n="profile.filter_prompts">Promptlar</button>
+        <button class="profile-filter-chip" disabled data-i18n-title="profile.soon" title="Yakında aktif olacak"
+          data-i18n="profile.filter_visuals">Görseller</button>
+        <button class="profile-filter-chip" disabled data-i18n-title="profile.soon" title="Yakında aktif olacak"
+          data-i18n="profile.filter_characters">Karakterler</button>
+        <button class="profile-filter-chip" disabled data-i18n-title="profile.soon" title="Yakında aktif olacak"
+          data-i18n="profile.filter_social">Sosyal İçerikler</button>
+        <button class="profile-filter-chip" disabled data-i18n-title="profile.soon" title="Yakında aktif olacak"
+          data-i18n="profile.filter_uploads">Yüklemeler</button>
+        <button class="profile-filter-chip" disabled data-i18n-title="profile.soon" title="Yakında aktif olacak"
+          data-i18n="profile.filter_favorites">Favoriler</button>
+      </div>
+
+      <div class="profile-content-placeholder" data-i18n="profile.content_placeholder">
+        İçerik galerisi (promptların/görsellerin/karakterlerin listesi) yakında burada görünecek.
+      </div>
+
+      <div class="profile-widgets-row">
+        <div class="profile-widget">
+          <div class="profile-widget-title" data-i18n="profile.recent_activity">Son Aktiviteler</div>
+          <div id="profileActivityList"></div>
+        </div>
+        <div class="profile-widget">
+          <div class="profile-widget-title" data-i18n="profile.top_tools">En Çok Kullandığın Araçlar</div>
+          <div id="profileToolsList"></div>
+        </div>
+        <div class="profile-widget">
+          <div class="profile-widget-title" data-i18n="profile.quick_actions">Hızlı İşlemler</div>
+          <div class="profile-quick-actions">
+            <button class="profile-quick-action" data-tab="maker"><span data-i18n="profile.quick_prompt">📝 Prompt
+                Oluşturucuya Git</span> <span>→</span></button>
+            <button class="profile-quick-action" data-tab="visual"><span data-i18n="profile.quick_visual">🖼️ Yeni
+                Görsel Oluştur</span> <span>→</span></button>
+            <button class="profile-quick-action" data-tab="avatar"><span data-i18n="profile.quick_avatar">🧬 Karakter
+                Sheet Oluştur</span> <span>→</span></button>
+            <button class="profile-quick-action" disabled data-i18n-title="profile.soon"
+              title="Yakında aktif olacak"><span data-i18n="profile.quick_social">📱 Sosyal Medya İçeriği Oluştur</span>
+              <span>→</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="site-footer">
+    <a href="/privacy.html" target="_blank" rel="noopener noreferrer" data-i18n="footer.privacy">Gizlilik Politikası</a>
+  </footer>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <div class="modal-img-wrap">
+        <img id="modalImg" src="" alt="referans görsel">
+        <button class="modal-copy-icon-btn" id="copyIconBtn" data-i18n-title="modal.copy_prompt_title"
+          data-i18n-aria-label="modal.copy_prompt_title" title="Prompt'u kopyala" aria-label="Prompt'u kopyala">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="premium-eyebrow-badge" id="modalPremiumBadge" style="display:none">
+          <span class="premium-eyebrow-icon">◆</span> <span data-i18n="modal.premium_badge">PREMIUM PROMPT</span>
+        </div>
+        <div class="modal-eyebrow" id="modalDate"></div>
+        <div class="modal-tags" id="modalTags"></div>
+
+        <div id="promptSection" style="display:flex; flex-direction:column; flex:1;">
+          <div class="modal-prompt" id="modalPrompt"></div>
+          <div class="modal-actions">
+            <button class="btn" data-i18n="modal.back_btn">← Geri</button>
+            <button class="btn primary" id="useInVisualBtn">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px; vertical-align:-2px;">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="9" cy="9" r="2" />
+                <path d="M21 15l-5-5L5 21" />
+              </svg>
+              <span data-i18n="modal.create_visual_btn">Görsel Oluştur</span>
+            </button>
+          </div>
+        </div>
+
+        <!--
         ESKİ paywallPanel/codePanel (iki adımlı: IBAN bilgisi göster -> kod gir) KALDIRILDI.
         Yeni model: kullanıcı zaten JG Puanı bakiyesine sahip; burada sadece bu içeriğin
         maliyetini gösterip tek butonla harcama yapıyoruz. IBAN/kod akışı artık kredi
         satın alma modalında (creditIbanStep), burada değil.
       -->
-      <div id="paywallSection" style="display:none; flex-direction:column; flex:1; justify-content:center;">
-        <div class="paywall-title-lg">Bu prompt premium</div>
-        <div class="paywall-desc-lg">Bu premium prompt'un kilidini aç, profesyonel ve yüksek kaliteli içeriğe eriş.</div>
+        <div id="paywallSection" style="display:none; flex-direction:column; flex:1; justify-content:center;">
+          <div class="paywall-title-lg" data-i18n="modal.paywall_title">Bu prompt premium</div>
+          <div class="paywall-desc-lg" data-i18n="modal.paywall_desc">Bu premium prompt'un kilidini aç, profesyonel ve
+            yüksek kaliteli içeriğe eriş.</div>
 
-        <div class="paywall-btn-row">
-          <button class="btn primary paywall-unlock-btn" id="unlockBtn">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 10V8a6 6 0 1 1 12 0v2h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h1zm2 0h8V8a4 4 0 1 0-8 0v2z"/></svg>
-            <span id="unlockBtnLabel">VSP ile Aç</span>
+          <div class="paywall-btn-row">
+            <button class="btn primary paywall-unlock-btn" id="unlockBtn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path
+                  d="M6 10V8a6 6 0 1 1 12 0v2h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h1zm2 0h8V8a4 4 0 1 0-8 0v2z" />
+              </svg>
+              <span id="unlockBtnLabel" data-i18n="modal.unlock_btn_label">VSP ile Aç</span>
+            </button>
+            <div class="paywall-cost-box">
+              <span class="paywall-cost-num" id="unlockCostNum">50</span>
+              <span class="paywall-cost-label">VSP</span>
+            </div>
+          </div>
+
+          <div class="paywall-balance-note" id="paywallBalanceNote"></div>
+
+          <hr class="paywall-divider">
+
+          <button class="btn paywall-back-btn" data-i18n="modal.paywall_back_btn">← Geri</button>
+
+          <div class="code-msg" id="unlockMsg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---- Kredi satın alma modalı ---- -->
+  <div class="modal-backdrop" id="creditModalBackdrop">
+    <div class="credit-modal">
+
+      <div id="creditLoginStep" style="display:none">
+        <div class="paywall-title" data-i18n="credit.login_title">Önce giriş yapmalısın</div>
+        <div class="credit-login-note" data-i18n="credit.login_desc">VSP satın alabilmek ve kullanabilmek için Google
+          hesabınla giriş yapman gerekiyor. Puanların hesabına bağlı olarak tutulur.</div>
+        <div class="paywall-actions">
+          <div id="creditGoogleSignInBtn" style="display:flex; justify-content:center;"></div>
+          <button class="btn" data-i18n="credit.cancel_btn">Vazgeç</button>
+        </div>
+      </div>
+
+      <div id="creditPkgStep" style="display:none">
+        <div class="paywall-title" data-i18n="credit.pkg_title">VSP Satın Al</div>
+        <div class="paywall-desc" data-i18n="credit.pkg_desc">Bir paket seç, ardından ödeme yöntemini belirle.</div>
+        <div class="credit-pkg-list" id="creditPkgList"></div>
+        <div class="paywall-actions">
+          <button class="btn primary" id="creditContinueBtn" disabled data-i18n="credit.continue_btn">Devam Et</button>
+          <button class="btn" data-i18n="credit.cancel_btn">Vazgeç</button>
+        </div>
+      </div>
+
+      <div id="creditPayStep" style="display:none">
+        <div class="paywall-title" data-i18n="credit.pay_title">Ödeme Yöntemi</div>
+        <div class="paywall-desc" id="creditPaySummary"></div>
+        <div class="credit-pay-methods">
+          <button class="btn" data-i18n="credit.pay_card_btn">💳 Kredi / Banka Kartı (Stripe)</button>
+          <button class="btn" data-i18n="credit.pay_iban_btn">🏦 IBAN ile Öde</button>
+          <button class="btn" data-i18n="credit.pay_back_btn">← Geri</button>
+        </div>
+      </div>
+
+      <div id="creditIbanStep" style="display:none">
+        <div class="paywall-title" data-i18n="credit.iban_title">IBAN ile Öde</div>
+        <div class="paywall-desc">
+          <span data-i18n="credit.iban_desc_prefix">Aşağıdaki IBAN'a</span> <strong id="creditIbanAmount"></strong>
+          <span data-i18n="credit.iban_desc_suffix">tutarını gönderip dekontu WhatsApp'tan</span>
+          <strong>@kullaniciadi</strong> <span data-i18n="credit.iban_desc_end">hesabına ilet. Sana bir aktivasyon kodu
+            göndereceğiz.</span>
+        </div>
+        <div class="paywall-desc"
+          style="background:#0d0d0b; border:1px solid var(--line); border-radius:7px; padding:14px; margin-bottom:20px;">
+          <strong data-i18n="credit.iban_recipient_label">Alıcı:</strong> [Ad Soyad]<br>
+          <strong data-i18n="credit.iban_label">IBAN:</strong> TR00 0000 0000 0000 0000 0000 00<br>
+          <strong data-i18n="credit.iban_bank_label">Banka:</strong> [Banka Adı]
+        </div>
+        <div class="credit-step-label" data-i18n="credit.iban_code_label">Aktivasyon kodun var mı?</div>
+        <div class="code-row">
+          <input type="text" id="creditCodeInput" data-i18n-placeholder="credit.iban_code_placeholder"
+            placeholder="Örn. AB12CD" maxlength="24">
+          <button class="btn primary" data-i18n="credit.verify_btn">Doğrula</button>
+        </div>
+        <div class="code-msg" id="creditCodeMsg"></div>
+        <button class="btn" style="margin-top:16px; width:100%;" data-i18n="credit.iban_back_btn">← Geri</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ---- Destek & Yardım modalı ---- -->
+  <div class="modal-backdrop" id="supportModalBackdrop">
+    <div class="support-modal">
+      <button class="support-close-btn" id="supportCloseBtn" data-i18n-aria-label="support.close_aria"
+        aria-label="Kapat">✕</button>
+
+      <aside class="support-sidebar">
+        <div class="support-brand"><span class="support-brand-jg">Vero</span> Scena</div>
+        <h2 class="support-title" data-i18n="support.title">Destek & Yardım</h2>
+        <p class="support-subtitle" data-i18n="support.subtitle">Sık sorulan sorulara göz atın veya bize doğrudan yazın.
+        </p>
+
+        <nav class="support-nav">
+          <button type="button" class="support-nav-item active" data-support-view="faq">
+            <span class="support-nav-icon">❓</span>
+            <span class="support-nav-label" data-i18n="support.nav_faq">Sık Sorulan Sorular</span>
+            <span class="support-nav-chev">›</span>
           </button>
-          <div class="paywall-cost-box">
-            <span class="paywall-cost-num" id="unlockCostNum">50</span>
-            <span class="paywall-cost-label">VSP</span>
+          <button type="button" class="support-nav-item" data-support-view="contact">
+            <span class="support-nav-icon">🎧</span>
+            <span class="support-nav-label" data-i18n="support.nav_contact">Bize Ulaşın</span>
+            <span class="support-nav-chev">›</span>
+          </button>
+        </nav>
+
+        <div class="support-quick">
+          <div class="support-quick-label" data-i18n="support.quick_label">Hızlı Destek</div>
+          <div class="support-quick-row"><span>📧</span> destek@jgstudio.com</div>
+          <div class="support-quick-row"><span>🕐</span> <span data-i18n="support.hours">Hafta içi 09:00 - 18:00</span>
           </div>
         </div>
-
-        <div class="paywall-balance-note" id="paywallBalanceNote"></div>
-
-        <hr class="paywall-divider">
-
-        <button class="btn paywall-back-btn">← Geri</button>
-
-        <div class="code-msg" id="unlockMsg"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ---- Kredi satın alma modalı ---- -->
-<div class="modal-backdrop" id="creditModalBackdrop">
-  <div class="credit-modal">
-
-    <div id="creditLoginStep" style="display:none">
-      <div class="paywall-title">Önce giriş yapmalısın</div>
-      <div class="credit-login-note">VSP satın alabilmek ve kullanabilmek için Google hesabınla giriş yapman gerekiyor. Puanların hesabına bağlı olarak tutulur.</div>
-      <div class="paywall-actions">
-        <div id="creditGoogleSignInBtn" style="display:flex; justify-content:center;"></div>
-        <button class="btn">Vazgeç</button>
-      </div>
-    </div>
-
-    <div id="creditPkgStep" style="display:none">
-      <div class="paywall-title">VSP Satın Al</div>
-      <div class="paywall-desc">Bir paket seç, ardından ödeme yöntemini belirle.</div>
-      <div class="credit-pkg-list" id="creditPkgList"></div>
-      <div class="paywall-actions">
-        <button class="btn primary" id="creditContinueBtn" disabled>Devam Et</button>
-        <button class="btn">Vazgeç</button>
-      </div>
-    </div>
-
-    <div id="creditPayStep" style="display:none">
-      <div class="paywall-title">Ödeme Yöntemi</div>
-      <div class="paywall-desc" id="creditPaySummary"></div>
-      <div class="credit-pay-methods">
-        <button class="btn">💳 Kredi / Banka Kartı (Stripe)</button>
-        <button class="btn">🏦 IBAN ile Öde</button>
-        <button class="btn">← Geri</button>
-      </div>
-    </div>
-
-    <div id="creditIbanStep" style="display:none">
-      <div class="paywall-title">IBAN ile Öde</div>
-      <div class="paywall-desc">
-        Aşağıdaki IBAN'a <strong id="creditIbanAmount"></strong> tutarını gönderip dekontu WhatsApp'tan <strong>@kullaniciadi</strong> hesabına ilet. Sana bir aktivasyon kodu göndereceğiz.
-      </div>
-      <div class="paywall-desc" style="background:#0d0d0b; border:1px solid var(--line); border-radius:7px; padding:14px; margin-bottom:20px;">
-        <strong>Alıcı:</strong> [Ad Soyad]<br>
-        <strong>IBAN:</strong> TR00 0000 0000 0000 0000 0000 00<br>
-        <strong>Banka:</strong> [Banka Adı]
-      </div>
-      <div class="credit-step-label">Aktivasyon kodun var mı?</div>
-      <div class="code-row">
-        <input type="text" id="creditCodeInput" placeholder="Örn. AB12CD" maxlength="24">
-        <button class="btn primary">Doğrula</button>
-      </div>
-      <div class="code-msg" id="creditCodeMsg"></div>
-      <button class="btn" style="margin-top:16px; width:100%;">← Geri</button>
-    </div>
-
-  </div>
-</div>
-
-<!-- ---- Destek & Yardım modalı ---- -->
-<div class="modal-backdrop" id="supportModalBackdrop">
-  <div class="support-modal">
-    <button class="support-close-btn" id="supportCloseBtn" aria-label="Kapat">✕</button>
-
-    <aside class="support-sidebar">
-      <div class="support-brand"><span class="support-brand-jg">Vero</span> Scena</div>
-      <h2 class="support-title">Destek & Yardım</h2>
-      <p class="support-subtitle">Sık sorulan sorulara göz atın veya bize doğrudan yazın.</p>
-
-      <nav class="support-nav">
-        <button type="button" class="support-nav-item active" data-support-view="faq">
-          <span class="support-nav-icon">❓</span>
-          <span class="support-nav-label">Sık Sorulan Sorular</span>
-          <span class="support-nav-chev">›</span>
-        </button>
-        <button type="button" class="support-nav-item" data-support-view="contact">
-          <span class="support-nav-icon">🎧</span>
-          <span class="support-nav-label">Bize Ulaşın</span>
-          <span class="support-nav-chev">›</span>
-        </button>
-      </nav>
-
-      <div class="support-quick">
-        <div class="support-quick-label">Hızlı Destek</div>
-        <div class="support-quick-row"><span>📧</span> destek@jgstudio.com</div>
-        <div class="support-quick-row"><span>🕐</span> Hafta içi 09:00 - 18:00</div>
-      </div>
-    </aside>
-
-    <div class="support-content" id="supportContent">
-      <!-- support.js tarafından doldurulur -->
-    </div>
-  </div>
-</div>
-<!-- ↑ supportModalBackdrop burada TAM olarak kapanıyor (eklenen kapanış div'i) -->
-
-<!-- ---- Ayarlar modalı (bkz. settingsModal.js) ---- -->
-<div class="modal-backdrop" id="settingsModalBackdrop">
-  <div class="settings-modal">
-    <button class="settings-close-btn" id="settingsCloseBtn" aria-label="Kapat">✕</button>
-    <div class="settings-modal-inner">
-      <aside class="settings-sidebar">
-        <h2 class="settings-sidebar-title">Ayarlar</h2>
-        <nav class="settings-nav" id="settingsNav"></nav>
       </aside>
-      <section class="settings-panel">
-        <div id="settingsPanelBody"></div>
-      </section>
-    </div>
-  </div>
-</div>
 
-<!-- ---- Karşılama / giriş teşvik modalı (giriş yapmamış kullanıcıya 15sn sonra açılır — bkz. welcomeModal.js) ---- -->
-<div class="modal-backdrop" id="welcomeModalBackdrop">
-  <div class="welcome-modal">
-    <button class="welcome-close-btn" id="welcomeCloseBtn" aria-label="Kapat">✕</button>
-
-    <div class="welcome-modal-img-wrap">
-      <img src="/welcome.png" alt="Yaratıcılığını keşfet">
-    </div>
-
-    <div class="welcome-modal-content">
-      <div class="welcome-modal-eyebrow">👋 Hoş geldin!</div>
-      <h2 class="welcome-modal-title">Yaratıcılığını <span>keşfetmeye başla</span></h2>
-
-      <ul class="welcome-modal-features">
-        <li>
-          <span class="welcome-feature-icon">✨</span>
-          <div>
-            <strong>Sınırsız ilham, profesyonel araçlar</strong>
-            <p>Binlerce görseli keşfet, trendleri yakala.</p>
-          </div>
-        </li>
-        <li>
-          <span class="welcome-feature-icon">🎨</span>
-          <div>
-            <strong>Kendi içeriklerini oluştur ve yönet</strong>
-            <p>Görsel üret, karakter oluştur, her şey tek yerde.</p>
-          </div>
-        </li>
-        <li>
-          <span class="welcome-feature-icon">💾</span>
-          <div>
-            <strong>Kişiselleştir ve favorilerini kaydet</strong>
-            <p>Beğendiklerini kaydet, koleksiyonunu oluştur.</p>
-          </div>
-        </li>
-      </ul>
-
-      <div class="welcome-modal-actions">
-        <div class="welcome-btn-wrap outline">
-          <span class="welcome-btn-label">Giriş Yap</span>
-          <div id="welcomeGoogleSigninBtn" class="welcome-google-overlay"></div>
-        </div>
-        <div class="welcome-btn-wrap filled">
-          <span class="welcome-btn-label">Hesap Oluştur</span>
-          <div id="welcomeGoogleSignupBtn" class="welcome-google-overlay"></div>
-        </div>
-      </div>
-
-      <div class="welcome-modal-footnote">Hesabın yok mu? <strong>Ücretsiz oluştur</strong> ve hemen başla!</div>
-      <div class="welcome-modal-privacy-note">Kaydolarak veya giriş yaparak <a href="/privacy.html" target="_blank" rel="noopener noreferrer">Gizlilik Politikamızı</a> kabul etmiş olursun.</div>
-    </div>
-  </div>
-</div>
-<!-- ↑ welcomeModalBackdrop burada TAM olarak kapanıyor -->
-
-<!-- ---- Onboarding anket modalı (4 adımlı sihirbaz — bkz. onboardingModal.js + styles/onboarding.css) ---- -->
-<div class="modal-backdrop" id="onboardingModalBackdrop">
-  <div class="onboarding-wizard">
-
-    <div class="onboarding-wizard-img-wrap">
-      <img id="onboardingStepImg" src="/step-1.webp" alt="">
-      <div class="onboarding-wizard-img-caption">
-        <div class="onboarding-wizard-caption-eyebrow" id="onboardingCaptionEyebrow"></div>
-        <div class="onboarding-wizard-caption-title" id="onboardingCaptionTitle"></div>
-        <div class="onboarding-wizard-caption-desc" id="onboardingCaptionDesc"></div>
+      <div class="support-content" id="supportContent">
+        <!-- support.js tarafından doldurulur -->
       </div>
     </div>
-
-    <div class="onboarding-wizard-content">
-      <div class="onboarding-progress" id="onboardingProgress"></div>
-
-      <div class="onboarding-step-body" id="onboardingStepBody"></div>
-
-      <p class="onboarding-error" id="onboardingErrorMsg"></p>
-
-      <div class="onboarding-wizard-actions" id="onboardingActions"></div>
-    </div>
-
   </div>
-</div>
-<!-- ↑ onboardingModalBackdrop burada kapanıyor -->
+  <!-- ↑ supportModalBackdrop burada TAM olarak kapanıyor (eklenen kapanış div'i) -->
 
-<!-- Detay Modal -->
-<div id="detailModal" class="detail-modal">
-  <button class="detail-close-btn" id="detailCloseBtn" aria-label="Kapat">
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-    </svg>
-  </button>
-
-  <div class="detail-modal-content">
-    <div class="detail-image-area">
-      <button class="detail-nav-btn detail-nav-prev" id="detailPrevBtn" aria-label="Önceki">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-      </button>
-      <img id="detailImg" src="" alt="detay görsel">
-      <button class="detail-nav-btn detail-nav-next" id="detailNextBtn" aria-label="Sonraki">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
-      </button>
-      <div class="detail-thumbs" id="detailThumbs"></div>
+  <!-- ---- Ayarlar modalı (bkz. settingsModal.js) ---- -->
+  <div class="modal-backdrop" id="settingsModalBackdrop">
+    <div class="settings-modal">
+      <button class="settings-close-btn" id="settingsCloseBtn" data-i18n-aria-label="settings.close_aria"
+        aria-label="Kapat">✕</button>
+      <div class="settings-modal-inner">
+        <aside class="settings-sidebar">
+          <h2 class="settings-sidebar-title" data-i18n="settings.title">Ayarlar</h2>
+          <nav class="settings-nav" id="settingsNav"></nav>
+        </aside>
+        <section class="settings-panel">
+          <div id="settingsPanelBody"></div>
+        </section>
+      </div>
     </div>
+  </div>
 
-    <div class="detail-info-panel">
-      <div class="detail-card detail-user-card">
-        <div class="detail-avatar" id="detailAvatar">JG</div>
-        <div>
-          <div class="detail-user-name" id="detailUserName">Kullanıcı</div>
-          <div class="detail-user-handle" id="detailUserHandle"></div>
+  <!-- ---- Karşılama / giriş teşvik modalı (giriş yapmamış kullanıcıya 15sn sonra açılır — bkz. welcomeModal.js) ---- -->
+  <div class="modal-backdrop" id="welcomeModalBackdrop">
+    <div class="welcome-modal">
+      <button class="welcome-close-btn" id="welcomeCloseBtn" data-i18n-aria-label="welcome.close_aria"
+        aria-label="Kapat">✕</button>
+
+      <div class="welcome-modal-img-wrap">
+        <img src="/welcome.png" alt="Yaratıcılığını keşfet">
+      </div>
+
+      <div class="welcome-modal-content">
+        <div class="welcome-modal-eyebrow" data-i18n="welcome.eyebrow">👋 Hoş geldin!</div>
+        <h2 class="welcome-modal-title"><span data-i18n="welcome.title_pre">Yaratıcılığını</span> <span
+            data-i18n="welcome.title_span">keşfetmeye başla</span></h2>
+
+        <ul class="welcome-modal-features">
+          <li>
+            <span class="welcome-feature-icon">✨</span>
+            <div>
+              <strong data-i18n="welcome.feature1_title">Sınırsız ilham, profesyonel araçlar</strong>
+              <p data-i18n="welcome.feature1_desc">Binlerce görseli keşfet, trendleri yakala.</p>
+            </div>
+          </li>
+          <li>
+            <span class="welcome-feature-icon">🎨</span>
+            <div>
+              <strong data-i18n="welcome.feature2_title">Kendi içeriklerini oluştur ve yönet</strong>
+              <p data-i18n="welcome.feature2_desc">Görsel üret, karakter oluştur, her şey tek yerde.</p>
+            </div>
+          </li>
+          <li>
+            <span class="welcome-feature-icon">💾</span>
+            <div>
+              <strong data-i18n="welcome.feature3_title">Kişiselleştir ve favorilerini kaydet</strong>
+              <p data-i18n="welcome.feature3_desc">Beğendiklerini kaydet, koleksiyonunu oluştur.</p>
+            </div>
+          </li>
+        </ul>
+
+        <div class="welcome-modal-actions">
+          <div class="welcome-btn-wrap outline">
+            <span class="welcome-btn-label" data-i18n="welcome.login_btn">Giriş Yap</span>
+            <div id="welcomeGoogleSigninBtn" class="welcome-google-overlay"></div>
+          </div>
+          <div class="welcome-btn-wrap filled">
+            <span class="welcome-btn-label" data-i18n="welcome.signup_btn">Hesap Oluştur</span>
+            <div id="welcomeGoogleSignupBtn" class="welcome-google-overlay"></div>
+          </div>
+        </div>
+
+        <div class="welcome-modal-footnote"><span data-i18n="welcome.footnote_pre">Hesabın yok mu?</span> <strong
+            data-i18n="welcome.footnote_strong">Ücretsiz oluştur</strong> <span data-i18n="welcome.footnote_end">ve
+            hemen başla!</span></div>
+        <div class="welcome-modal-privacy-note"><span data-i18n="welcome.privacy_pre">Kaydolarak veya giriş
+            yaparak</span> <a href="/privacy.html" target="_blank" rel="noopener noreferrer"
+            data-i18n="welcome.privacy_link">Gizlilik Politikamızı</a> <span data-i18n="welcome.privacy_end">kabul etmiş
+            olursun.</span></div>
+      </div>
+    </div>
+  </div>
+  <!-- ↑ welcomeModalBackdrop burada TAM olarak kapanıyor -->
+
+  <!-- ---- Onboarding anket modalı (4 adımlı sihirbaz — bkz. onboardingModal.js + styles/onboarding.css) ---- -->
+  <div class="modal-backdrop" id="onboardingModalBackdrop">
+    <div class="onboarding-wizard">
+
+      <div class="onboarding-wizard-img-wrap">
+        <img id="onboardingStepImg" src="/step-1.webp" alt="">
+        <div class="onboarding-wizard-img-caption">
+          <div class="onboarding-wizard-caption-eyebrow" id="onboardingCaptionEyebrow"></div>
+          <div class="onboarding-wizard-caption-title" id="onboardingCaptionTitle"></div>
+          <div class="onboarding-wizard-caption-desc" id="onboardingCaptionDesc"></div>
         </div>
       </div>
 
-      <div class="detail-card">
-        <div class="detail-card-header">
-          <span class="detail-card-label">Prompt</span>
-          <button class="detail-mini-btn" id="detailCopyBtn">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+      <div class="onboarding-wizard-content">
+        <div class="onboarding-progress" id="onboardingProgress"></div>
+
+        <div class="onboarding-step-body" id="onboardingStepBody"></div>
+
+        <p class="onboarding-error" id="onboardingErrorMsg"></p>
+
+        <div class="onboarding-wizard-actions" id="onboardingActions"></div>
+      </div>
+
+    </div>
+  </div>
+  <!-- ↑ onboardingModalBackdrop burada kapanıyor -->
+  <!-- NOT: onboarding içeriği (başlıklar/sorular) onboardingModal.js içinde JS ile üretiliyor —
+     bu kısmın çevirisi UI fazından sonra, JS içeriklerini gönderdiğinde ele alınacak. -->
+
+  <!-- Detay Modal -->
+  <div id="detailModal" class="detail-modal">
+    <button class="detail-close-btn" id="detailCloseBtn" data-i18n-aria-label="detail.close_aria" aria-label="Kapat">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+
+    <div class="detail-modal-content">
+      <div class="detail-image-area">
+        <button class="detail-nav-btn detail-nav-prev" id="detailPrevBtn" data-i18n-aria-label="detail.prev_aria"
+          aria-label="Önceki">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        <img id="detailImg" src="" alt="detay görsel">
+        <button class="detail-nav-btn detail-nav-next" id="detailNextBtn" data-i18n-aria-label="detail.next_aria"
+          aria-label="Sonraki">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+        <div class="detail-thumbs" id="detailThumbs"></div>
+      </div>
+
+      <div class="detail-info-panel">
+        <div class="detail-card detail-user-card">
+          <div class="detail-avatar" id="detailAvatar">JG</div>
+          <div>
+            <div class="detail-user-name" id="detailUserName" data-i18n="detail.default_user_name">Kullanıcı</div>
+            <div class="detail-user-handle" id="detailUserHandle"></div>
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <div class="detail-card-header">
+            <span class="detail-card-label" data-i18n="detail.prompt_label">Prompt</span>
+            <button class="detail-mini-btn" id="detailCopyBtn">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+              <span class="copy-label" data-i18n="detail.copy_label">Kopyala</span>
+            </button>
+          </div>
+          <div class="detail-prompt" id="detailPrompt"></div>
+        </div>
+
+        <div class="detail-card detail-meta">
+          <div class="detail-meta-row"><span data-i18n="detail.date_label">Oluşturulma Tarihi</span><span
+              id="detailDate">—</span></div>
+          <div class="detail-meta-row"><span data-i18n="detail.model_label">Model</span><span id="detailModel">—</span>
+          </div>
+          <div class="detail-meta-row"><span data-i18n="detail.size_label">Boyut</span><span id="detailSize">—</span>
+          </div>
+          <div class="detail-meta-row"><span data-i18n="detail.id_label">Üretim ID</span><span id="detailId">—</span>
+          </div>
+        </div>
+
+        <div class="detail-primary-actions">
+          <button class="detail-action-btn" id="detailUseBtn">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
             </svg>
-            <span class="copy-label">Kopyala</span>
+            <span data-i18n="detail.use_prompt_btn">Bu Prompt ile Oluştur</span>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+          <button class="detail-action-btn" disabled data-i18n-title="visual.history_soon" title="Yakında aktif olacak">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <span data-i18n="detail.find_similar_btn">Benzer Görseller Bul</span>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
           </button>
         </div>
-        <div class="detail-prompt" id="detailPrompt"></div>
       </div>
+    </div>
 
-      <div class="detail-card detail-meta">
-        <div class="detail-meta-row"><span>Oluşturulma Tarihi</span><span id="detailDate">—</span></div>
-        <div class="detail-meta-row"><span>Model</span><span id="detailModel">—</span></div>
-        <div class="detail-meta-row"><span>Boyut</span><span id="detailSize">—</span></div>
-        <div class="detail-meta-row"><span>Üretim ID</span><span id="detailId">—</span></div>
-      </div>
-
-      <div class="detail-primary-actions">
-        <button class="detail-action-btn" id="detailUseBtn">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>
-          </svg>
-          <span>Bu Prompt ile Oluştur</span>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        </button>
-        <button class="detail-action-btn" disabled title="Yakında aktif olacak">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <span>Benzer Görseller Bul</span>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        </button>
-      </div>
+    <div class="detail-bottom-bar">
+      <button class="detail-bottom-btn primary" id="detailDownloadBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        <span data-i18n="detail.download_btn">İndir</span>
+      </button>
+      <button class="detail-bottom-btn" id="detailShareBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5" r="3" />
+          <circle cx="6" cy="12" r="3" />
+          <circle cx="18" cy="19" r="3" />
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+        </svg>
+        <span data-i18n="detail.share_btn">Paylaş</span>
+      </button>
+      <button class="detail-bottom-btn danger" id="detailDelBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6" />
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+          <path d="M10 11v6M14 11v6" />
+        </svg>
+        <span data-i18n="detail.delete_btn">Sil</span>
+      </button>
     </div>
   </div>
 
-  <div class="detail-bottom-bar">
-    <button class="detail-bottom-btn primary" id="detailDownloadBtn">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-      </svg>
-      İndir
-    </button>
-    <button class="detail-bottom-btn" id="detailShareBtn">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-      </svg>
-      Paylaş
-    </button>
-    <button class="detail-bottom-btn danger" id="detailDelBtn">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>
-      </svg>
-      Sil
-    </button>
-  </div>
-</div>
-
-<script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/main.js"></script>
 </body>
+
 </html>

@@ -1,15 +1,21 @@
 // src/settingsModal.js
 // "Ayarlar" modalı — Profil Bilgileri, Güvenlik, Bildirim Tercihleri, Görünüm,
-// JG Plus & Ödemeler, Bağlı Hesaplar, Kullanım, Hesabı Sil sekmeleri.
+// Vero Plus & Ödemeler, Bağlı Hesaplar, Kullanım, Hesabı Sil sekmeleri.
 // Profil Bilgileri artık get-profile/save-profile'a bağlı (name + username).
 // Bio ve avatar backend'de henüz desteklenmiyor, bilinçli olarak disabled bırakıldı.
-// Satın Alma Geçmişi artık profile.js'ten buraya taşındı (JG Plus & Ödemeler sekmesi).
+// Satın Alma Geçmişi artık profile.js'ten buraya taşındı (Vero Plus & Ödemeler sekmesi).
+// Dil seçimi (TR/EN) Görünüm sekmesine eklendi — i18n.js üzerinden çalışır.
+//
+// i18n: Tüm görünür metinler t() üzerinden okunur. TABS ve ICONS dışında
+// hiçbir statik Türkçe metin YOK — panel fonksiyonları her çağrıldığında
+// güncel dile göre yeniden üretilir.
 import './styles/settings.css';
 import { escapeAttr, escapeHtml, unwrap } from './utils.js';
 import { authHeaders, renderAuthArea } from './auth.js';
 import { GET_PROFILE_URL, SAVE_PROFILE_URL, PURCHASE_HISTORY_URL } from './config.js';
 import { getStoredTheme, setStoredTheme, applyTheme, getStoredDensity, setStoredDensity, applyDensity } from './state.js';
 import { switchTab } from './tabState.js';
+import { t, getLang, setLanguage } from './i18n.js';
 
 const ICONS = {
   profile: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>',
@@ -23,15 +29,16 @@ const ICONS = {
   camera: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3l-1.5 2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.5L15 3H9zm3 6a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9z"/></svg>'
 };
 
+// TABS artık sadece id/danger taşıyor — label her renderNav() çağrısında t() ile okunuyor.
 const TABS = [
-  { id: 'profile', label: 'Profil Bilgileri' },
-  { id: 'security', label: 'Güvenlik' },
-  { id: 'notifications', label: 'Bildirim Tercihleri' },
-  { id: 'appearance', label: 'Görünüm' },
-  { id: 'billing', label: 'Vero Plus & Ödemeler' },
-  { id: 'connections', label: 'Bağlı Hesaplar' },
-  { id: 'usage', label: 'Kullanım' },
-  { id: 'delete', label: 'Hesabı Sil', danger: true }
+  { id: 'profile', labelKey: 'settings.tabs.profile' },
+  { id: 'security', labelKey: 'settings.tabs.security' },
+  { id: 'notifications', labelKey: 'settings.tabs.notifications' },
+  { id: 'appearance', labelKey: 'settings.tabs.appearance' },
+  { id: 'billing', labelKey: 'settings.tabs.billing' },
+  { id: 'connections', labelKey: 'settings.tabs.connections' },
+  { id: 'usage', labelKey: 'settings.tabs.usage' },
+  { id: 'delete', labelKey: 'settings.tabs.delete', danger: true }
 ];
 
 let activeTab = 'profile';
@@ -50,17 +57,17 @@ function getUser() {
     name = localStorage.getItem('userName') || '';
     email = localStorage.getItem('userEmail') || '';
     picture = localStorage.getItem('userPicture') || '';
-  } catch (e) {}
+  } catch (e) { }
   return { name, email, picture };
 }
 
 function renderNav() {
   const nav = document.getElementById('settingsNav');
   if (!nav) return;
-  nav.innerHTML = TABS.map((t) => `
-    <button class="settings-nav-item ${t.id === activeTab ? 'active' : ''} ${t.danger ? 'settings-nav-danger' : ''}" data-settings-tab="${t.id}">
-      <span class="settings-nav-icon">${ICONS[t.id]}</span>
-      <span>${escapeHtml(t.label)}</span>
+  nav.innerHTML = TABS.map((tab) => `
+    <button class="settings-nav-item ${tab.id === activeTab ? 'active' : ''} ${tab.danger ? 'settings-nav-danger' : ''}" data-settings-tab="${tab.id}">
+      <span class="settings-nav-icon">${ICONS[tab.id]}</span>
+      <span>${escapeHtml(t(tab.labelKey))}</span>
     </button>
   `).join('');
 }
@@ -71,45 +78,45 @@ function panelProfile() {
   const displayUsername = serverProfile.loaded ? serverProfile.username : '';
 
   return `
-    <h3 class="settings-panel-title">Profil Bilgileri</h3>
-    <p class="settings-panel-sub">Hesap profil bilgilerinizi güncel tutun.</p>
+    <h3 class="settings-panel-title">${escapeHtml(t('settings.profile.title'))}</h3>
+    <p class="settings-panel-sub">${escapeHtml(t('settings.profile.subtitle'))}</p>
 
     <div class="settings-avatar-row">
       <div class="settings-avatar-wrap">
         <div class="settings-avatar-img" id="settingsAvatarPreview">
           ${picture ? `<img src="${escapeAttr(picture)}" alt="">` : escapeHtml((name || email || 'Vero').charAt(0).toUpperCase())}
         </div>
-        <button type="button" class="settings-avatar-camera-btn" id="settingsAvatarBtn" disabled title="Yakında aktif olacak">${ICONS.camera}</button>
+        <button type="button" class="settings-avatar-camera-btn" id="settingsAvatarBtn" disabled title="${escapeAttr(t('settings.common.soon'))}">${ICONS.camera}</button>
         <input type="file" id="settingsAvatarInput" accept="image/*" style="display:none" disabled>
       </div>
-      <p class="settings-avatar-hint">Profil fotoğrafı değiştirme özelliği yakında eklenecek.</p>
+      <p class="settings-avatar-hint">${escapeHtml(t('settings.profile.avatar_hint'))}</p>
     </div>
 
     <div class="settings-field-row">
       <div class="settings-field-group">
-        <label class="settings-field-label">Ad Soyad</label>
+        <label class="settings-field-label">${escapeHtml(t('settings.profile.name_label'))}</label>
         <input type="text" class="settings-input" id="settingsNameInput" value="${escapeAttr(displayName)}" maxlength="50">
       </div>
       <div class="settings-field-group">
-        <label class="settings-field-label">Kullanıcı Adı</label>
-        <input type="text" class="settings-input" id="settingsUsernameInput" value="${escapeAttr(displayUsername)}" placeholder="kullaniciadi" maxlength="20" ${serverProfile.loaded ? '' : 'disabled'}>
+        <label class="settings-field-label">${escapeHtml(t('settings.profile.username_label'))}</label>
+        <input type="text" class="settings-input" id="settingsUsernameInput" value="${escapeAttr(displayUsername)}" placeholder="${escapeAttr(t('settings.profile.username_placeholder'))}" maxlength="20" ${serverProfile.loaded ? '' : 'disabled'}>
       </div>
     </div>
 
     <div class="settings-field-group">
-      <label class="settings-field-label">E-posta</label>
-      <input type="email" class="settings-input" value="${escapeAttr(email)}" disabled title="E-posta Google hesabınızdan geliyor, buradan değiştirilemez">
+      <label class="settings-field-label">${escapeHtml(t('settings.profile.email_label'))}</label>
+      <input type="email" class="settings-input" value="${escapeAttr(email)}" disabled title="${escapeAttr(t('settings.profile.email_locked_title'))}">
     </div>
 
     <div class="settings-field-group">
-      <label class="settings-field-label">Bio</label>
-      <textarea class="settings-textarea" id="settingsBioInput" maxlength="200" placeholder="Kendinden kısaca bahset..." disabled title="Yakında aktif olacak"></textarea>
+      <label class="settings-field-label">${escapeHtml(t('settings.profile.bio_label'))}</label>
+      <textarea class="settings-textarea" id="settingsBioInput" maxlength="200" placeholder="${escapeAttr(t('settings.profile.bio_placeholder'))}" disabled title="${escapeAttr(t('settings.common.soon'))}"></textarea>
     </div>
 
     <div class="settings-save-row">
-      <button type="button" class="settings-btn" data-settings-close>İptal</button>
+      <button type="button" class="settings-btn" data-settings-close>${escapeHtml(t('settings.common.cancel'))}</button>
       <button type="button" class="settings-btn settings-btn-primary" id="settingsSaveBtn" ${serverProfile.loaded ? '' : 'disabled'}>
-        ${profileSave.loading ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+        ${profileSave.loading ? escapeHtml(t('settings.profile.saving')) : escapeHtml(t('settings.profile.save_btn'))}
       </button>
     </div>
     <div id="settingsSaveStatus" class="settings-save-status" style="${profileSave.error ? '' : 'display:none;'} color:#e0554a; font-size:13px; margin-top:8px; text-align:right;">
@@ -120,74 +127,80 @@ function panelProfile() {
 
 function panelSecurity() {
   return `
-    <h3 class="settings-panel-title">Güvenlik</h3>
-    <p class="settings-panel-sub">Hesap güvenliğinizi yönetin.</p>
+    <h3 class="settings-panel-title">${escapeHtml(t('settings.security.title'))}</h3>
+    <p class="settings-panel-sub">${escapeHtml(t('settings.security.subtitle'))}</p>
 
     <div class="settings-security-block">
       <div class="settings-security-row">
         <div>
-          <div class="settings-security-label">Şifre</div>
-          <div class="settings-security-desc">Google hesabınla giriş yapıyorsun, şifre değişikliği Google üzerinden yönetilir.</div>
+          <div class="settings-security-label">${escapeHtml(t('settings.security.password_label'))}</div>
+          <div class="settings-security-desc">${escapeHtml(t('settings.security.password_desc'))}</div>
         </div>
-        <button type="button" class="settings-btn" disabled title="Yakında aktif olacak">Şifreyi Değiştir</button>
+        <button type="button" class="settings-btn" disabled title="${escapeAttr(t('settings.common.soon'))}">${escapeHtml(t('settings.security.password_btn'))}</button>
       </div>
 
       <div class="settings-divider"></div>
 
       <div class="settings-security-row">
         <div>
-          <div class="settings-security-label">İki Aşamalı Doğrulama</div>
-          <div class="settings-security-desc">Hesabınızı ekstra güvenlik katmanıyla koruyun.</div>
+          <div class="settings-security-label">${escapeHtml(t('settings.security.twofa_label'))}</div>
+          <div class="settings-security-desc">${escapeHtml(t('settings.security.twofa_desc'))}</div>
         </div>
-        <button type="button" class="settings-toggle" disabled title="Yakında aktif olacak"><span class="settings-toggle-knob"></span></button>
+        <button type="button" class="settings-toggle" disabled title="${escapeAttr(t('settings.common.soon'))}"><span class="settings-toggle-knob"></span></button>
       </div>
 
       <div class="settings-divider"></div>
 
-      <div class="settings-security-label" style="margin-bottom:10px;">Aktif Oturumlar</div>
+      <div class="settings-security-label" style="margin-bottom:10px;">${escapeHtml(t('settings.security.sessions_label'))}</div>
       <div class="settings-session-row">
         <div>
-          <div class="settings-security-label">Bu cihaz</div>
-          <div class="settings-security-desc">Şu anda kullanılıyor</div>
+          <div class="settings-security-label">${escapeHtml(t('settings.security.this_device_label'))}</div>
+          <div class="settings-security-desc">${escapeHtml(t('settings.security.this_device_desc'))}</div>
         </div>
-        <button type="button" class="settings-btn" disabled title="Yakında aktif olacak">Oturumu Kapat</button>
+        <button type="button" class="settings-btn" disabled title="${escapeAttr(t('settings.common.soon'))}">${escapeHtml(t('settings.security.end_session_btn'))}</button>
       </div>
 
       <div class="settings-divider"></div>
 
-      <button type="button" class="settings-btn settings-btn-danger" style="width:100%" disabled title="Yakında aktif olacak">Tüm Oturumlardan Çıkış Yap</button>
+      <button type="button" class="settings-btn settings-btn-danger" style="width:100%" disabled title="${escapeAttr(t('settings.common.soon'))}">${escapeHtml(t('settings.security.end_all_btn'))}</button>
     </div>
   `;
 }
 
-function panelPlaceholder(title, desc) {
+function panelPlaceholder(titleKey, descKey) {
   return `
-    <h3 class="settings-panel-title">${escapeHtml(title)}</h3>
-    <p class="settings-panel-sub">${escapeHtml(desc)}</p>
-    <div class="settings-placeholder">Bu bölüm yakında eklenecek.</div>
+    <h3 class="settings-panel-title">${escapeHtml(t(titleKey))}</h3>
+    <p class="settings-panel-sub">${escapeHtml(t(descKey))}</p>
+    <div class="settings-placeholder">${escapeHtml(t('settings.common.coming_soon_section'))}</div>
   `;
 }
 
 function panelAppearance() {
   const currentTheme = getStoredTheme();
   const currentDensity = getStoredDensity();
+  const currentLang = getLang();
+
   const themeOptions = [
-    { id: 'dark', label: 'Koyu' },
-    { id: 'system', label: 'Sistem' },
-    { id: 'light', label: 'Açık' }
+    { id: 'dark', label: t('settings.appearance.theme_dark') },
+    { id: 'system', label: t('settings.appearance.theme_system') },
+    { id: 'light', label: t('settings.appearance.theme_light') }
   ];
   const densityOptions = [
-    { id: 'compact', label: 'Kompakt' },
-    { id: 'standard', label: 'Standart' },
-    { id: 'comfortable', label: 'Rahat' }
+    { id: 'compact', label: t('settings.appearance.density_compact') },
+    { id: 'standard', label: t('settings.appearance.density_standard') },
+    { id: 'comfortable', label: t('settings.appearance.density_comfortable') }
+  ];
+  const langOptions = [
+    { id: 'tr', label: t('settings.appearance.lang_tr') },
+    { id: 'en', label: t('settings.appearance.lang_en') }
   ];
 
   return `
-    <h3 class="settings-panel-title">Görünüm</h3>
-    <p class="settings-panel-sub">Tema ve görünüm tercihlerini özelleştir.</p>
+    <h3 class="settings-panel-title">${escapeHtml(t('settings.appearance.title'))}</h3>
+    <p class="settings-panel-sub">${escapeHtml(t('settings.appearance.subtitle'))}</p>
 
     <div class="settings-appearance-block">
-      <div class="settings-security-label">Tema</div>
+      <div class="settings-security-label">${escapeHtml(t('settings.appearance.theme_label'))}</div>
       <div class="settings-radio-group">
         ${themeOptions.map((opt) => `
           <button type="button" class="settings-radio-option ${opt.id === currentTheme ? 'active' : ''}" data-theme-option="${opt.id}">
@@ -200,10 +213,23 @@ function panelAppearance() {
     <div class="settings-divider"></div>
 
     <div class="settings-appearance-block">
-      <div class="settings-security-label">Arayüz Yoğunluğu</div>
+      <div class="settings-security-label">${escapeHtml(t('settings.appearance.density_label'))}</div>
       <div class="settings-radio-group">
         ${densityOptions.map((opt) => `
           <button type="button" class="settings-radio-option ${opt.id === currentDensity ? 'active' : ''}" data-density-option="${opt.id}">
+            <span class="settings-radio-dot"></span> ${escapeHtml(opt.label)}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <div class="settings-appearance-block">
+      <div class="settings-security-label">${escapeHtml(t('settings.appearance.lang_label'))}</div>
+      <div class="settings-radio-group">
+        ${langOptions.map((opt) => `
+          <button type="button" class="settings-radio-option ${opt.id === currentLang ? 'active' : ''}" data-lang-option="${opt.id}">
             <span class="settings-radio-dot"></span> ${escapeHtml(opt.label)}
           </button>
         `).join('')}
@@ -215,8 +241,9 @@ function panelAppearance() {
 // ---- Satın Alma Geçmişi (profile.js'ten taşındı) ----
 
 function formatPurchaseDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('tr-TR', {
+  if (!iso) return t('onboarding.empty');
+  const locale = getLang() === 'en' ? 'en-US' : 'tr-TR';
+  return new Date(iso).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -227,7 +254,7 @@ function formatPurchaseDate(iso) {
 
 async function fetchPurchaseHistoryData() {
   if (!PURCHASE_HISTORY_URL || PURCHASE_HISTORY_URL.includes('YOUR-N8N-URL')) {
-    return { error: 'Servis henüz bağlanmadı.' };
+    return { error: t('settings.billing.not_connected') };
   }
   try {
     const res = await fetch(PURCHASE_HISTORY_URL, {
@@ -235,7 +262,7 @@ async function fetchPurchaseHistoryData() {
       headers: authHeaders(),
       body: JSON.stringify({})
     });
-    if (res.status === 401) return { error: 'Oturum süresi dolmuş, lütfen tekrar giriş yap.' };
+    if (res.status === 401) return { error: t('settings.billing.session_expired') };
     const raw = await res.json();
     const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
     return {
@@ -270,31 +297,31 @@ function purchaseHistoryBodyHtml() {
   if (purchaseHistory.subTab === 'codes') {
     return purchaseHistory.kodGecmisi.length
       ? `<table class="settings-history-table">
-          <thead><tr><th>Kod</th><th>Kredi</th><th>Kullanım Tarihi</th></tr></thead>
+          <thead><tr><th>${escapeHtml(t('settings.billing.history_col_code'))}</th><th>${escapeHtml(t('settings.billing.history_col_credit'))}</th><th>${escapeHtml(t('settings.billing.history_col_date'))}</th></tr></thead>
           <tbody>${purchaseHistory.kodGecmisi.map((r) => `
             <tr><td>${escapeHtml(r.kod || '')}</td><td>${escapeHtml(String(r.puan ?? ''))}</td><td>${formatPurchaseDate(r.used_at)}</td></tr>
           `).join('')}</tbody>
         </table>`
-      : `<div class="settings-placeholder">Henüz IBAN/kod ile satın alma yok.</div>`;
+      : `<div class="settings-placeholder">${escapeHtml(t('settings.billing.history_empty'))}</div>`;
   }
   return `
     <div class="settings-placeholder" style="text-align:left;">
-      Satın alınan promptları <a href="#" id="settingsGoToPurchasedPrompts">Satın Alınan Promptlar</a> bölümünden görebilirsin.<br><br>
-      Oluşturulan görseller, karakter sheet'leri ve sosyal medya içerikleri için kredi harcama geçmişi yakında burada listelenecek.
+      ${escapeHtml(t('settings.billing.spending_prefix'))}<a href="#" id="settingsGoToPurchasedPrompts">${escapeHtml(t('settings.billing.spending_link'))}</a>${escapeHtml(t('settings.billing.spending_suffix'))}<br><br>
+      ${escapeHtml(t('settings.billing.spending_note'))}
     </div>`;
 }
 
 function purchaseHistorySectionHtml() {
   if (purchaseHistory.loading || (!purchaseHistory.loaded && !purchaseHistory.error)) {
-    return `<div class="settings-placeholder">Yükleniyor...</div>`;
+    return `<div class="settings-placeholder">${escapeHtml(t('settings.common.loading'))}</div>`;
   }
   if (purchaseHistory.error) {
-    return `<div class="settings-placeholder">Yüklenemedi: ${escapeHtml(purchaseHistory.error)}</div>`;
+    return `<div class="settings-placeholder">${escapeHtml(t('settings.billing.history_load_error', { msg: purchaseHistory.error }))}</div>`;
   }
   return `
     <div class="settings-subtabs">
-      <button class="settings-subtab ${purchaseHistory.subTab === 'codes' ? 'active' : ''}" data-history-subtab="codes">IBAN / Kredi Kartı (Stripe)</button>
-      <button class="settings-subtab ${purchaseHistory.subTab === 'spending' ? 'active' : ''}" data-history-subtab="spending">Site İçi Harcama</button>
+      <button class="settings-subtab ${purchaseHistory.subTab === 'codes' ? 'active' : ''}" data-history-subtab="codes">${escapeHtml(t('settings.billing.subtab_codes'))}</button>
+      <button class="settings-subtab ${purchaseHistory.subTab === 'spending' ? 'active' : ''}" data-history-subtab="spending">${escapeHtml(t('settings.billing.subtab_spending'))}</button>
     </div>
     ${purchaseHistoryBodyHtml()}
   `;
@@ -302,33 +329,33 @@ function purchaseHistorySectionHtml() {
 
 function panelBilling() {
   let balance = 0;
-  try { balance = parseInt(localStorage.getItem('jg_credit_balance') || '0', 10) || 0; } catch (e) {}
+  try { balance = parseInt(localStorage.getItem('jg_credit_balance') || '0', 10) || 0; } catch (e) { }
   return `
-    <h3 class="settings-panel-title">Vero Plus & Ödemeler</h3>
-    <p class="settings-panel-sub">VSP bakiyeni yönet ve ödeme geçmişine göz at.</p>
+    <h3 class="settings-panel-title">${escapeHtml(t('settings.billing.title'))}</h3>
+    <p class="settings-panel-sub">${escapeHtml(t('settings.billing.subtitle'))}</p>
     <div class="settings-billing-box">
       <div>
-        <div class="settings-security-label">Mevcut Bakiye</div>
+        <div class="settings-security-label">${escapeHtml(t('settings.billing.balance_label'))}</div>
         <div class="settings-billing-amount">💎 ${balance} VSP</div>
       </div>
-      <button type="button" class="settings-btn settings-btn-primary" id="settingsBillingBtn">Kredi Satın Al</button>
+      <button type="button" class="settings-btn settings-btn-primary" id="settingsBillingBtn">${escapeHtml(t('settings.billing.buy_btn'))}</button>
     </div>
 
     <div class="settings-divider"></div>
 
-    <div class="settings-security-label" style="margin-bottom:10px;">Satın Alma Geçmişi</div>
+    <div class="settings-security-label" style="margin-bottom:10px;">${escapeHtml(t('settings.billing.history_label'))}</div>
     <div id="settingsPurchaseHistory">${purchaseHistorySectionHtml()}</div>
   `;
 }
 
 function panelDelete() {
   return `
-    <h3 class="settings-panel-title settings-panel-title-danger">Hesabı Sil</h3>
-    <p class="settings-panel-sub">Bu işlem geri alınamaz; tüm verileriniz kalıcı olarak silinir.</p>
+    <h3 class="settings-panel-title settings-panel-title-danger">${escapeHtml(t('settings.delete.title'))}</h3>
+    <p class="settings-panel-sub">${escapeHtml(t('settings.delete.subtitle'))}</p>
     <div class="settings-danger-box">
-      Hesabını silmeden önce bilmen gerekenler: tüm promptların, görsellerin ve VSP bakiyen silinecek. Bu özellik şu an aktif değil.
+      ${escapeHtml(t('settings.delete.warning'))}
     </div>
-    <button type="button" class="settings-btn settings-btn-danger" disabled title="Yakında aktif olacak">Hesabımı Kalıcı Olarak Sil</button>
+    <button type="button" class="settings-btn settings-btn-danger" disabled title="${escapeAttr(t('settings.common.soon'))}">${escapeHtml(t('settings.delete.btn'))}</button>
   `;
 }
 
@@ -339,11 +366,11 @@ function renderPanel() {
   const renderers = {
     profile: panelProfile,
     security: panelSecurity,
-    notifications: () => panelPlaceholder('Bildirim Tercihleri', 'Hangi bildirimleri almak istediğini seç.'),
+    notifications: () => panelPlaceholder('settings.notifications.title', 'settings.notifications.subtitle'),
     appearance: panelAppearance,
     billing: panelBilling,
-    connections: () => panelPlaceholder('Bağlı Hesaplar', 'Hesabına bağlı diğer servisleri yönet.'),
-    usage: () => panelPlaceholder('Kullanım', 'VSP ve araç kullanım istatistiklerini gör.'),
+    connections: () => panelPlaceholder('settings.connections.title', 'settings.connections.subtitle'),
+    usage: () => panelPlaceholder('settings.usage.title', 'settings.usage.subtitle'),
     delete: panelDelete
   };
 
@@ -369,7 +396,7 @@ async function loadProfileFromServer() {
     const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
 
     if (!res.ok || !data.success) {
-      profileSave.error = 'Profil bilgileri yüklenemedi, lütfen modalı kapatıp tekrar aç.';
+      profileSave.error = t('settings.profile.load_error');
       if (activeTab === 'profile') renderPanel();
       return;
     }
@@ -382,18 +409,20 @@ async function loadProfileFromServer() {
     };
     if (activeTab === 'profile') renderPanel();
   } catch (err) {
-    profileSave.error = 'Profil bilgileri yüklenemedi, lütfen modalı kapatıp tekrar aç.';
+    profileSave.error = t('settings.profile.load_error');
     if (activeTab === 'profile') renderPanel();
     console.warn('get-profile hatası:', err.message);
   }
 }
 
-const SAVE_ERROR_MESSAGES = {
-  invalid_username: 'Kullanıcı adı 3-20 karakter olmalı ve sadece harf, rakam, alt çizgi içerebilir.',
-  username_taken: 'Bu kullanıcı adı zaten alınmış.',
-  invalid_name: 'Ad Soyad boş bırakılamaz ve 50 karakteri geçemez.',
-  unknown_error: 'Bir hata oluştu, lütfen tekrar dene.'
-};
+function getSaveErrorMessages() {
+  return {
+    invalid_username: t('settings.errors.invalid_username'),
+    username_taken: t('settings.errors.username_taken'),
+    invalid_name: t('settings.errors.invalid_name'),
+    unknown_error: t('settings.errors.unknown_error')
+  };
+}
 
 async function handleSaveProfile() {
   if (profileSave.loading) return;
@@ -407,6 +436,8 @@ async function handleSaveProfile() {
   profileSave.error = '';
   renderPanel();
 
+  const errorMessages = getSaveErrorMessages();
+
   try {
     const res = await fetch(SAVE_PROFILE_URL, {
       method: 'POST',
@@ -418,7 +449,7 @@ async function handleSaveProfile() {
 
     if (!res.ok || !data.success) {
       profileSave.loading = false;
-      profileSave.error = SAVE_ERROR_MESSAGES[data.error] || SAVE_ERROR_MESSAGES.unknown_error;
+      profileSave.error = errorMessages[data.error] || errorMessages.unknown_error;
       renderPanel();
       return;
     }
@@ -426,7 +457,7 @@ async function handleSaveProfile() {
     try {
       localStorage.setItem('userName', data.name || name);
       localStorage.setItem('userUsername', data.username || username);
-    } catch (e) {}
+    } catch (e) { }
 
     serverProfile = { loaded: true, name: data.name || name, username: data.username || username, picture: serverProfile.picture };
     profileSave.loading = false;
@@ -435,7 +466,7 @@ async function handleSaveProfile() {
     renderAuthArea();
   } catch (err) {
     profileSave.loading = false;
-    profileSave.error = SAVE_ERROR_MESSAGES.unknown_error;
+    profileSave.error = errorMessages.unknown_error;
     renderPanel();
     console.warn('save-profile hatası:', err.message);
   }
@@ -475,6 +506,16 @@ function wirePanelEvents() {
       setStoredDensity(density);
       applyDensity(density);
       renderPanel();
+    });
+  });
+
+  document.querySelectorAll('[data-lang-option]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const lang = btn.dataset.langOption;
+      setLanguage(lang).then(() => {
+        renderNav();
+        renderPanel();
+      });
     });
   });
 
@@ -530,5 +571,13 @@ export function initSettingsModal() {
     activeTab = btn.dataset.settingsTab;
     renderNav();
     renderPanel();
+  });
+
+  // Dil değişince modal açıksa yeniden çiz (onboardingModal.js'teki pattern ile tutarlı).
+  window.addEventListener('langchange', () => {
+    if (backdrop.classList.contains('open')) {
+      renderNav();
+      renderPanel();
+    }
   });
 }

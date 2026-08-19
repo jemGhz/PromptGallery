@@ -1,5 +1,11 @@
 // src/tabs/visualGenerator.js
-import { AI_MODELS, CAMERA_OPTIONS, CAMERA_OPTION_IMAGES, EFFECT_OPTIONS, EFFECT_OPTION_IMAGES, POSE_OPTIONS, POSE_OPTION_IMAGES, STYLE_OPTIONS, STYLE_OPTION_IMAGES, GEN_GENERATE_URL } from '../config.js';
+import {
+  AI_MODELS, CAMERA_OPTIONS, CAMERA_OPTION_IMAGES, CAMERA_OPTION_LABEL_KEYS,
+  EFFECT_OPTIONS, EFFECT_OPTION_IMAGES, EFFECT_OPTION_LABEL_KEYS,
+  POSE_OPTIONS, POSE_OPTION_IMAGES, POSE_OPTION_LABEL_KEYS,
+  STYLE_OPTIONS, STYLE_OPTION_IMAGES, STYLE_OPTION_LABEL_KEYS,
+  GEN_GENERATE_URL
+} from '../config.js';
 import { escapeAttr, escapeHtml, unwrap, getDeviceId, resizeImageToBase64 } from '../utils.js';
 import { isLoggedIn, onBalanceChange, setLocalCreditBalance, authHeaders } from '../auth.js';
 import { openCreditModal } from '../credits.js';
@@ -7,10 +13,19 @@ import { createChipGroup, bindAccordions, updateAccCount } from '../chipGroups.j
 import { appState } from '../state.js';
 import { switchTab } from '../tabState.js';
 import { openLightbox } from '../visualDetail.js';
+import { t } from '../i18n.js';
 
 function $(id) {
   return document.getElementById(id);
 }
+
+// labelFor yardımcıları — chip'in sistem key'i (TR, sabit) değişmiyor, sadece görünen
+// metin t() üzerinden okunuyor. Key eşleşmesi yoksa (ör. config.js'e yeni bir seçenek
+// eklenip LABEL_KEYS güncellenmemişse) opt'un kendisi gösterilir — sessizce kaybolmaz.
+const cameraLabel = (opt) => t(CAMERA_OPTION_LABEL_KEYS[opt] || opt);
+const effectsLabel = (opt) => t(EFFECT_OPTION_LABEL_KEYS[opt] || opt);
+const posesLabel = (opt) => t(POSE_OPTION_LABEL_KEYS[opt] || opt);
+const styleLabel = (opt) => t(STYLE_OPTION_LABEL_KEYS[opt] || opt);
 
 let genSelectedSize = '1:1';
 let genSelectedCount = 4;
@@ -30,7 +45,7 @@ function updateGenQuotaNote() {
   const note = $('genQuotaNote');
   if (!note) return;
   const cost = getVisualGenerationCost();
-  note.textContent = `Bu üretim ${cost} kredi tutuyor (bakiyeniz: ${appState.currentCreditBalance} kredi).`;
+  note.textContent = t('visual.quota_cost_note', { cost, balance: appState.currentCreditBalance });
 }
 
 function setGenSize(ratio, btn) {
@@ -46,13 +61,17 @@ function setGenCount(n, btn) {
   updateGenQuotaNote();
 }
 
+function creditPerImageSuffix(cost) {
+  return `${cost} ${t('visual.credit_per_image_suffix')}`;
+}
+
 function renderModelMenu() {
   const menu = $('genModelMenu');
   menu.innerHTML = AI_MODELS.map(
     (m, i) => `
     <button type="button" class="model-option" data-model-idx="${i}" ${m.comingSoon ? 'disabled style="opacity:.4;pointer-events:none;"' : ''}>
       <span class="m-name">${m.icon} ${escapeHtml(m.name)} ${m.badge ? `<span class="model-badge-new">${escapeHtml(m.badge)}</span>` : ''}</span>
-      <span class="m-desc">${escapeHtml(m.desc)} · ${m.creditCost} kredi / görsel</span>
+      <span class="m-desc">${escapeHtml(m.desc)} · ${escapeHtml(creditPerImageSuffix(m.creditCost))}</span>
     </button>`
   ).join('');
   menu.querySelectorAll('[data-model-idx]').forEach((btn) => {
@@ -80,7 +99,7 @@ function selectModel(i, silent) {
   const m = AI_MODELS[i];
   $('genModelIcon').textContent = m.icon;
   $('genModelName').textContent = m.name;
-  $('genModelDesc').textContent = `${m.desc} · ${m.creditCost} kredi / görsel`;
+  $('genModelDesc').textContent = `${m.desc} · ${creditPerImageSuffix(m.creditCost)}`;
   const badgeEl = $('genModelBadge');
   badgeEl.style.display = m.badge ? 'inline-block' : 'none';
   if (!silent) $('genModelMenu').classList.remove('open');
@@ -105,15 +124,19 @@ function usePromptFromMaker() {
   }
   switchTab('visual');
 }
+
+// 5 örnek prompt fikri — içerik olduğu için (UI etiketi değil) ayrı key'lerle çevrilir.
+const PROMPT_IDEA_KEYS = [
+  'visual.suggest_idea_1',
+  'visual.suggest_idea_2',
+  'visual.suggest_idea_3',
+  'visual.suggest_idea_4',
+  'visual.suggest_idea_5'
+];
+
 function suggestGenPrompt() {
-  const ideas = [
-    'Gün batımında sahilde yürüyen bir kadın, sinematik ışık, warm tones',
-    'Yağmurlu bir şehir sokağında neon yansımalar, cyberpunk atmosfer',
-    'Minimalist stüdyoda ürün fotoğrafı, yumuşak gölgeler, temiz arka plan',
-    'Dağ zirvesinde gün doğumu, epik geniş açı, sinematik renk paleti',
-    'Kafede kitap okuyan bir karakter, doğal ışık, sıcak tonlar, portre'
-  ];
-  $('genPromptInput').value = ideas[Math.floor(Math.random() * ideas.length)];
+  const key = PROMPT_IDEA_KEYS[Math.floor(Math.random() * PROMPT_IDEA_KEYS.length)];
+  $('genPromptInput').value = t(key);
   onGenPromptInput();
 }
 
@@ -132,7 +155,7 @@ function handleRefFile(file) {
       $('refModeSection').style.display = 'block';
     })
     .catch((err) => {
-      $('genQuotaNote').textContent = 'Referans görsel okunamadı: ' + err.message;
+      $('genQuotaNote').textContent = t('visual.ref_read_error', { msg: err.message });
     });
 }
 function removeRefImage() {
@@ -169,7 +192,7 @@ function handleCharFile(id, file) {
       renderCharList();
     })
     .catch((err) => {
-      $('genQuotaNote').textContent = 'Karakter görseli okunamadı: ' + err.message;
+      $('genQuotaNote').textContent = t('visual.char_read_error', { msg: err.message });
     });
 }
 function renderCharList() {
@@ -183,9 +206,9 @@ function renderCharList() {
       </div>
       <input type="file" id="charFile_${c.id}" accept="image/*" style="display:none">
       <div class="char-fields">
-        <input type="text" placeholder="Karakter ${idx + 1} (isim, isteğe bağlı)" value="${escapeAttr(c.name)}" data-char-name="${c.id}">
+        <input type="text" placeholder="${escapeAttr(t('visual.char_name_placeholder', { n: idx + 1 }))}" value="${escapeAttr(c.name)}" data-char-name="${c.id}">
       </div>
-      <button type="button" class="char-remove" data-char-remove="${c.id}" title="Kaldır">✕</button>
+      <button type="button" class="char-remove" data-char-remove="${c.id}" title="${escapeAttr(t('visual.char_remove_title'))}">✕</button>
     </div>`
     )
     .join('');
@@ -220,7 +243,7 @@ function showGenLoadingTiles(n) {
   grid.innerHTML = Array.from({ length: n })
     .map(
       () => `<div class="gen-tile loading">
-      <div class="gen-loading-text">Oluşturuluyor...</div>
+      <div class="gen-loading-text">${escapeHtml(t('visual.generating_label'))}</div>
       <div class="gen-progress-bar"><div class="gen-progress-bar-fill"></div></div>
     </div>`
     )
@@ -255,12 +278,12 @@ function renderGenResults(images, prompt) {
     .map(
       (url, i) => `
     <div class="gen-tile" style="aspect-ratio:${aspectRatio}" data-lightbox-url="${escapeAttr(url)}">
-      <img src="${escapeAttr(url)}" alt="oluşturulan görsel ${i + 1}" loading="lazy">
+      <img src="${escapeAttr(url)}" alt="${escapeAttr(t('visual.result_alt', { n: i + 1 }))}" loading="lazy">
       <div class="gen-tile-hover-overlay">
         <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4M15 3h4a2 2 0 0 1 2 2v4M9 21H5a2 2 0 0 1-2-2v-4M15 21h4a2 2 0 0 0 2-2v-4"/></svg>
       </div>
       <div class="gen-tile-actions">
-        <button class="icon-btn" data-download-url="${escapeAttr(url)}" data-download-idx="${i}" title="İndir">⬇</button>
+        <button class="icon-btn" data-download-url="${escapeAttr(url)}" data-download-idx="${i}" title="${escapeAttr(t('visual.tile_download_title'))}">⬇</button>
       </div>
     </div>`
     )
@@ -286,6 +309,8 @@ function renderGenResults(images, prompt) {
 }
 
 function downloadGenImage(url, idx) {
+  // NOT: indirilen dosya adı bilinçli olarak çevrilmedi (sistem/dosya adı,
+  // kullanıcıya UI metni olarak gösterilmiyor). İstersen bunu da t()'a bağlarım.
   const a = document.createElement('a');
   a.href = url;
   a.download = 'jg-studio-gorsel-' + (idx + 1) + '.png';
@@ -300,26 +325,26 @@ async function generateVisual() {
   if (!prompt) return;
 
   if (!isLoggedIn()) {
-    $('genQuotaNote').textContent = 'Görsel oluşturmak için önce giriş yapmalısın.';
+    $('genQuotaNote').textContent = t('visual.login_required');
     openCreditModal();
     return;
   }
 
   const cost = getVisualGenerationCost();
   if (appState.currentCreditBalance < cost) {
-    $('genQuotaNote').textContent = `Yetersiz kredi: bu üretim ${cost} kredi tutuyor, bakiyeniz ${appState.currentCreditBalance} kredi.`;
+    $('genQuotaNote').textContent = t('visual.insufficient_credit', { cost, balance: appState.currentCreditBalance });
     openCreditModal();
     return;
   }
 
   if (!GEN_GENERATE_URL || GEN_GENERATE_URL.includes('YOUR-N8N-URL')) {
-    $('genQuotaNote').textContent = 'Görsel oluşturma servisi henüz bağlanmadı.';
+    $('genQuotaNote').textContent = t('visual.service_not_connected');
     return;
   }
 
   const btn = $('genSubmitBtn');
   btn.disabled = true;
-  $('genQuotaNote').textContent = `Görsel oluşturuluyor (${cost} kredi), birkaç saniye sürebilir...`;
+  $('genQuotaNote').textContent = t('visual.generating_progress', { cost });
   showGenLoadingTiles(genSelectedCount);
 
   try {
@@ -332,6 +357,8 @@ async function generateVisual() {
       model: AI_MODELS[genSelectedModelIdx].key,
       creditCostPerImage: AI_MODELS[genSelectedModelIdx].creditCost,
       creditCost: cost,
+      // NOT: buraya giden değerler chip'lerin sistem key'leri (TR, sabit) —
+      // dil değişse bile n8n'e her zaman aynı Türkçe key gider.
       camera: [...cameraGroup.selected],
       effects: [...effectsGroup.selected],
       poses: [...posesGroup.selected],
@@ -349,7 +376,7 @@ async function generateVisual() {
     const data = unwrap(Array.isArray(raw) ? raw[0] : raw) || {};
 
     if (!data.allowed) {
-      $('genQuotaNote').textContent = data.message || 'Kredi bakiyeniz bu işlem için yetersiz.';
+      $('genQuotaNote').textContent = data.message || t('visual.insufficient_balance_generic');
       showGenEmptyState();
       if (typeof data.newBalance === 'number') setLocalCreditBalance(data.newBalance);
       if (data.reason === 'insufficient_credit') openCreditModal();
@@ -360,7 +387,7 @@ async function generateVisual() {
     renderGenResults(data.images || [], prompt);
     updateGenQuotaNote();
   } catch (err) {
-    $('genQuotaNote').textContent = 'Hata: ' + err.message;
+    $('genQuotaNote').textContent = t('visual.generic_error', { msg: err.message });
     showGenEmptyState();
   } finally {
     btn.disabled = false;
@@ -368,10 +395,10 @@ async function generateVisual() {
 }
 
 export function initVisualGenerator() {
-  cameraGroup = createChipGroup($('cameraChips'), CAMERA_OPTIONS, (s) => updateAccCount($('cameraAccCount'), s.size), CAMERA_OPTION_IMAGES);
-  effectsGroup = createChipGroup($('effectsChips'), EFFECT_OPTIONS, (s) => updateAccCount($('effectsAccCount'), s.size), EFFECT_OPTION_IMAGES);
-  posesGroup = createChipGroup($('posesChips'), POSE_OPTIONS, (s) => updateAccCount($('posesAccCount'), s.size), POSE_OPTION_IMAGES);
-  styleGroup = createChipGroup($('styleChips'), STYLE_OPTIONS, (s) => updateAccCount($('styleAccCount'), s.size), STYLE_OPTION_IMAGES);
+  cameraGroup = createChipGroup($('cameraChips'), CAMERA_OPTIONS, (s) => updateAccCount($('cameraAccCount'), s.size), CAMERA_OPTION_IMAGES, cameraLabel);
+  effectsGroup = createChipGroup($('effectsChips'), EFFECT_OPTIONS, (s) => updateAccCount($('effectsAccCount'), s.size), EFFECT_OPTION_IMAGES, effectsLabel);
+  posesGroup = createChipGroup($('posesChips'), POSE_OPTIONS, (s) => updateAccCount($('posesAccCount'), s.size), POSE_OPTION_IMAGES, posesLabel);
+  styleGroup = createChipGroup($('styleChips'), STYLE_OPTIONS, (s) => updateAccCount($('styleAccCount'), s.size), STYLE_OPTION_IMAGES, styleLabel);
   bindAccordions(document.getElementById('visualView'));
 
   renderModelMenu();
@@ -410,4 +437,13 @@ export function initVisualGenerator() {
 
   onBalanceChange(updateGenQuotaNote);
   updateGenQuotaNote();
+
+  // Dil değişince: chip grupları kendi içinde otomatik yeniden render oluyor
+  // (chipGroups.js — labelFor verilince langchange'i kendisi dinliyor).
+  // Burada sadece bu dosyanın kendi ürettiği dinamik metinleri tazeliyoruz.
+  window.addEventListener('langchange', () => {
+    renderModelMenu();
+    renderCharList();
+    updateGenQuotaNote();
+  });
 }

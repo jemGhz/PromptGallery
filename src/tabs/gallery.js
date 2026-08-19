@@ -5,6 +5,7 @@ import { openCreditModal } from '../credits.js';
 import { MAX_TOP_TAGS, PUBLIC_LIST_URL, PREMIUM_LIST_URL, UNLOCK_PREMIUM_URL, TOGGLE_INTERACTION_URL, USER_INTERACTIONS_URL } from '../config.js';
 import { getStoredDensity, setStoredDensity, applyDensity, appState } from '../state.js';
 import { switchTab } from '../tabState.js';
+import { t, getLang } from '../i18n.js';
 
 
 let allRows = [];
@@ -40,7 +41,7 @@ async function fetchPublicRows() {
   if (!PUBLIC_LIST_URL || PUBLIC_LIST_URL.includes('YOUR-N8N-URL')) return [];
   try {
     const res = await fetch(PUBLIC_LIST_URL);
-    if (!res.ok) throw new Error('Public liste okunamadı.');
+    if (!res.ok) throw new Error(t('gallery.err.publicListFailed'));
     const data = await res.json();
 
     const rows = (Array.isArray(data) ? data : []).map((raw) => {
@@ -70,7 +71,7 @@ async function fetchPremiumList() {
   if (!PREMIUM_LIST_URL || PREMIUM_LIST_URL.includes('YOUR-N8N-URL')) return [];
   try {
     const res = await fetch(PREMIUM_LIST_URL);
-    if (!res.ok) throw new Error('premium liste okunamadı');
+    if (!res.ok) throw new Error(t('gallery.err.premiumListFailed'));
     const data = await res.json();
 
     return (Array.isArray(data) ? data : []).map((raw) => {
@@ -116,7 +117,7 @@ async function fetchUserInteractions() {
 }
 
 export async function loadData() {
-  setStatus('Yükleniyor...');
+  setStatus(t('gallery.status.loading'));
   $('grid').innerHTML = '';
 
   try {
@@ -135,10 +136,10 @@ export async function loadData() {
     searchTerm = '';
     $('searchInput').value = '';
     clearStatus();
-    $('countLabel').textContent = allRows.length + ' kayıt';
+    $('countLabel').textContent = t('gallery.count_label', { count: allRows.length });
 
     if (allRows.length === 0) {
-      $('grid').innerHTML = '<div class="empty">Henüz kayıt yok. Bota bir görsel gönder, buraya düşer.</div>';
+      $('grid').innerHTML = `<div class="empty">${escapeHtml(t('gallery.empty.noRecords'))}</div>`;
       $('catBody').innerHTML = '';
       $('tagCloud').innerHTML = '';
       return;
@@ -146,7 +147,7 @@ export async function loadData() {
     renderFilters();
     applyFiltersAndRender();
   } catch (err) {
-    setStatus('Hata: ' + err.message, true);
+    setStatus(t('gallery.err.generic', { msg: err.message }), true);
   }
 }
 
@@ -192,7 +193,7 @@ function renderFilters() {
   const freq = getTagFrequency();
   const tagsToShow = showAllTags ? freq : freq.slice(0, MAX_TOP_TAGS);
 
-  let catHtml = `<button class="cat-item ${!activeCategory ? 'active' : ''}" data-cat=""><span>Tümü</span></button>`;
+  let catHtml = `<button class="cat-item ${!activeCategory ? 'active' : ''}" data-cat=""><span>${escapeHtml(t('common.all'))}</span></button>`;
   catHtml += categories
     .map(
       (c) => `
@@ -207,14 +208,16 @@ function renderFilters() {
     .map(([t]) => `<button class="chip ${activeTag === t ? 'active' : ''}" data-tag="${escapeAttr(t)}">${escapeHtml(t)}</button>`)
     .join('');
 
-  $('seeAllTagsBtn').textContent = showAllTags ? 'Daha az göster' : 'Tüm etiketleri gör';
+  $('seeAllTagsBtn').textContent = showAllTags ? t('gallery.tags.showLess') : t('sidebar.see_all_tags');
 
   renderProductTypeSelect();
   renderGenderSelect();
 }
 
-// Türkçe label mapping — kullanıcıya gösterirken
-const PRODUCT_TYPE_LABELS = {
+// Ürün türü etiketleri — dile göre seçiliyor. Sistem anahtarları (bag, shoes, jacket...)
+// SABİT kalıyor, sadece görünen etiket değişiyor. n8n/veritabanı bu key'leri bilmiyor bile,
+// sadece görüntüleme katmanında kullanılıyor.
+const PRODUCT_TYPE_LABELS_TR = {
   'bag': 'Çanta', 'backpack': 'Sırt Çantası', 'clutch': 'El Çantası',
   'wallet': 'Cüzdan', 'card-holder': 'Kart Cüzdanı', 'luggage': 'Bavul',
   'travel-bag': 'Seyahat Çantası', 'makeup-bag': 'Makyaj Çantası',
@@ -239,23 +242,54 @@ const PRODUCT_TYPE_LABELS = {
   'phone-case': 'Telefon Kılıfı', 'perfume': 'Parfüm', 'other': 'Diğer'
 };
 
+const PRODUCT_TYPE_LABELS_EN = {
+  'bag': 'Bag', 'backpack': 'Backpack', 'clutch': 'Clutch',
+  'wallet': 'Wallet', 'card-holder': 'Card Holder', 'luggage': 'Luggage',
+  'travel-bag': 'Travel Bag', 'makeup-bag': 'Makeup Bag',
+  'shoes': 'Shoes', 'sneakers': 'Sneakers', 'boots': 'Boots',
+  'ankle-boots': 'Ankle Boots', 'heels': 'Heels', 'loafers': 'Loafers',
+  'sandals': 'Sandals', 'flats': 'Flats', 'slippers': 'Slippers',
+  'jacket': 'Jacket', 'coat': 'Coat', 'trench-coat': 'Trench Coat',
+  'blazer': 'Blazer', 'suit': 'Suit', 'vest': 'Vest',
+  't-shirt': 'T-Shirt', 'polo-shirt': 'Polo Shirt', 'shirt': 'Shirt',
+  'blouse': 'Blouse', 'sweater': 'Sweater', 'hoodie': 'Hoodie',
+  'cardigan': 'Cardigan', 'pants': 'Pants', 'jeans': 'Jeans',
+  'trousers': 'Trousers', 'shorts': 'Shorts', 'skirt': 'Skirt',
+  'dress': 'Dress', 'jumpsuit': 'Jumpsuit',
+  'sunglasses': 'Sunglasses', 'eyeglasses': 'Eyeglasses',
+  'watch': 'Watch', 'smartwatch': 'Smartwatch',
+  'belt': 'Belt', 'hat': 'Hat', 'cap': 'Cap', 'scarf': 'Scarf',
+  'tie': 'Tie', 'bow-tie': 'Bow Tie', 'gloves': 'Gloves',
+  'hair-accessories': 'Hair Accessories', 'hair-clips': 'Hair Clips',
+  'umbrella': 'Umbrella', 'keychain': 'Keychain',
+  'jewelry': 'Jewelry', 'necklace': 'Necklace', 'bracelet': 'Bracelet',
+  'ring': 'Ring', 'earrings': 'Earrings',
+  'phone-case': 'Phone Case', 'perfume': 'Perfume', 'other': 'Other'
+};
+
+function getProductTypeLabels() {
+  return getLang() === 'en' ? PRODUCT_TYPE_LABELS_EN : PRODUCT_TYPE_LABELS_TR;
+}
+
 function renderProductTypeSelect() {
   const sel = document.getElementById('productTypeSelect');
   if (!sel) return;
+  const labels = getProductTypeLabels();
   // Mevcut ürün türlerini (o an DB'de olan) topla
   const counts = {};
   allRows.forEach((r) => {
     if (r.productType) counts[r.productType] = (counts[r.productType] || 0) + 1;
   });
+  const localeCode = getLang() === 'en' ? 'en' : 'tr';
   const items = Object.keys(counts).sort((a, b) => {
-    const la = PRODUCT_TYPE_LABELS[a] || a;
-    const lb = PRODUCT_TYPE_LABELS[b] || b;
-    return la.localeCompare(lb, 'tr');
+    const la = labels[a] || a;
+    const lb = labels[b] || b;
+    return la.localeCompare(lb, localeCode);
   });
   sel.innerHTML =
-    `<option value="">Tümü (${allRows.filter((r) => r.productType).length})</option>` +
+    `<option value="">${escapeHtml(t('common.all'))} (${allRows.filter((r) => r.productType).length})</option>` +
     items.map((k) => {
-      const label = PRODUCT_TYPE_LABELS[k] || k;
+      const label = labels[k] || k;
       return `<option value="${escapeAttr(k)}" ${activeProductType === k ? 'selected' : ''}>${escapeHtml(label)} (${counts[k]})</option>`;
     }).join('');
 }
@@ -319,7 +353,7 @@ async function toggleInteraction(id, type) {
   const row = findRow(id);
   if (!row) return;
   if (!TOGGLE_INTERACTION_URL || TOGGLE_INTERACTION_URL.includes('YOUR-N8N-URL')) {
-    setStatus('Etkileşim servisi henüz bağlanmadı.', true);
+    setStatus(t('gallery.err.interactionNotConnected'), true);
     return;
   }
 
@@ -350,10 +384,10 @@ async function toggleInteraction(id, type) {
       if (wasActive) set.add(key);
       else set.delete(key);
       renderGrid();
-      setStatus('Oturum süresi dolmuş, lütfen tekrar giriş yap.', true);
+      setStatus(t('gallery.err.sessionExpired'), true);
       return;
     }
-    if (!res.ok || data.success === false) throw new Error(data.message || 'İşlem başarısız.');
+    if (!res.ok || data.success === false) throw new Error(data.message || t('gallery.err.actionFailed'));
 
     // Sunucudan dönen gerçek durum optimistic tahminden farklıysa düzelt
     if (typeof data.active === 'boolean' && data.active !== set.has(key)) {
@@ -366,7 +400,7 @@ async function toggleInteraction(id, type) {
     if (wasActive) set.add(key);
     else set.delete(key);
     renderGrid();
-    setStatus('Bağlantı hatası: ' + err.message, true);
+    setStatus(t('gallery.err.generic', { msg: err.message }), true);
   }
 }
 
@@ -374,14 +408,14 @@ function renderGrid() {
   const grid = $('grid');
 
   if (visibleRows.length === 0) {
-    grid.innerHTML = '<div class="empty">Bu filtrelere uyan kayıt yok.</div>';
+    grid.innerHTML = `<div class="empty">${escapeHtml(t('gallery.empty.noMatches'))}</div>`;
     return;
   }
 
   grid.innerHTML = visibleRows
     .map((r, i) => {
       const tags = r.etiketler.split(',').map((t) => t.trim()).filter(Boolean);
-      const firstTag = tags[0] || (r.isPremium ? 'Premium' : '');
+      const firstTag = tags[0] || (r.isPremium ? t('gallery.premium_label') : '');
       const imgSrc = r.gorselLink || '';
       const lockBadge = r.isPremium && !getUnlockedPrompt(r.id)
         ? `<div class="premium-badge">
@@ -399,10 +433,10 @@ function renderGrid() {
       </div>`;
       const cardActions = `
       <div class="card-actions">
-        <button class="icon-btn like-btn ${isLiked(r.id) ? 'active' : ''}" data-like-id="${escapeAttr(r.id)}" title="Beğen">
+        <button class="icon-btn like-btn ${isLiked(r.id) ? 'active' : ''}" data-like-id="${escapeAttr(r.id)}" title="${escapeAttr(t('gallery.action.like'))}">
           <svg viewBox="0 0 24 24"><path d="M12 21s-6.7-4.35-9.3-8.1C.8 9.9 1.7 6.4 4.6 5.1c2.1-.95 4.2-.1 5.4 1.6.4.55.8 1.1 1 1.5.2-.4.6-.95 1-1.5 1.2-1.7 3.3-2.55 5.4-1.6 2.9 1.3 3.8 4.8 1.9 7.8C18.7 16.65 12 21 12 21z"/></svg>
         </button>
-        <button class="icon-btn save-btn ${isSaved(r.id) ? 'active' : ''}" data-save-id="${escapeAttr(r.id)}" title="Kaydet">
+        <button class="icon-btn save-btn ${isSaved(r.id) ? 'active' : ''}" data-save-id="${escapeAttr(r.id)}" title="${escapeAttr(t('gallery.action.save'))}">
           <svg viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>
         </button>
       </div>`;
@@ -432,6 +466,12 @@ function openModal(idx) {
   openModalForRow(visibleRows[idx]);
 }
 
+function formatModalDate(iso) {
+  if (!iso) return '';
+  const localeCode = getLang() === 'en' ? 'en-US' : 'tr-TR';
+  return new Date(iso).toLocaleDateString(localeCode, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
 // Satır objesiyle doğrudan açar — galeri dışından (ör. profil sayfası) da çağrılabilir
 export function openModalForRow(r) {
   if (!r) return;
@@ -439,9 +479,7 @@ export function openModalForRow(r) {
   const tags = r.etiketler.split(',').map((t) => t.trim()).filter(Boolean);
 
   $('modalImg').src = r.gorselLink || '';
-  $('modalDate').textContent = r.tarih
-    ? new Date(r.tarih).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-    : '';
+  $('modalDate').textContent = formatModalDate(r.tarih);
 
   const maxEtiket = r.kategori ? 3 : 4;
   let tagsHtml = tags
@@ -480,7 +518,7 @@ function getUnlockedPrompt(id) {
 function setUnlockedPrompt(id, promptText) {
   try {
     sessionStorage.setItem('unlocked_' + id, promptText);
-  } catch (e) {}
+  } catch (e) { }
 }
 
 function showPromptSection(promptText) {
@@ -505,7 +543,7 @@ function showPaywallSection() {
   const r = currentModalRow;
   const cost = r?.cost || 50;
   $('unlockCostNum').textContent = cost;
-  $('paywallBalanceNote').textContent = `${getLocalCreditBalance()} VSP'ye sahipsin.`;
+  $('paywallBalanceNote').textContent = t('gallery.paywall.balanceNote', { balance: getLocalCreditBalance() });
 
   const msgEl = $('unlockMsg');
   msgEl.textContent = '';
@@ -513,7 +551,7 @@ function showPaywallSection() {
 
   const btn = $('unlockBtn');
   btn.disabled = false;
-  $('unlockBtnLabel').textContent = 'VSP ile Aç';
+  $('unlockBtnLabel').textContent = t('modal.unlock_btn_label');
 }
 
 // ---- Kredi ile prompt açma ----
@@ -528,13 +566,13 @@ async function unlockWithCredits() {
     return;
   }
   if (!UNLOCK_PREMIUM_URL || UNLOCK_PREMIUM_URL.includes('YOUR-N8N-URL')) {
-    msgEl.textContent = 'Kilit açma servisi henüz bağlanmadı.';
+    msgEl.textContent = t('gallery.err.unlockNotConnected');
     msgEl.className = 'code-msg error';
     return;
   }
 
   btn.disabled = true;
-  label.textContent = 'İşleniyor...';
+  label.textContent = t('gallery.status.processing');
   msgEl.textContent = '';
   msgEl.className = 'code-msg';
 
@@ -553,7 +591,7 @@ async function unlockWithCredits() {
     if (data.success) {
       setUnlockedPrompt(r.id, data.promptText);
       serverPurchases.add(itemKey(r)); // profil listesi bu oturumda da güncel görünsün
-      msgEl.textContent = 'Açıldı!';
+      msgEl.textContent = t('gallery.status.unlocked');
       msgEl.className = 'code-msg success';
       if (typeof data.newBalance === 'number') {
         setLocalCreditBalance(data.newBalance);
@@ -563,21 +601,21 @@ async function unlockWithCredits() {
       renderGrid();
       setTimeout(() => showPromptSection(data.promptText), 400);
     } else if (res.status === 401) {
-      msgEl.textContent = 'Oturum süresi dolmuş, lütfen tekrar giriş yap.';
+      msgEl.textContent = t('gallery.err.sessionExpired');
       msgEl.className = 'code-msg error';
       btn.disabled = false;
-      label.textContent = 'VSP ile Aç';
+      label.textContent = t('modal.unlock_btn_label');
     } else {
-      msgEl.textContent = data.message || 'Bakiye yetersiz veya bir hata oluştu.';
+      msgEl.textContent = data.message || t('gallery.err.insufficientBalance');
       msgEl.className = 'code-msg error';
       btn.disabled = false;
-      label.textContent = 'VSP ile Aç';
+      label.textContent = t('modal.unlock_btn_label');
     }
   } catch (err) {
-    msgEl.textContent = 'Bağlantı hatası: ' + err.message;
+    msgEl.textContent = t('gallery.err.generic', { msg: err.message });
     msgEl.className = 'code-msg error';
     btn.disabled = false;
-    label.textContent = 'VSP ile Aç';
+    label.textContent = t('modal.unlock_btn_label');
   }
 }
 
@@ -740,6 +778,17 @@ export function initGallery() {
     await fetchUserInteractions();
     renderGrid();
   });
+
+  // Dil değiştiğinde (Ayarlar > Görünüm) filtre etiketlerini, sıralama etiketini,
+  // grid'i ve açık modal varsa tarih/metinlerini taze dille yeniden çiz.
+  window.addEventListener('langchange', () => {
+    renderFilters();
+    applyFiltersAndRender();
+    $('sortLabel').textContent = SORT_LABELS_KEY[sortOrder] ? t(SORT_LABELS_KEY[sortOrder]) : t('sort.newest');
+    if ($('modalBackdrop').classList.contains('open') && currentModalRow) {
+      openModalForRow(currentModalRow);
+    }
+  });
 }
 
 function toggleSection(key) {
@@ -750,16 +799,16 @@ function toggleSection(key) {
   chev.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
 }
 
-const SORT_LABELS = {
-  'newest': 'En yeni',
-  'oldest': 'En eski',
-  'most-viewed': 'En çok görüntülenen',
-  'most-liked': 'En çok beğenilen'
+const SORT_LABELS_KEY = {
+  'newest': 'sort.newest',
+  'oldest': 'sort.oldest',
+  'most-viewed': 'sort.most_viewed',
+  'most-liked': 'sort.most_liked'
 };
 
 function setSort(order) {
   sortOrder = order;
-  $('sortLabel').textContent = SORT_LABELS[order] || 'En yeni';
+  $('sortLabel').textContent = t(SORT_LABELS_KEY[order] || 'sort.newest');
   $('sortNewestBtn').classList.toggle('active', order === 'newest');
   $('sortOldestBtn').classList.toggle('active', order === 'oldest');
   $('sortMostViewedBtn').classList.toggle('active', order === 'most-viewed');

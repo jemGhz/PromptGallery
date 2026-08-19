@@ -1,7 +1,8 @@
 // src/main.js — Vite giriş noktası
 import './style.css';
+import { initI18n } from './i18n.js';
 import { initOnboardingModal } from './onboardingModal.js';
-import { authHeaders, initAuth } from './auth.js';import { switchTab } from './tabState.js';
+import { authHeaders, initAuth } from './auth.js'; import { switchTab } from './tabState.js';
 import { initCreditModal } from './credits.js';
 import { initWelcomeModal } from './welcomeModal.js';
 import { loadData, initGallery } from './tabs/gallery.js';
@@ -31,6 +32,7 @@ function initTabs() {
 document.addEventListener('DOMContentLoaded', () => {
   // initAuth önce çağrılıyor ki appState.currentCreditBalance, gen/avatar sekmelerinin
   // ilk render'ında (quota notu metninde) doğru değerle görünsün.
+  initI18n();
   initAuth();
   initTabs();
   initGallery();
